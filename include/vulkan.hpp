@@ -10,6 +10,7 @@
 
 
 #ifdef _DEBUG
+#include <sstream>
 #include <iostream>
 
 #define dc(val) \

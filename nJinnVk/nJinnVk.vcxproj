@@ -74,19 +74,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="application.hpp" />
-    <ClInclude Include="context.hpp" />
+    <ClInclude Include="Application.hpp" />
+    <ClInclude Include="Console.hpp" />
+    <ClInclude Include="Context.hpp" />
+    <ClInclude Include="Screen.hpp" />
     <ClInclude Include="stdafx.hpp" />
-    <ClInclude Include="window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application.cpp" />
-    <ClCompile Include="context.cpp" />
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Context.cpp" />
+    <ClCompile Include="Screen.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

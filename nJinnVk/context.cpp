@@ -1,9 +1,7 @@
 #include "stdafx.hpp"
-#include "context.hpp"
+#include "Context.hpp"
 
 namespace nJinn {
-	context * ctx;
-
 	static const char * appName = "nJinnVk";
 
 	static const char * layers[] =
@@ -26,7 +24,13 @@ namespace nJinn {
 		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 	};
 
-	context::context()
+	Context * Context::context = nullptr;
+
+	Context::Context() :
+		instance(nullptr),
+		physicalDevice(nullptr),
+		device(nullptr)
+
 	{
 		vk::ApplicationInfo appInfo;
 
@@ -35,25 +39,99 @@ namespace nJinn {
 		appInfo.pApplicationName(appName);
 		appInfo.pEngineName(appName);
 
-		vk::InstanceCreateInfo createInfo;
-		createInfo.ppEnabledExtensionNames(extensions);
-		createInfo.enabledExtensionCount(countof(extensions));
-		createInfo.ppEnabledLayerNames(layers);
-		createInfo.enabledLayerCount(countof(layers));
-		createInfo.pApplicationInfo(&appInfo);
+		vk::InstanceCreateInfo instanceInfo;
+		instanceInfo.ppEnabledExtensionNames(extensions);
+		instanceInfo.enabledExtensionCount(countof(extensions));
+		instanceInfo.ppEnabledLayerNames(layers);
+		instanceInfo.enabledLayerCount(countof(layers));
+		instanceInfo.pApplicationInfo(&appInfo);
 
-		dc(vk::createInstance(&createInfo, nullptr, &instance));
+		dc(vk::createInstance(&instanceInfo, nullptr, &instance));
+
+		std::vector<vk::PhysicalDevice> physicalDevices;
+		dc(vk::enumeratePhysicalDevices(instance, physicalDevices));
+
+		physicalDevice = physicalDevices[0];
+
+		std::vector<vk::QueueFamilyProperties> queuesProperties = vk::getPhysicalDeviceQueueFamilyProperties(physicalDevice);
+		vk::QueueFlags queueTypes[3] = {
+			vk::QueueFlagBits::eGraphics,
+			vk::QueueFlagBits::eTransfer,
+			vk::QueueFlagBits::eCompute,
+		};
+
+		struct queueLocation {
+			size_t familyIndex = 0;
+			size_t indexInFamily = 0;
+		};
+
+		queueLocation qLocations[queueCount];
+		std::vector<size_t> queueInstanceCounts(queuesProperties.size());
+
+		for (auto type : queueTypes) {
+			for (size_t i = 0; i < queuesProperties.size(); ++i) {
+				if (queuesProperties[i].queueFlags() & type) {
+					qLocations[type].familyIndex = i;
+					qLocations[type].indexInFamily = queueInstanceCounts[i]++;
+					break;
+				}
+			}
+		}
+
+		float priorities[3] = { 1.0f, 1.0f, 1.0f };
+		std::vector<vk::DeviceQueueCreateInfo> queueInfos;
+		size_t queueIndex = 0;
+		for (size_t i = 0; i < queuesProperties.size(); ++i) {
+			if (queueInstanceCounts[i] > 0) {
+				queueInfos.emplace_back();
+				queueInfos.back()
+					.queueFamilyIndex(i)
+					.queueCount(queueInstanceCounts[i])
+					.pQueuePriorities(priorities + queueIndex);
+				queueIndex += queueInstanceCounts[i];
+			}
+		}
+
+		const char * deviceExtensions[] = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		vk::DeviceCreateInfo deviceInfo;
+		deviceInfo
+			.queueCreateInfoCount(queueInfos.size())
+			.pQueueCreateInfos(queueInfos.data())
+			.pEnabledFeatures(nullptr)
+			.enabledExtensionCount(countof(deviceExtensions))
+			.ppEnabledExtensionNames(deviceExtensions)
+			.enabledLayerCount(countof(layers))
+			.ppEnabledLayerNames(layers);
+
+		dc(vk::createDevice(physicalDevice, &deviceInfo, nullptr, &device));
+
+		vk::PhysicalDeviceMemoryProperties memoryProperties;
+
+		vk::getPhysicalDeviceMemoryProperties(physicalDevice, memoryProperties);
+
+		for (size_t i = 0; i < queueCount; ++i) {
+			auto & qLoc = qLocations[i];
+			vk::getDeviceQueue(device, qLoc.familyIndex, qLoc.indexInFamily, queues[i]);
+		}
 	}
-	context::~context()
+
+	void Context::create()
 	{
+		context = new Context();
+	}
+
+	void Context::destroy()
+	{
+		delete context;
+		context = nullptr;
+	}
+
+	Context::~Context()
+	{
+		vk::destroyDevice(device, nullptr);
 		vk::destroyInstance(instance, nullptr);
-	}
-
-	void context::allocateConsole()
-	{
-		AllocConsole();
-		AttachConsole(GetCurrentProcessId());
-		freopen("CON", "w", stdout);
-		SetConsoleTitle(TEXT("Debug console"));
 	}
 }

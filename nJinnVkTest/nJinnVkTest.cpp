@@ -2,14 +2,12 @@
 #include "nJinnVkTest.h"
 
 
-#include <nJinnVk/application.hpp>
-#include <nJinnVk/context.hpp>
-#include <nJinnVk/window.hpp>
+#include <nJinnVk/Application.hpp>
 
 using namespace nJinn;
 
-class G : public gameBase {};
+class G : public GameBase {};
 
 MAIN_FUNCTION{
-	return application::initialize<G>(APPLICATION_PARAMS_VAL);
+	return Application::initialize<G>(APPLICATION_PARAMS_VAL);
 }

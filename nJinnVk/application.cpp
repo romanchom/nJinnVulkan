@@ -1,39 +1,55 @@
 #include "stdafx.hpp"
-#include "application.hpp"
+#include "Application.hpp"
 
-#include "window.hpp"
+#include <chrono>
+
+#include "Screen.hpp"
+#include "Context.hpp"
 
 namespace nJinn {
-	gameBase * application::mGame = nullptr;
-	HINSTANCE application::shInstance = 0;
-	int application::snCmdShow = 1;
-	class window * application::sWindow = nullptr;
+	GameBase * Application::mGame = nullptr;
+	HINSTANCE Application::shInstance = 0;
+	int Application::snCmdShow = 1;
+	class Screen * Application::sScreen = nullptr;
 
-	void application::run()
+	typedef std::chrono::high_resolution_clock clock;
+
+	void Application::run()
 	{
-		mGame->OnInitialize();
-		
+		auto begin = clock::now();
+		mGame->onInitialize();
+		size_t frame = 0;
 		while (true) {
-			if (!sWindow->run()) break;
+			if (sScreen->shouldClose()) break;
+			sScreen->acquireFrame();
+			sScreen->present();
+			if (++frame > 10) {
+				auto end = clock::now();
+				std::chrono::duration<double> diff = end - begin;
+				std::cout << "FPS: " << frame / diff.count();
+				begin = clock::now();
+				frame = 0;
+			}
 		}
 		finalize();
 	}
 
-	void application::quit()
+	void Application::quit()
 	{
 		PostQuitMessage(0);
 	}
 
-	void application::finalize()
+	void Application::finalize()
 	{
-		mGame->OnExit();
-		
+		mGame->onExit();
+		Context::destroy();
 	}
 
-	void nJinn::application::doInitialize(APPLICATION_PARAMS)
+	void nJinn::Application::doInitialize(APPLICATION_PARAMS)
 	{
 		shInstance = hInstance;
-		sWindow = new window(1280, 720);
+		Context::create();
+		sScreen = new Screen(1280, 720);
 		run();
 	}
 }
