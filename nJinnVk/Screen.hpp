@@ -13,7 +13,10 @@ namespace nJinn
 			Frame & operator=(const Frame & that) = delete;
 			void create(const Screen & info, size_t index, vk::Image img);
 			void present();
-		private:
+			void transitionForDraw(vk::CommandBuffer buffer);
+			void transitionForPresent(vk::CommandBuffer buffer);
+		//private:
+			void transition(vk::CommandBuffer buffer, const vk::ImageMemoryBarrier & barrier);
 			void destroy();
 			vk::Image image;
 			vk::ImageView view;
@@ -21,6 +24,8 @@ namespace nJinn
 			vk::Semaphore imageAquiredSemaphore;
 			vk::Semaphore renderingCompleteSemaphore;
 			vk::PresentInfoKHR presentInfo;
+			vk::ImageMemoryBarrier presentToDrawBarrier;
+			vk::ImageMemoryBarrier drawToPresentBarrier;
 			uint32_t imageIndex;
 			friend class Screen;
 		};
@@ -34,9 +39,9 @@ namespace nJinn
 		void resize(uint32_t width, uint32_t height);
 		void present();
 		void acquireFrame();
+		void testBlink();
 	private:
 		bool shouldClose();
-		static void allocateConsole();
 
 		void * mWindowHandle;
 

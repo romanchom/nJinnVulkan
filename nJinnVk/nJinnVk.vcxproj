@@ -75,6 +75,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp" />
+    <ClInclude Include="CommandBuffer.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Screen.hpp" />
@@ -82,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Screen.cpp" />

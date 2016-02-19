@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "Application.hpp"
 #include "Context.hpp"
+#include "CommandBuffer.hpp"
 
 namespace nJinn {
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -228,6 +229,10 @@ namespace nJinn {
 		std::cout << "Acquired frame: " << currentFrameIndex << std::endl;
 	}
 
+	void Screen::testBlink()
+	{
+	}
+
 	bool Screen::shouldClose()
 	{
 		MSG msg = { 0 };
@@ -238,10 +243,6 @@ namespace nJinn {
 		}
 
 		return false;
-	}
-
-	void Screen::allocateConsole()
-	{
 	}
 
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -318,11 +319,75 @@ namespace nJinn {
 
 		vk::FenceCreateInfo fenceInfo;
 		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
+
+		presentToDrawBarrier
+			.oldLayout(vk::ImageLayout::ePresentSrc)
+			.newLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.dstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.image(image);
+
+		drawToPresentBarrier
+			.oldLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.newLayout(vk::ImageLayout::ePresentSrc)
+			.srcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.image(image);
+
+		vk::ImageMemoryBarrier defineImageBarrier;
+		defineImageBarrier
+			.oldLayout(vk::ImageLayout::eUndefined)
+			.newLayout(vk::ImageLayout::ePresentSrc)
+			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.image(image);
+
+		CommandBuffer buffer;
+		buffer.beginRecording();
+		
+		transition(buffer, defineImageBarrier);
+
+		buffer.endRecording();
+
+		vk::CommandBuffer b = buffer;
+		vk::SubmitInfo submitInfo;
+		submitInfo
+			.commandBufferCount(1)
+			.pCommandBuffers(&b);
+
+		vk::queueSubmit(Context::mainQueue(), 0, &submitInfo, nullptr);
+		vk::queueWaitIdle(Context::mainQueue());
 	}
 
 	void Screen::Frame::present()
 	{
 		dc(vk::queuePresentKHR(Context::mainQueue(), presentInfo));
+	}
+
+	void Screen::Frame::transitionForDraw(vk::CommandBuffer buffer)
+	{
+		transition(buffer, presentToDrawBarrier);
+	}
+
+	void Screen::Frame::transitionForPresent(vk::CommandBuffer buffer)
+	{
+		transition(buffer, drawToPresentBarrier);
+	}
+
+	void Screen::Frame::transition(vk::CommandBuffer buffer, const vk::ImageMemoryBarrier & barrier)
+	{
+		vk::cmdPipelineBarrier(buffer,
+			vk::PipelineStageFlagBits::eAllCommands,
+			vk::PipelineStageFlagBits::eTopOfPipe,
+			vk::DependencyFlags(),
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
 	}
 
 	void Screen::Frame::destroy()

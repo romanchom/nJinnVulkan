@@ -15,12 +15,18 @@ namespace nJinn {
 	public:
 		static void create();
 		static void destroy();
+		
 		static vk::Instance inst() { return context->instance; }
 		static vk::PhysicalDevice physDev() { return context->physicalDevice; }
 		static vk::Device dev() { return context->device; }
+		
 		static vk::Queue mainQueue() { return context->queues[graphicsQueueIndex]; }
 		static vk::Queue transferQueue() { return context->queues[transferQueueIndex]; }
 		static vk::Queue computeQueue() { return context->queues[computeQueueIndex]; }
+
+		static size_t mainQueueFamilyIndex() { return context->queueFamilyIndicies[graphicsQueueIndex]; }
+		static size_t transferQueueFamilyIndex() { return context->queueFamilyIndicies[transferQueueIndex]; }
+		static size_t computeQueueFamilyIndex() { return context->queueFamilyIndicies[computeQueueIndex]; }
 	private:
 		static Context * context;
 		~Context();

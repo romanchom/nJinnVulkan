@@ -5,6 +5,7 @@
 
 #include "Screen.hpp"
 #include "Context.hpp"
+#include "CommandBuffer.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -19,9 +20,32 @@ namespace nJinn {
 		auto begin = clock::now();
 		mGame->onInitialize();
 		size_t frame = 0;
+		CommandBuffer buf;
+		vk::ClearColorValue color;
+		color.float32({ 1, 0, 1, 1 });
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
+
+			buf.beginRecording();
+
+			sScreen->currentFrame->transitionForDraw(buf);
+
+			vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+			vk::cmdClearColorImage(buf, sScreen->currentFrame->image, vk::ImageLayout::eColorAttachmentOptimal, &color, 1, &range);
+
+			sScreen->currentFrame->transitionForPresent(buf);
+
+			buf.endRecording();
+
+			vk::CommandBuffer buff = buf;
+			vk::SubmitInfo submitInfo;
+			submitInfo
+				.commandBufferCount(1)
+				.pCommandBuffers(&buff);
+
+			vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
+
 			sScreen->present();
 			if (++frame > 10) {
 				auto end = clock::now();

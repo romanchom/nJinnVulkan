@@ -6,8 +6,8 @@
 
 #include <cassert>
 #define VKCPP_ENHANCED_MODE
+#undef MemoryBarrier
 #include "vk_cpp.h"
-
 
 #ifdef _DEBUG
 #include <sstream>
