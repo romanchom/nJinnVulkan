@@ -2,6 +2,9 @@
 #include "Context.hpp"
 
 #include "Config.hpp"
+#include <iostream>
+#include <iomanip>
+
 
 namespace nJinn {
 	static const char * appName = "nJinnVk";
@@ -179,9 +182,43 @@ namespace nJinn {
 		vk::destroyInstance(instance, nullptr);
 	}
 
-	static const int32_t breakIgnoredCodes[] = {
+	static const int32_t ignoredCodes[] = {
 		50, // Attempt to reset command buffer which is in use
 		49, // Attempt to simultaneously execute command buffer without flag set
+		// reusing command buffers reports errors, even if they have finished executing long time ago
+
+	};
+
+	static const char * objectNames[] = {
+		"Unknown",
+		"Instance",
+		"Physical device",
+		"Device",
+		"Queue",
+		"Semaphore",
+		"Command buffer",
+		"Fence",
+		"Device memory",
+		"Buffer",
+		"Image",
+		"Event",
+		"Query pool",
+		"Buffer view",
+		"Image view",
+		"Shader module",
+		"Pipeline cache",
+		"Pipeline layout",
+		"Render pass",
+		"Pipeline",
+		"Descriptor set layout",
+		"Sampler",
+		"Descriptor pool",
+		"Descriptor set",
+		"Framebuffer",
+		"Command pool",
+		"Surface khr",
+		"Swapchain khr",
+		"Debug report",
 	};
 
 	VkBool32 VKAPI_PTR messageCallback(
@@ -195,7 +232,7 @@ namespace nJinn {
 		void* pUserData)
 	{
 		bool ignore = false;
-		for (const int32_t code : breakIgnoredCodes) {
+		for (const int32_t code : ignoredCodes) {
 			if (code == msgCode) {
 				ignore = true;
 				break;
@@ -204,16 +241,20 @@ namespace nJinn {
 		if (ignore) return 0;
 
 		const char * type = nullptr;
-		if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) type = "error";
-		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) type = "warning";
-		else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) type = "info";
-		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) type = "perfWarn";
-		else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) type = "debug";
+		if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) type = "ERR";
+		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) type = "WAR";
+		else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) type = "INFO";
+		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) type = "PERF";
+		else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) type = "DBG";
 		
-		std::cout << "Vulkan " << type << ": [" << pLayerPrefix << "] Code " << msgCode << " : " << pMsg << std::endl;
+		std::cout << type;
+		std::cout << " : object " << objectNames[objType] << "[" << std::hex << srcObject << std::dec;
+		std::cout << "] : Layer " << pLayerPrefix;
+		std::cout << " : Code " << msgCode << "\n";
+		std::cout << "\"" << pMsg << "\"" << std::endl;
 
 #ifdef _DEBUG
-		if(!ignore) DebugBreak();
+		DebugBreak();
 #endif
 		return 0;
 	}
