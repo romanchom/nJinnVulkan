@@ -5,16 +5,20 @@
 
 namespace nJinn {
 	nJinn::CommandBuffer::CommandBuffer() :
-		currentIndex(1)
+		currentIndex(-1)
 	{
+
+		uint32_t flag = static_cast<uint32_t>(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		vk::CommandPoolCreateInfo poolInfo;
-		poolInfo.queueFamilyIndex(Context::mainQueueFamilyIndex());
+		poolInfo
+			.flags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+			.queueFamilyIndex(Context::mainQueueFamilyIndex());
 			
 		dc(vk::createCommandPool(Context::dev(), &poolInfo, nullptr, &pool));
 
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo
-			.commandBufferCount(2)
+			.commandBufferCount(bufferCount)
 			.commandPool(pool)
 			.level(vk::CommandBufferLevel::ePrimary);
 

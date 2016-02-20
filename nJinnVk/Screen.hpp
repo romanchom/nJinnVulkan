@@ -31,6 +31,7 @@ namespace nJinn
 		};
 
 		enum {
+			frameCount = 2,
 			maxQueuedFrames = 2
 		};
 	public:
@@ -39,9 +40,9 @@ namespace nJinn
 		void resize(uint32_t width, uint32_t height);
 		void present();
 		void acquireFrame();
-		void testBlink();
 	private:
 		bool shouldClose();
+		void aquireFrameIndex();
 
 		void * mWindowHandle;
 
@@ -55,12 +56,13 @@ namespace nJinn
 		uint32_t width;
 		uint32_t height;
 		
-		Frame frames[3];
+		Frame frames[frameCount];
 		size_t currentFrameIndex;
 		Frame * currentFrame;
 		vk::Semaphore currentAcquireFrameSemaphore;
 		vk::Fence fences[maxQueuedFrames];
 		size_t currentFence;
+		size_t totalFrames;
 
 
 		friend class Application;

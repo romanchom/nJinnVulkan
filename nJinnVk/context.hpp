@@ -37,5 +37,14 @@ namespace nJinn {
 		vk::Device device;
 		size_t queueFamilyIndicies[queueCount];
 		vk::Queue queues[queueCount];
+
+		// debug section
+		vk::DebugReportCallbackEXT debugReportCallback;
+
+		PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
+		PFN_vkDestroyDebugReportCallbackEXT	DestroyDebugReportCallback;
+		// end debug section
+	
+		bool validation;
 	};
 }

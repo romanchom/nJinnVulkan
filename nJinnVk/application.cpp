@@ -3,6 +3,7 @@
 
 #include <chrono>
 
+#include "Config.hpp"
 #include "Screen.hpp"
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
@@ -23,6 +24,7 @@ namespace nJinn {
 		CommandBuffer buf;
 		vk::ClearColorValue color;
 		color.float32({ 1, 0, 1, 1 });
+		float val = 0;
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
@@ -30,7 +32,8 @@ namespace nJinn {
 			buf.beginRecording();
 
 			sScreen->currentFrame->transitionForDraw(buf);
-
+			val = 1 - val;
+			color.float32({ val, 0, 0, 0 });
 			vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 			vk::cmdClearColorImage(buf, sScreen->currentFrame->image, vk::ImageLayout::eColorAttachmentOptimal, &color, 1, &range);
 
@@ -39,10 +42,16 @@ namespace nJinn {
 			buf.endRecording();
 
 			vk::CommandBuffer buff = buf;
+			vk::PipelineStageFlags src = vk::PipelineStageFlagBits::eAllGraphics;
 			vk::SubmitInfo submitInfo;
 			submitInfo
 				.commandBufferCount(1)
-				.pCommandBuffers(&buff);
+				.pCommandBuffers(&buff)
+				.pWaitSemaphores(&sScreen->currentAcquireFrameSemaphore)
+				.waitSemaphoreCount(1)
+				.pWaitDstStageMask(&src)
+				.signalSemaphoreCount(1)
+				.pSignalSemaphores(&sScreen->currentFrame->renderingCompleteSemaphore);
 
 			vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
 
@@ -72,6 +81,8 @@ namespace nJinn {
 	void nJinn::Application::doInitialize(APPLICATION_PARAMS)
 	{
 		shInstance = hInstance;
+		Config::create();
+		Config::parseCommandLine(args);
 		Context::create();
 		sScreen = new Screen(1280, 720);
 		run();

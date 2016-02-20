@@ -1,6 +1,8 @@
 #include "stdafx.hpp"
 #include "Context.hpp"
 
+#include "Config.hpp"
+
 namespace nJinn {
 	static const char * appName = "nJinnVk";
 
@@ -24,13 +26,23 @@ namespace nJinn {
 		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 	};
 
+	VkBool32 VKAPI_PTR messageCallback(
+		VkDebugReportFlagsEXT flags,
+		VkDebugReportObjectTypeEXT objType,
+		uint64_t srcObject,
+		size_t location,
+		int32_t msgCode,
+		const char* pLayerPrefix,
+		const char* pMsg,
+		void* pUserData);
+
 	Context * Context::context = nullptr;
 
 	Context::Context() :
 		instance(nullptr),
 		physicalDevice(nullptr),
-		device(nullptr)
-
+		device(nullptr),
+		validation(false)
 	{
 		vk::ApplicationInfo appInfo;
 
@@ -114,7 +126,35 @@ namespace nJinn {
 
 		for (size_t i = 0; i < queueCount; ++i) {
 			auto & qLoc = qLocations[i];
+			queueFamilyIndicies[i] = qLoc.familyIndex;
 			vk::getDeviceQueue(device, qLoc.familyIndex, qLoc.indexInFamily, queues[i]);
+		}
+
+		validation = Config::getValue<uint32_t>("debugLevel");
+		const uint32_t levels[] = {
+			0,													// 0 disabled
+			VK_DEBUG_REPORT_ERROR_BIT_EXT,						// 1 error
+			VK_DEBUG_REPORT_WARNING_BIT_EXT,					// 2 warning
+			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,		// 3 perfwarn
+			VK_DEBUG_REPORT_INFORMATION_BIT_EXT,				// 4 info
+			VK_DEBUG_REPORT_DEBUG_BIT_EXT,						// 5 debug
+		};
+
+		if (validation) {
+			CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+			DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+			
+			VkDebugReportCallbackCreateInfoEXT debugInfo;
+			debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+			debugInfo.pNext = NULL;
+			debugInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)messageCallback;
+			debugInfo.pUserData = NULL;
+			debugInfo.flags = 0;
+			for (int i = 1; i <= validation; ++i) {
+				debugInfo.flags |= levels[i];
+			}
+
+			CreateDebugReportCallback(instance, &debugInfo, nullptr, &debugReportCallback);
 		}
 	}
 
@@ -131,7 +171,50 @@ namespace nJinn {
 
 	Context::~Context()
 	{
+		vk::deviceWaitIdle(device);
+		if (validation) {
+			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
+		}
 		vk::destroyDevice(device, nullptr);
 		vk::destroyInstance(instance, nullptr);
+	}
+
+	static const int32_t breakIgnoredCodes[] = {
+		50, // Attempt to reset command buffer which is in use
+		49, // Attempt to simultaneously execute command buffer without flag set
+	};
+
+	VkBool32 VKAPI_PTR messageCallback(
+		VkDebugReportFlagsEXT flags,
+		VkDebugReportObjectTypeEXT objType,
+		uint64_t srcObject,
+		size_t location,
+		int32_t msgCode,
+		const char* pLayerPrefix,
+		const char* pMsg,
+		void* pUserData)
+	{
+		bool ignore = false;
+		for (const int32_t code : breakIgnoredCodes) {
+			if (code == msgCode) {
+				ignore = true;
+				break;
+			}
+		}
+		if (ignore) return 0;
+
+		const char * type = nullptr;
+		if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) type = "error";
+		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) type = "warning";
+		else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) type = "info";
+		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) type = "perfWarn";
+		else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) type = "debug";
+		
+		std::cout << "Vulkan " << type << ": [" << pLayerPrefix << "] Code " << msgCode << " : " << pMsg << std::endl;
+
+#ifdef _DEBUG
+		if(!ignore) DebugBreak();
+#endif
+		return 0;
 	}
 }

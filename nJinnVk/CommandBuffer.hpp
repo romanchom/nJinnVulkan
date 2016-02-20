@@ -14,14 +14,17 @@ namespace nJinn {
 		
 		operator vk::CommandBuffer() const { return buffer[currentIndex]; }
 	private:
+		enum { bufferCount = 2 };
 		vk::CommandPool pool;
-		vk::CommandBuffer buffer[2];
+		vk::CommandBuffer buffer[bufferCount];
 		vk::CommandBufferBeginInfo beginInfo;
 		size_t currentIndex;
 	};
 
 	inline void CommandBuffer::beginRecording() {
-		++currentIndex %= 2;
+		++currentIndex %= bufferCount;
+		std::cout << "Using buffer no. " << currentIndex << std::endl;
+		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlags());
 		vk::beginCommandBuffer(*this, beginInfo);
 	}
 	

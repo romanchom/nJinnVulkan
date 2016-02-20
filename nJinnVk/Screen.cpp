@@ -4,6 +4,8 @@
 
 #include <cstdio>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 #include "Application.hpp"
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
@@ -22,7 +24,8 @@ namespace nJinn {
 		currentFrameIndex(0),
 		currentFrame(frames + currentFrameIndex),
 		currentAcquireFrameSemaphore(nullptr),
-		currentFence(0)
+		currentFence(0),
+		totalFrames(0)
 	{
 		WNDCLASSEX windowClass = { 0 };
 		windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -139,7 +142,7 @@ namespace nJinn {
 		vk::SwapchainCreateInfoKHR swapChainInfo;
 		swapChainInfo
 			.surface(surface)
-			.minImageCount(3)
+			.minImageCount(frameCount)
 			.imageFormat(colorFormat)
 			.imageColorSpace(colorSpace)
 			.imageExtent(swapChainExtent)
@@ -160,10 +163,12 @@ namespace nJinn {
 			vk::destroySwapchainKHR(Context::dev(), oldSwapChain, nullptr);
 		}
 
+		
+
 		std::vector<vk::Image> images;
 		dc(vk::getSwapchainImagesKHR(Context::dev(), swapChain, images));
 
-		assert(3 == images.size());
+		assert(frameCount == images.size());
 
 		vk::AttachmentDescription attachment;
 		attachment
@@ -194,45 +199,56 @@ namespace nJinn {
 
 		dc(vk::createRenderPass(Context::dev(), &renderPassInfo, nullptr, &renderPass));
 
-		for (size_t i = 0; i < 3; ++i) {
+		for (size_t i = 0; i < frameCount; ++i) {
 			frames[i].create(*this, i, images[i]);
-
-			// TODO transition into present layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or something meaningfull
 		}
 		vk::FenceCreateInfo fenceInfo;
 		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
 		for (size_t i = 0; i < maxQueuedFrames; ++i) {
 			dc(vk::createFence(Context::dev(), &fenceInfo, nullptr, fences + i));
+			fenceInfo.flags(vk::FenceCreateFlags());
 		}
 
-		acquireFrame();
-		present();
+		uint32_t imageIndex;
+		dc(vk::acquireNextImageKHR(Context::dev(), swapChain, -1, nullptr, nullptr, imageIndex));
+		currentFrameIndex = imageIndex;
+		currentFrame = frames + currentFrameIndex;
+		//acquireFrame();
+		//present();
 	}
 
 	void Screen::present()
 	{
-		std::cout << "Presenting frame: " << currentFrameIndex << std::endl;
+		vk::queueSubmit(Context::mainQueue(), 0, nullptr, fences[currentFence]);
+		std::cout << "Presenting frame: " << totalFrames << std::endl;
 		currentFrame->present();
+		++totalFrames;
 	}
 
 	void Screen::acquireFrame()
 	{
-		vk::waitForFences(Context::dev(), 1, &fences[currentFence], 1, -1);
-		vk::resetFences(Context::dev(), 1, &fences[currentFence]);
+		vk::Fence * pFence = &fences[currentFence];
+
+		auto then = std::chrono::high_resolution_clock::now();
+		vk::waitForFences(Context::dev(), 1, pFence, 1, -1);
+		auto now = std::chrono::high_resolution_clock::now();
+		std::cout << "Curr fence " << currentFence << ", Waited for " << (now - then).count() << "ns" << std::endl;
+
+		vk::resetFences(Context::dev(), 1, pFence);
 
 		uint32_t imageIndex;
 		currentAcquireFrameSemaphore = currentFrame->imageAquiredSemaphore;
-		dc(vk::acquireNextImageKHR(Context::dev(), swapChain, -1, currentAcquireFrameSemaphore, fences[currentFence], imageIndex));
+		dc(vk::acquireNextImageKHR(Context::dev(), swapChain, -1, currentAcquireFrameSemaphore, nullptr, imageIndex));
 		currentFrameIndex = imageIndex;
 		currentFrame = frames + currentFrameIndex;
 		++currentFence %= maxQueuedFrames;
 		std::cout << "Acquired frame: " << currentFrameIndex << std::endl;
 	}
 
-	void Screen::testBlink()
+	void Screen::aquireFrameIndex()
 	{
 	}
-
+	
 	bool Screen::shouldClose()
 	{
 		MSG msg = { 0 };
@@ -288,7 +304,6 @@ namespace nJinn {
 				vk::ImageAspectFlagBits::eColor,
 				0, 1, 0, 1))
 			.viewType(vk::ImageViewType::e2D)
-			.flags(0)
 			.image(image);
 
 		dc(vk::createImageView(Context::dev(), &viewInfo, nullptr, &view));
@@ -321,7 +336,7 @@ namespace nJinn {
 		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
 
 		presentToDrawBarrier
-			.oldLayout(vk::ImageLayout::ePresentSrc)
+			.oldLayout(vk::ImageLayout::ePresentSrcKhr)
 			.newLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.dstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
 			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
@@ -331,7 +346,7 @@ namespace nJinn {
 
 		drawToPresentBarrier
 			.oldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.newLayout(vk::ImageLayout::ePresentSrc)
+			.newLayout(vk::ImageLayout::ePresentSrcKhr)
 			.srcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
 			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
 			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
@@ -341,7 +356,7 @@ namespace nJinn {
 		vk::ImageMemoryBarrier defineImageBarrier;
 		defineImageBarrier
 			.oldLayout(vk::ImageLayout::eUndefined)
-			.newLayout(vk::ImageLayout::ePresentSrc)
+			.newLayout(vk::ImageLayout::ePresentSrcKhr)
 			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
 			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
 			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
