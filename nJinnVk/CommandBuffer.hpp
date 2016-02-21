@@ -22,7 +22,7 @@ namespace nJinn {
 	};
 
 	inline void CommandBuffer::beginRecording() {
-		++currentIndex %= bufferCount;
+		++currentIndex %= bufferCount; // TODO possibly centralize this
 		std::cout << "Using buffer no. " << currentIndex << std::endl;
 		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlags());
 		vk::beginCommandBuffer(*this, beginInfo);

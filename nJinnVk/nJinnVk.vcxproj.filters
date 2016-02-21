@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Header Files\api">
       <UniqueIdentifier>{a126ea08-1176-4df4-892b-a776aeb2d038}</UniqueIdentifier>
     </Filter>
@@ -24,6 +20,12 @@
     </Filter>
     <Filter Include="Source Files\os">
       <UniqueIdentifier>{fe0776c9-8efd-48ac-8549-8d99a540ad4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\resources">
+      <UniqueIdentifier>{d3660857-d81c-42d2-9bab-aa58118e4f5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\resources">
+      <UniqueIdentifier>{c0302fd9-629a-47e3-a4e9-06e0723cd0f1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,14 +41,20 @@
     <ClInclude Include="Context.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="Screen.hpp">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="CommandBuffer.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="Config.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.hpp">
+      <Filter>Header Files\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="TrackedResource.hpp">
+      <Filter>Header Files\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.hpp">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -71,5 +79,15 @@
     <ClCompile Include="Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files\resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\*.frag" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
   </ItemGroup>
 </Project>

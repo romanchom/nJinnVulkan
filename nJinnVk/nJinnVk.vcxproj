@@ -80,7 +80,9 @@
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Screen.hpp" />
+    <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
+    <ClInclude Include="TrackedResource.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
@@ -89,10 +91,19 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\*">
+      <FileType>Document</FileType>
+      <Command>$(SolutionDir)tools\glslangValidator.exe -V %(Identity) -o $(OutputPath)%(Identity).spv</Command>
+      <Message>Shader Compilation</Message>
+      <Outputs>$(OutputPath)%(Identity).spv</Outputs>
+      <TreatOutputAsContent>true</TreatOutputAsContent>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

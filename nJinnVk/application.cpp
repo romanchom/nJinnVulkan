@@ -7,6 +7,7 @@
 #include "Screen.hpp"
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
+#include "Shader.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -25,6 +26,7 @@ namespace nJinn {
 		vk::ClearColorValue color;
 		color.float32({ 1, 0, 1, 1 });
 		float val = 0;
+		Shader::load({"shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex});
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
