@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-#include <Eigen/Core>
+#include <Eigen/Dense>
 #include <boost/iostreams/device/mapped_file.hpp>
 
 #include "MeshLoader.hpp"
@@ -29,12 +29,17 @@ namespace meshLoader {
 	}
 
 	template<typename T>
-	void push_back(std::vector<T> & vector, T * data, uint32_t count) {
-		vector.insert(vector.end(), data, data + count);
+	void push_back(std::vector<T> & vector, T * data, size_t count) {
+		T * end = data + count;
+		do {
+			vector.emplace_back(*data);
+		} while (++data < end);
 	}
 
 	void MeshLoader::loadObj(const std::string & filename, bool verbose) {
 		if (_loaded) throw std::exception("Cannot load mesh into an already used object.");
+		
+
 
 		std::vector<float> positions;
 		std::vector<float> normals;
@@ -132,14 +137,13 @@ namespace meshLoader {
 		}
 
 		_attributes.emplace_back();
+		_attributes.emplace_back();
+		_attributes.emplace_back();
+
 		std::vector<float> & finalPositions = _attributes[0].data;
 		_attributes[0].componentCount = 3;
-
-		_attributes.emplace_back();
 		std::vector<float> & finalUVs = _attributes[1].data;
 		_attributes[1].componentCount = 2;
-
-		_attributes.emplace_back();
 		std::vector<float> & finalNormals = _attributes[2].data;
 		_attributes[2].componentCount = 3;
 
@@ -183,52 +187,6 @@ namespace meshLoader {
 
 		_shortIndexing = (((finalPositions.size()) >> 16) == 0);
 	}
-	/*
-	void MeshLoader::toMeshData(MeshData & mesh){
-		const uint32_t vertexCount = _attributes[0].data.size() / _attributes[0].componentCount;
-		const uint32_t triangleCount = _indicies.size() / 3;
-
-		mesh.properties.indexTypeSize = (_shortIndexing ? 2 : 4);
-		mesh.properties.triangleCount = triangleCount;
-		mesh.properties.vertexAttributeCount = _attributes.size();
-		mesh.properties.vertexCount = vertexCount;
-		mesh.vertexAttributes = new MeshData::VertexAttribute[_attributes.size()];
-		for(uint32_t i = 0, offset = 0; i < _attributes.size(); ++i){
-			VertexAttribute & src = _attributes[i];
-			MeshData::VertexAttribute & dst = mesh.vertexAttributes[i];
-			dst.attributeIndex = i;
-			dst.componentCount = src.componentCount;
-			dst.normalized = src.typeConverter->normalized();
-			dst.offset = offset;
-			dst.type = src.typeConverter->type();
-			offset += dst.size();
-		}
-
-		const uint32_t dataSize = mesh.indexDataSize() + mesh.vertexDataSize();
-
-		mesh.data = new uint8_t[dataSize];
-
-		const uint32_t attrCount = _attributes.size();
-		uint8_t * verticies = mesh.vertexData();
-		for(uint32_t i = 0; i < vertexCount; ++i){
-			for(uint32_t j = 0; j < attrCount; ++j){
-				VertexAttribute & attr = _attributes[j];
-				verticies += (*attr.typeConverter)(verticies, &attr.data[i * attr.componentCount], attr.componentCount);
-			}
-		}
-
-		if(_shortIndexing){
-			uint16_t * indicies = (uint16_t *) mesh.indexData();
-			for(uint32_t i = 0; i < triangleCount * 3; ++i){
-				indicies[i] = (uint16_t) _indicies[i];
-			}
-		}else{
-			uint32_t * indicies = (uint32_t *) mesh.indexData();
-			for(uint32_t i = 0; i < triangleCount * 3; ++i){
-				indicies[i] = _indicies[i];
-			}
-		}
-	}*/
 
 	namespace bi = boost::iostreams;
 
@@ -266,21 +224,25 @@ namespace meshLoader {
 
 		vbm::Header & header = *reinterpret_cast<vbm::Header *>(p);
 		p += sizeof(vbm::Header);
+		header.magickNumber = vbm::Header::magickNumberValue;
 		header.indexTypeSize = indexTypeSize;
 		header.indiciesCount = _indicies.size();
 		header.totalDataSize = indexDataSize + vertexDataSize;
 		header.vertexCount = _attributes[0].data.size();
 		header.vetexStreamCount = 1;
 
+		const size_t attrCount = _attributes.size();
+
 		vbm::VertexStream & stream = *reinterpret_cast<vbm::VertexStream *>(p);
 		p += sizeof(vbm::VertexStream);
-		stream.offsetFromBufferBegin = 0;
-		stream.stride = 0;
-		stream.vertexAttributeCount = 0;
+		stream.offsetFromBufferBegin = indexDataSize;
+		stream.stride = vertexStride;
+		stream.vertexAttributeCount = attrCount;
 
-		for (size_t i = 0; i < 3; ++i) {
+		for (size_t i = 0; i < attrCount; ++i) {
 			auto & src = _attributes[i];
 			vbm::VertexAttribute & dst = *reinterpret_cast<vbm::VertexAttribute *>(p);
+			p += sizeof(vbm::VertexAttribute);
 			dst.componentCount = src.componentCount;
 			dst.offset = 0;
 			dst.type = static_cast<uint32_t>(src.typeConverter->type());
@@ -298,7 +260,6 @@ namespace meshLoader {
 			}
 		}
 
-		const uint32_t attrCount = _attributes.size();
 		for (uint32_t i = 0; i < vertexCount; ++i) {
 			for (auto & attr : _attributes) {
 				p += attr.typeConverter->convert(p, &attr.data[i * attr.componentCount], attr.componentCount);

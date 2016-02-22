@@ -5,7 +5,7 @@
 namespace vbm {
 	struct Header {
 		enum { magickNumberValue = 0x13243546 };
-		const uint32_t magickNumber;
+		uint32_t magickNumber;
 		uint32_t indiciesCount;
 		uint32_t indexTypeSize;
 		uint32_t vertexCount;

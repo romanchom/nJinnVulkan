@@ -7,7 +7,7 @@
 #include "Screen.hpp"
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
-#include "Shader.hpp"
+#include "Mesh.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -30,6 +30,7 @@ namespace nJinn {
 		vk::PhysicalDeviceMemoryProperties memProp;
 		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProp);
 
+		Mesh::load("asteroid2.vbm");
 
 		while (true) {
 			if (sScreen->shouldClose()) break;

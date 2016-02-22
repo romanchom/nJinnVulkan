@@ -173,7 +173,7 @@ namespace nJinn {
 		}
 
 		vk::PhysicalDeviceMemoryProperties memProps;
-		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProps);
+		vk::getPhysicalDeviceMemoryProperties(physicalDevice, memProps);
 		
 		bufferMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
 			vk::MemoryPropertyFlagBits::eDeviceLocal,
@@ -202,9 +202,11 @@ namespace nJinn {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
 		vk::destroyDevice(device, nullptr);
+		exit(0); // TODO FIXME temporary workaround crash during instance destruction
 		vk::destroyInstance(instance, nullptr);
 	}
 
+	// FIXME
 	static const int32_t ignoredCodes[] = {
 		50, // Attempt to reset command buffer which is in use
 		49, // Attempt to simultaneously execute command buffer without flag set

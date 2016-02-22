@@ -10,7 +10,6 @@ namespace meshLoader {
 		MeshLoader();
 		~MeshLoader();
 		void loadObj(const std::string & filename, bool verbose = false);
-		//void toMeshData(MeshData & mesh);
 		void save(const std::string & fileName);
 		void setConverter(const int index, const TypeConverter * converter);
 		void calculateTangent();
@@ -23,7 +22,7 @@ namespace meshLoader {
 			uint32_t componentCount;
 			std::vector<float> data;
 			const TypeConverter * typeConverter;
-			VertexAttribute() : componentCount(0), typeConverter(nullptr) {}
+			VertexAttribute() : componentCount(0), data(), typeConverter(nullptr) {}
 		};
 		std::vector<VertexAttribute> _attributes;
 		std::vector<uint32_t> _indicies;

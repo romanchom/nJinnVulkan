@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nJinnVkTest", "nJinnVkTest\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "meshConverterLib", "meshConverterLib\meshConverterLib.vcxproj", "{C79FFB2A-7640-4FEA-9CBF-16C147B50F1D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "meshConverterApp", "meshConverterApp\meshConverterApp.vcxproj", "{07C441EC-A9CC-448E-9D91-6CBEDED972CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -27,6 +29,10 @@ Global
 		{C79FFB2A-7640-4FEA-9CBF-16C147B50F1D}.Debug|x64.Build.0 = Debug|x64
 		{C79FFB2A-7640-4FEA-9CBF-16C147B50F1D}.Release|x64.ActiveCfg = Release|x64
 		{C79FFB2A-7640-4FEA-9CBF-16C147B50F1D}.Release|x64.Build.0 = Release|x64
+		{07C441EC-A9CC-448E-9D91-6CBEDED972CC}.Debug|x64.ActiveCfg = Debug|x64
+		{07C441EC-A9CC-448E-9D91-6CBEDED972CC}.Debug|x64.Build.0 = Debug|x64
+		{07C441EC-A9CC-448E-9D91-6CBEDED972CC}.Release|x64.ActiveCfg = Release|x64
+		{07C441EC-A9CC-448E-9D91-6CBEDED972CC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

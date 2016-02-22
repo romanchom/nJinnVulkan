@@ -50,9 +50,9 @@ namespace nJinn {
 			.allocationSize(memReq.size())
 			.memoryTypeIndex(Context::bufferMemoryType());
 
-		vk::allocateMemory(Context::dev(), &allocInfo, nullptr, &deviceMemory);
+		dc(vk::allocateMemory(Context::dev(), &allocInfo, nullptr, &deviceMemory));
 
-		vk::bindBufferMemory(Context::dev(), buffer, deviceMemory, 0);
+		dc(vk::bindBufferMemory(Context::dev(), buffer, deviceMemory, 0));
 		size_t totalVertexAttributes = 0;
 		
 		for (size_t s = 0; s < meshData.vertexStreamCount(); ++s) {
