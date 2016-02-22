@@ -29,6 +29,18 @@ namespace nJinn {
 		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 	};
 
+	uint32_t getOptimalMemoryType(const vk::MemoryType * memoryTypes, size_t count, vk::MemoryPropertyFlags mandatoryFlags, vk::MemoryPropertyFlags optionalFlags) {
+		uint32_t ret = -1;
+		for (uint32_t i = 0; i < count; ++i) {
+			vk::MemoryPropertyFlags flags = memoryTypes[i].propertyFlags();
+			if ((flags & mandatoryFlags) == mandatoryFlags) {
+				if(ret == -1) ret = i;
+				else if (flags & optionalFlags) ret = i;
+			}
+		}
+		return ret;
+	}
+
 	VkBool32 VKAPI_PTR messageCallback(
 		VkDebugReportFlagsEXT flags,
 		VkDebugReportObjectTypeEXT objType,
@@ -159,6 +171,17 @@ namespace nJinn {
 
 			CreateDebugReportCallback(instance, &debugInfo, nullptr, &debugReportCallback);
 		}
+
+		vk::PhysicalDeviceMemoryProperties memProps;
+		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProps);
+		
+		bufferMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
+			vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::MemoryPropertyFlags());
+
+		uploadMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
+			vk::MemoryPropertyFlagBits::eHostVisible,
+			vk::MemoryPropertyFlagBits::eHostCoherent);
 	}
 
 	void Context::create()

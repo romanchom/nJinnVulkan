@@ -26,7 +26,11 @@ namespace nJinn {
 		vk::ClearColorValue color;
 		color.float32({ 1, 0, 1, 1 });
 		float val = 0;
-		Shader::load({"shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex});
+
+		vk::PhysicalDeviceMemoryProperties memProp;
+		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProp);
+
+
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
@@ -61,7 +65,7 @@ namespace nJinn {
 			if (++frame > 10) {
 				auto end = clock::now();
 				std::chrono::duration<double> diff = end - begin;
-				std::cout << "FPS: " << frame / diff.count();
+				std::cout << "FPS: " << frame * diff.count();
 				begin = clock::now();
 				frame = 0;
 			}

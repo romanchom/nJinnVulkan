@@ -27,6 +27,9 @@ namespace nJinn {
 		static size_t mainQueueFamilyIndex() { return context->queueFamilyIndicies[graphicsQueueIndex]; }
 		static size_t transferQueueFamilyIndex() { return context->queueFamilyIndicies[transferQueueIndex]; }
 		static size_t computeQueueFamilyIndex() { return context->queueFamilyIndicies[computeQueueIndex]; }
+
+		static uint32_t bufferMemoryType() { return context->bufferMemoryTypeIndex; }
+		static uint32_t uploadMemoryType() { return context->uploadMemoryTypeIndex; }
 	private:
 		static Context * context;
 		~Context();
@@ -37,6 +40,9 @@ namespace nJinn {
 		vk::Device device;
 		size_t queueFamilyIndicies[queueCount];
 		vk::Queue queues[queueCount];
+
+		uint32_t bufferMemoryTypeIndex;
+		uint32_t uploadMemoryTypeIndex;
 
 		// debug section
 		vk::DebugReportCallbackEXT debugReportCallback;

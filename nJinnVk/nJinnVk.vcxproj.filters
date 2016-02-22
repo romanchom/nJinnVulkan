@@ -27,6 +27,9 @@
     <Filter Include="Source Files\resources">
       <UniqueIdentifier>{c0302fd9-629a-47e3-a4e9-06e0723cd0f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{e2693828-e37a-47a2-ba3f-bea8a161fca3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
@@ -56,6 +59,9 @@
     <ClInclude Include="Screen.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.hpp">
+      <Filter>Header Files\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -82,12 +88,34 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\resources</Filter>
     </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\*.frag" />
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.frag">
+      <Filter>shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.frag">
+      <Filter>shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.frag">
+      <Filter>shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
   </ItemGroup>
 </Project>
