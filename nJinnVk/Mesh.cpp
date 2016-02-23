@@ -4,6 +4,8 @@
 #include "Context.hpp"
 #include <MeshData.hpp>
 
+#include "ResourceUploader.hpp"
+
 namespace nJinn {
 	typedef vk::Format f;
 
@@ -79,6 +81,8 @@ namespace nJinn {
 			.pVertexBindingDescriptions(veretxBindingDescription)
 			.vertexAttributeDescriptionCount(totalVertexAttributes)
 			.pVertexAttributeDescriptions(vertexAttributeDescriptions);
+
+		ResourceUploader::upload(meshData.data(), meshData.totalDataSize(), buffer);
 	}
 
 	Mesh::~Mesh()

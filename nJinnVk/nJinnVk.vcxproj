@@ -82,6 +82,7 @@
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">

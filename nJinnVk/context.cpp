@@ -1,10 +1,12 @@
 #include "stdafx.hpp"
 #include "Context.hpp"
 
-#include "Config.hpp"
 #include <iostream>
 #include <iomanip>
 
+#include "Config.hpp"
+
+#include "ResourceUploader.hpp"
 
 namespace nJinn {
 	static const char * appName = "nJinnVk";
@@ -181,23 +183,28 @@ namespace nJinn {
 
 		uploadMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
 			vk::MemoryPropertyFlagBits::eHostVisible,
-			vk::MemoryPropertyFlagBits::eHostCoherent);
+			vk::MemoryPropertyFlagBits::eHostCoherent | 
+			vk::MemoryPropertyFlagBits::eHostCached);
+
+		isUploadMemoryCoherent = (memProps.memoryTypes()[uploadMemoryTypeIndex].propertyFlags() & vk::MemoryPropertyFlagBits::eHostCoherent);
 	}
 
 	void Context::create()
 	{
 		context = new Context();
+		ResourceUploader::create();
 	}
 
 	void Context::destroy()
 	{
+		vk::deviceWaitIdle(Context::dev());
+		ResourceUploader::destroy();
 		delete context;
 		context = nullptr;
 	}
 
 	Context::~Context()
 	{
-		vk::deviceWaitIdle(device);
 		if (validation) {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
@@ -256,14 +263,9 @@ namespace nJinn {
 		const char* pMsg,
 		void* pUserData)
 	{
-		bool ignore = false;
 		for (const int32_t code : ignoredCodes) {
-			if (code == msgCode) {
-				ignore = true;
-				break;
-			}
+			if (code == msgCode) return 0;
 		}
-		if (ignore) return 0;
 
 		const char * type = nullptr;
 		if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) type = "ERR";

@@ -62,6 +62,9 @@
     <ClInclude Include="Mesh.hpp">
       <Filter>Header Files\resources</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceUploader.hpp">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -91,20 +94,18 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ResourceUploader.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.frag">
-      <Filter>shaders</Filter>
-    </CustomBuild>
     <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\triangle.frag">
@@ -117,5 +118,7 @@
     </CustomBuild>
     <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
   </ItemGroup>
 </Project>

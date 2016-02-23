@@ -8,6 +8,7 @@
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
 #include "Mesh.hpp"
+#include "ResourceUploader.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -35,6 +36,10 @@ namespace nJinn {
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
+
+			// update
+
+			ResourceUploader::execute();
 
 			buf.beginRecording();
 
