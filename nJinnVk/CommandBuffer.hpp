@@ -12,7 +12,9 @@ namespace nJinn {
 
 		void endRecording();
 		
-		operator vk::CommandBuffer() const { return buffer[currentIndex]; }
+		operator vk::CommandBuffer() { return buffer[currentIndex]; }
+
+		vk::CommandBuffer * get() { return &buffer[currentIndex]; }
 	private:
 		enum { bufferCount = 2 };
 		vk::CommandPool pool;
@@ -23,7 +25,6 @@ namespace nJinn {
 
 	inline void CommandBuffer::beginRecording() {
 		++currentIndex %= bufferCount; // TODO possibly centralize this
-		std::cout << "Using buffer no. " << currentIndex << std::endl;
 		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlags());
 		vk::beginCommandBuffer(*this, beginInfo);
 	}

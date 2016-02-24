@@ -7,6 +7,7 @@
 #include "Config.hpp"
 
 #include "ResourceUploader.hpp"
+#include "Mesh.hpp"
 
 namespace nJinn {
 	static const char * appName = "nJinnVk";
@@ -198,6 +199,7 @@ namespace nJinn {
 	void Context::destroy()
 	{
 		vk::deviceWaitIdle(Context::dev());
+		Mesh::collect();
 		ResourceUploader::destroy();
 		delete context;
 		context = nullptr;

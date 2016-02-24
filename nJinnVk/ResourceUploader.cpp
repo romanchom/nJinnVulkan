@@ -48,7 +48,7 @@ namespace nJinn {
 			.size(size)
 			.usage(vk::BufferUsageFlagBits::eTransferSrc);
 
-		vk::createBuffer(Context::dev(), &bufferInfo, nullptr, &task.buffer);
+		dc(vk::createBuffer(Context::dev(), &bufferInfo, nullptr, &task.buffer));
 
 		vk::MemoryRequirements memReq;
 		vk::getBufferMemoryRequirements(Context::dev(), task.buffer, memReq);
@@ -63,11 +63,15 @@ namespace nJinn {
 		dc(vk::bindBufferMemory(Context::dev(), task.buffer, task.memory, 0));
 
 		void * pDest;
-		vk::mapMemory(Context::dev(), task.memory, 0, size, vk::MemoryMapFlags(), &pDest);
+		dc(vk::mapMemory(Context::dev(), task.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags(), &pDest));
 
 		memcpy(pDest, data, size);
 
-		if (!Context::isUploadMemoryTypeCoherent()) vk::flushMappedMemoryRanges(Context::dev(), 1, &vk::MappedMemoryRange(task.memory, 0, size));
+		if (!Context::isUploadMemoryTypeCoherent()) {
+			dc(vk::flushMappedMemoryRanges(Context::dev(), 1, &vk::MappedMemoryRange(task.memory, 0, size)));
+		}
+		vk::MemoryBarrier barr;
+		vk::BufferMemoryBarrier preBarrier;
 
 		vk::cmdCopyBuffer(instance->uploadCmdBuffer, task.buffer, dst, 1, &vk::BufferCopy(0, 0, size));
 
@@ -76,17 +80,20 @@ namespace nJinn {
 
 	void ResourceUploader::doExecute()
 	{
+		vk::SubmitInfo submit;
+		submit
+			.signalSemaphoreCount(1)
+			.pSignalSemaphores(transfersCompleteSemaphore.get());
+
 		if (tasksAdded) {
 			uploadCmdBuffer.endRecording();
 
 			vk::CommandBuffer buffer = uploadCmdBuffer;
 
-			vk::SubmitInfo submit;
 			submit
 				.commandBufferCount(1)
 				.pCommandBuffers(&buffer);
 
-			vk::queueSubmit(Context::mainQueue(), 1, &submit, nullptr);
 			++currentIndex %= 2;
 
 			for (auto & task : uploadTasks[currentIndex]) {
@@ -99,5 +106,7 @@ namespace nJinn {
 
 			uploadCmdBuffer.beginRecording();
 		}
+
+		dc(vk::queueSubmit(Context::mainQueue(), 1, &submit, nullptr));
 	}
 }

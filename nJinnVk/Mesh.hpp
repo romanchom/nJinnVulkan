@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vulkan.hpp>
+
 #include "TrackedResource.hpp"
+#include "MemoryAllocation.hpp"
 
 namespace nJinn {
 	class Mesh : public TrackedResource<Mesh> {
@@ -10,7 +12,7 @@ namespace nJinn {
 		~Mesh();
 	private:
 		vk::Buffer buffer;
-		vk::DeviceMemory deviceMemory;
+		MemoryAllocation bufferMemory;
 		vk::PipelineVertexInputStateCreateInfo vertexDataLayout;
 		vk::VertexInputBindingDescription veretxBindingDescription[2];
 		uint32_t vertexBufferOffsets[2];

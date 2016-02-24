@@ -31,6 +31,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vulkan/vulkan.h>
+#undef MemoryBarrier
 #ifdef VKCPP_ENHANCED_MODE
 # include <vector>
 #endif    // VKCPP_ENHANCED_MODE

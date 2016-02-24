@@ -31,8 +31,6 @@ namespace nJinn {
 		vk::PhysicalDeviceMemoryProperties memProp;
 		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProp);
 
-		Mesh::load("asteroid2.vbm");
-
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
@@ -55,12 +53,16 @@ namespace nJinn {
 
 			vk::CommandBuffer buff = buf;
 			vk::PipelineStageFlags src = vk::PipelineStageFlagBits::eAllGraphics;
+			vk::Semaphore waitSemaphores[] = {
+				sScreen->currentAcquireFrameSemaphore,
+				ResourceUploader::semaphore()
+			};
 			vk::SubmitInfo submitInfo;
 			submitInfo
 				.commandBufferCount(1)
 				.pCommandBuffers(&buff)
-				.pWaitSemaphores(&sScreen->currentAcquireFrameSemaphore)
-				.waitSemaphoreCount(1)
+				.pWaitSemaphores(waitSemaphores)
+				.waitSemaphoreCount(countof(waitSemaphores))
 				.pWaitDstStageMask(&src)
 				.signalSemaphoreCount(1)
 				.pSignalSemaphores(&sScreen->currentFrame->renderingCompleteSemaphore);

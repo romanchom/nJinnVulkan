@@ -30,6 +30,12 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{e2693828-e37a-47a2-ba3f-bea8a161fca3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\api\memory">
+      <UniqueIdentifier>{0480011c-cd80-409a-a441-df458ee1232a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api\memory">
+      <UniqueIdentifier>{c399f23d-7fce-4f3b-a9cb-07f6240fb52e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
@@ -65,6 +71,24 @@
     <ClInclude Include="ResourceUploader.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="Semaphore.hpp">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryManager.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Allocator.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockAllocator.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="BucketAllocator.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryAllocation.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -97,27 +121,36 @@
     <ClCompile Include="ResourceUploader.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="Semaphore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryManager.cpp">
+      <Filter>Source Files\api\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="BlockAllocator.cpp">
+      <Filter>Source Files\api\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="BucketAllocator.cpp">
+      <Filter>Source Files\api\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryAllocation.cpp">
+      <Filter>Source Files\api\memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.vert" />
+    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.frag">
-      <Filter>shaders</Filter>
-    </CustomBuild>
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.frag">
-      <Filter>shaders</Filter>
-    </CustomBuild>
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
   </ItemGroup>
