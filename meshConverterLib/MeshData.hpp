@@ -22,6 +22,9 @@ namespace meshLoader {
 		size_t attributeCount() const { return attributeCount_; }
 		const vbm::VertexAttribute & vertexAttribute(size_t stream, size_t attr) const { return vertexAttributes[stream][attr]; }
 
+		size_t indexCount() const { return header->indiciesCount; }
+		size_t vertexCont() const { return header->vertexCount; }
+		size_t indexSize() const { return header->indexTypeSize; }
 	private:
 		boost::iostreams::mapped_file_source file;
 		const vbm::Header * header;

@@ -9,6 +9,8 @@
 #include "CommandBuffer.hpp"
 #include "Mesh.hpp"
 #include "ResourceUploader.hpp"
+#include "Material.hpp"
+#include "RendererSystem.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -25,11 +27,9 @@ namespace nJinn {
 		size_t frame = 0;
 		CommandBuffer buf;
 		vk::ClearColorValue color;
-		color.float32({ 1, 0, 1, 1 });
-		float val = 0;
+		color.float32({ 0, 0, 1, 1 });
 
-		vk::PhysicalDeviceMemoryProperties memProp;
-		vk::getPhysicalDeviceMemoryProperties(Context::physDev(), memProp);
+		RendererSystem * rend = new RendererSystem();
 
 		while (true) {
 			if (sScreen->shouldClose()) break;
@@ -42,10 +42,10 @@ namespace nJinn {
 			buf.beginRecording();
 
 			sScreen->currentFrame->transitionForDraw(buf);
-			val = 1 - val;
-			color.float32({ val, 0, 0, 0 });
-			vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-			vk::cmdClearColorImage(buf, sScreen->currentFrame->image, vk::ImageLayout::eColorAttachmentOptimal, &color, 1, &range);
+			//vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+			//vk::cmdClearColorImage(buf, sScreen->currentFrame->image, vk::ImageLayout::eColorAttachmentOptimal, &color, 1, &range);
+
+			rend->update(buf);
 
 			sScreen->currentFrame->transitionForPresent(buf);
 
@@ -68,12 +68,12 @@ namespace nJinn {
 				.pSignalSemaphores(&sScreen->currentFrame->renderingCompleteSemaphore);
 
 			vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
-
+			//vk::queueWaitIdle(Context::mainQueue());
 			sScreen->present();
 			if (++frame > 10) {
 				auto end = clock::now();
 				std::chrono::duration<double> diff = end - begin;
-				std::cout << "FPS: " << frame * diff.count();
+				std::cout << "FPS: " << frame / diff.count() << std::endl;
 				begin = clock::now();
 				frame = 0;
 			}

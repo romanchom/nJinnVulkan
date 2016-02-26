@@ -27,6 +27,7 @@ namespace nJinn {
 	void ResourceUploader::addTask(const uploadTask & task)
 	{
 		uploadTasks[currentIndex].push_back(task);
+		tasksAdded = true;
 	}
 
 	void ResourceUploader::create()

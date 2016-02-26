@@ -84,9 +84,12 @@
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
+    <ClInclude Include="Material.hpp" />
     <ClInclude Include="MemoryAllocation.hpp" />
     <ClInclude Include="MemoryManager.hpp" />
     <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="PipelineFactory.hpp" />
+    <ClInclude Include="RendererSystem.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
     <ClInclude Include="Semaphore.hpp" />
@@ -102,9 +105,12 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="MemoryAllocation.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PipelineFactory.cpp" />
+    <ClCompile Include="RendererSystem.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Semaphore.cpp" />
@@ -116,7 +122,7 @@
   <ItemGroup>
     <CustomBuild Include="shaders\*">
       <FileType>Document</FileType>
-      <Command>$(SolutionDir)tools\glslangValidator.exe -V %(Identity) -o $(OutputPath)%(Identity).spv</Command>
+      <Command>$(SolutionDir)tools\glslangValidator.exe -G -H %(Identity) -o $(OutputPath)%(Identity).spv</Command>
       <Message>Shader Compilation</Message>
       <Outputs>$(OutputPath)%(Identity).spv</Outputs>
       <TreatOutputAsContent>true</TreatOutputAsContent>

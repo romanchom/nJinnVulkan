@@ -7,11 +7,9 @@ namespace nJinn {
 	nJinn::CommandBuffer::CommandBuffer() :
 		currentIndex(-1)
 	{
-
-		uint32_t flag = static_cast<uint32_t>(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		vk::CommandPoolCreateInfo poolInfo;
 		poolInfo
-			.flags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+			.flags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer | vk::CommandPoolCreateFlagBits::eTransient)
 			.queueFamilyIndex(Context::mainQueueFamilyIndex());
 			
 		dc(vk::createCommandPool(Context::dev(), &poolInfo, nullptr, &pool));

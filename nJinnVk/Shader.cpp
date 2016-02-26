@@ -7,7 +7,7 @@
 namespace nJinn {
 	using namespace boost::iostreams;
 
-	nJinn::Shader::Shader(const std::pair<std::string, vk::ShaderStageFlagBits>& name)
+	Shader::Shader(const std::pair<std::string, vk::ShaderStageFlagBits>& name)
 	{
 		mapped_file_source file(name.first);
 		if (!file.is_open()) throw std::runtime_error("Couldn't open shader file " + name.first);

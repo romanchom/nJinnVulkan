@@ -89,6 +89,15 @@
     <ClInclude Include="MemoryAllocation.hpp">
       <Filter>Header Files\api\memory</Filter>
     </ClInclude>
+    <ClInclude Include="RendererSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PipelineFactory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.hpp">
+      <Filter>Header Files\resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -115,14 +124,8 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\resources</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResourceUploader.cpp">
       <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="Semaphore.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryManager.cpp">
       <Filter>Source Files\api\memory</Filter>
@@ -136,22 +139,38 @@
     <ClCompile Include="MemoryAllocation.cpp">
       <Filter>Source Files\api\memory</Filter>
     </ClCompile>
+    <ClCompile Include="RendererSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PipelineFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Semaphore.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\triangle.vert" />
     <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
-    <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\*" />
   </ItemGroup>
 </Project>

@@ -36,6 +36,10 @@ namespace nJinn {
 		meshLoader::MeshData meshData(name);
 
 		size_t totalSize = meshData.totalDataSize();
+		bindingCount = meshData.vertexStreamCount();
+		indexCount = meshData.indexCount();
+		indexType = (meshData.indexSize() == 2) ? vk::IndexType::eUint16 : vk::IndexType::eUint32;
+
 
 		vk::BufferCreateInfo bufferInfo;
 		bufferInfo
@@ -67,7 +71,8 @@ namespace nJinn {
 					.binding(s)
 					.location(a)
 					.offset(src.offset)
-					.format(formatTable[src.type][src.componentCount]);
+					.format(formatTable[src.type][src.componentCount - 1]);
+				int as = 5;
 			}
 		}
 
@@ -77,10 +82,39 @@ namespace nJinn {
 			.vertexAttributeDescriptionCount(totalVertexAttributes)
 			.pVertexAttributeDescriptions(vertexAttributeDescriptions);
 
+		inputAssemblyInfo.topology(vk::PrimitiveTopology::eTriangleList);
+
+		tessInfo.patchControlPoints(3);
+
+		
+
 		ResourceUploader::upload(meshData.data(), meshData.totalDataSize(), buffer);
 	}
 
 	Mesh::~Mesh()
 	{
+	}
+
+	void Mesh::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)
+	{
+		info
+			.pVertexInputState(&vertexDataLayout)
+			.pInputAssemblyState(&inputAssemblyInfo)
+			.pTessellationState(&tessInfo);
+	}
+
+	void Mesh::bindMesh(vk::CommandBuffer cmdbuf)
+	{
+		vk::Buffer b[] = {
+			buffer, buffer
+		};
+		vk::cmdBindIndexBuffer(cmdbuf, buffer, 0, indexType);
+		vk::cmdBindVertexBuffers(cmdbuf, 0, bindingCount, b, vertexBufferOffsets);
+	}
+
+	void Mesh::draw(vk::CommandBuffer cmdbuf)
+	{
+		//vk::cmdDraw(cmdbuf, 300, 1, 0, 0);
+		vk::cmdDrawIndexed(cmdbuf, indexCount, 1, 0, 0, 1);
 	}
 }

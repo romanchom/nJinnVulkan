@@ -27,14 +27,16 @@ namespace nJinn {
 		uint32_t uploadMemoryTypeIndex;
 		bool isUploadMemoryCoherent;
 
+		class PipelineFactory * pipelineFactory;
+
 		// debug section
 		vk::DebugReportCallbackEXT debugReportCallback;
 
 		PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
 		PFN_vkDestroyDebugReportCallbackEXT	DestroyDebugReportCallback;
+		bool validation;
 		// end debug section
 	
-		bool validation;
 	public:
 		static void create();
 		static void destroy();
@@ -54,5 +56,7 @@ namespace nJinn {
 		static uint32_t bufferMemoryType() { return context->bufferMemoryTypeIndex; }
 		static uint32_t uploadMemoryType() { return context->uploadMemoryTypeIndex; }
 		static bool isUploadMemoryTypeCoherent() { return context->isUploadMemoryCoherent; }
+
+		static class PipelineFactory & pipeFact() { return *context->pipelineFactory; }
 	};
 }

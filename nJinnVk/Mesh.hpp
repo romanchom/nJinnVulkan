@@ -10,13 +10,20 @@ namespace nJinn {
 	public:
 		Mesh(const std::string & name);
 		~Mesh();
+		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
+		void bindMesh(vk::CommandBuffer cmdbuf);
+		void draw(vk::CommandBuffer cmdbuf);
 	private:
 		vk::Buffer buffer;
 		MemoryAllocation bufferMemory;
 		vk::PipelineVertexInputStateCreateInfo vertexDataLayout;
-		vk::VertexInputBindingDescription veretxBindingDescription[2];
-		uint32_t vertexBufferOffsets[2];
-		vk::VertexInputAttributeDescription vertexAttributeDescriptions[10];
 		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+		vk::PipelineTessellationStateCreateInfo tessInfo;
+		vk::VertexInputBindingDescription veretxBindingDescription[2];
+		uint64_t vertexBufferOffsets[2];
+		vk::VertexInputAttributeDescription vertexAttributeDescriptions[10];
+		uint32_t bindingCount;
+		uint32_t indexCount;
+		vk::IndexType indexType;
 	};
 }

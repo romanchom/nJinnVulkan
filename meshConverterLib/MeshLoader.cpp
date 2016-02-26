@@ -239,13 +239,15 @@ namespace meshLoader {
 		stream.stride = vertexStride;
 		stream.vertexAttributeCount = attrCount;
 
+		uint32_t offset = 0;
 		for (size_t i = 0; i < attrCount; ++i) {
 			auto & src = _attributes[i];
 			vbm::VertexAttribute & dst = *reinterpret_cast<vbm::VertexAttribute *>(p);
 			p += sizeof(vbm::VertexAttribute);
 			dst.componentCount = src.componentCount;
-			dst.offset = 0;
+			dst.offset = offset;
 			dst.type = static_cast<uint32_t>(src.typeConverter->type());
+			offset += src.typeConverter->size() * src.componentCount;
 		}
 
 		if (_shortIndexing) {

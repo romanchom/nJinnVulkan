@@ -220,7 +220,7 @@ namespace nJinn {
 	void Screen::present()
 	{
 		vk::queueSubmit(Context::mainQueue(), 0, nullptr, fences[currentFence]);
-		std::cout << "Presenting frame: " << totalFrames << std::endl;
+		//std::cout << "Presenting frame: " << totalFrames << std::endl;
 		currentFrame->present();
 		++totalFrames;
 	}
@@ -232,7 +232,7 @@ namespace nJinn {
 		auto then = std::chrono::high_resolution_clock::now();
 		vk::waitForFences(Context::dev(), 1, pFence, 1, -1);
 		auto now = std::chrono::high_resolution_clock::now();
-		std::cout << "Curr fence " << currentFence << ", Waited for " << (now - then).count() << "ns" << std::endl;
+		//std::cout << "Curr fence " << currentFence << ", Waited for " << (now - then).count() << "ns" << std::endl;
 
 		vk::resetFences(Context::dev(), 1, pFence);
 
@@ -242,7 +242,7 @@ namespace nJinn {
 		currentFrameIndex = imageIndex;
 		currentFrame = frames + currentFrameIndex;
 		++currentFence %= maxQueuedFrames;
-		std::cout << "Acquired frame: " << currentFrameIndex << std::endl;
+		//std::cout << "Acquired frame: " << currentFrameIndex << std::endl;
 	}
 
 	void Screen::aquireFrameIndex()

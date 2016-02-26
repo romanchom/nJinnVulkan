@@ -4,19 +4,14 @@
 #extension GL_ARB_shading_language_420pack : enable
 
 layout (location = 0) in vec3 inPos;
-layout (location = 1) in vec3 inColor;
+layout (location = 1) in vec2 inUv;
+layout (location = 2) in vec3 inNormal;
+layout (location = 3) in vec3 inTangent;
 
-layout (binding = 0) uniform UBO 
-{
-	mat4 projectionMatrix;
-	mat4 modelMatrix;
-	mat4 viewMatrix;
-} ubo;
-
-layout (location = 0) out vec3 outColor;
+layout (location = 0) out vec3 color;
 
 void main() 
 {
-	outColor = inColor;
-	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);
+	color = inNormal * 0.5 + 0.5;
+	gl_Position = vec4(inPos * 0.1, 1.0);
 }

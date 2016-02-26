@@ -40,7 +40,7 @@ namespace nJinn
 		void resize(uint32_t width, uint32_t height);
 		void present();
 		void acquireFrame();
-	private:
+	//private:
 		bool shouldClose();
 		void aquireFrameIndex();
 
@@ -50,7 +50,9 @@ namespace nJinn
 
 		vk::SwapchainKHR swapChain;
 		vk::Format colorFormat;
+	//public:
 		vk::RenderPass renderPass;
+	//private:
 		vk::SurfaceKHR surface;
 		vk::ColorSpaceKHR colorSpace;
 		uint32_t width;

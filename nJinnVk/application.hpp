@@ -24,7 +24,7 @@ namespace nJinn {
 		template<typename T>
 		static int initialize(APPLICATION_PARAMS);
 		static void quit();
-	private:
+	//private:
 		static void run();
 		static void finalize();
 		Application() = delete;

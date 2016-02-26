@@ -8,6 +8,7 @@
 
 #include "ResourceUploader.hpp"
 #include "Mesh.hpp"
+#include "PipelineFactory.hpp"
 
 namespace nJinn {
 	static const char * appName = "nJinnVk";
@@ -60,7 +61,7 @@ namespace nJinn {
 		instance(nullptr),
 		physicalDevice(nullptr),
 		device(nullptr),
-		validation(false)
+		validation(0)
 	{
 		vk::ApplicationInfo appInfo;
 
@@ -194,12 +195,15 @@ namespace nJinn {
 	{
 		context = new Context();
 		ResourceUploader::create();
+		context->pipelineFactory = new PipelineFactory();
 	}
 
 	void Context::destroy()
 	{
 		vk::deviceWaitIdle(Context::dev());
+		delete context->pipelineFactory;
 		Mesh::collect();
+		Shader::collect();
 		ResourceUploader::destroy();
 		delete context;
 		context = nullptr;
@@ -220,7 +224,6 @@ namespace nJinn {
 		50, // Attempt to reset command buffer which is in use
 		49, // Attempt to simultaneously execute command buffer without flag set
 		// reusing command buffers reports errors, even if they have finished executing long time ago
-
 	};
 
 	static const char * objectNames[] = {

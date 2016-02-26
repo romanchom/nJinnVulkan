@@ -16,7 +16,7 @@ namespace nJinn {
 
 		vk::CommandBuffer * get() { return &buffer[currentIndex]; }
 	private:
-		enum { bufferCount = 2 };
+		enum { bufferCount = 3 };
 		vk::CommandPool pool;
 		vk::CommandBuffer buffer[bufferCount];
 		vk::CommandBufferBeginInfo beginInfo;
@@ -25,7 +25,7 @@ namespace nJinn {
 
 	inline void CommandBuffer::beginRecording() {
 		++currentIndex %= bufferCount; // TODO possibly centralize this
-		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlags());
+		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlagBits::eReleaseResources);
 		vk::beginCommandBuffer(*this, beginInfo);
 	}
 	

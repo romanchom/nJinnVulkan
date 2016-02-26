@@ -7,12 +7,9 @@ namespace nJinn {
 	template<typename T, typename key_t = std::string>
 	class TrackedResource {
 	public:
-		typedef std::shared_ptr<T> p_t;
+		typedef std::shared_ptr<T> p;
 		static std::shared_ptr<T> load(const key_t & name);
 		static unsigned int collect();
-
-		template<typename... Args>
-		static p_t create(Args... args);
 	protected:
 		TrackedResource() {};
 	private:
@@ -49,12 +46,5 @@ namespace nJinn {
 			}
 		}
 		return count;
-	}
-
-	template<typename T, typename key_t>
-	template<typename... Args>
-	inline std::shared_ptr<T> TrackedResource<T, key_t>::create(Args... args)
-	{
-		return std::make_shared<T>(args...);
 	}
 }
