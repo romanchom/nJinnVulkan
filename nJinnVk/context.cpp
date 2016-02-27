@@ -13,26 +13,6 @@
 namespace nJinn {
 	static const char * appName = "nJinnVk";
 
-	static const char * layers[] =
-	{
-		"VK_LAYER_LUNARG_threading",
-		"VK_LAYER_LUNARG_mem_tracker",
-		"VK_LAYER_LUNARG_object_tracker",
-		"VK_LAYER_LUNARG_draw_state",
-		"VK_LAYER_LUNARG_param_checker",
-		"VK_LAYER_LUNARG_swapchain",
-		"VK_LAYER_LUNARG_device_limits",
-		"VK_LAYER_LUNARG_image",
-		"VK_LAYER_GOOGLE_unique_objects",
-	};
-
-	static const char * extensions[] =
-	{
-		VK_KHR_SURFACE_EXTENSION_NAME,
-		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-	};
-
 	uint32_t getOptimalMemoryType(const vk::MemoryType * memoryTypes, size_t count, vk::MemoryPropertyFlags mandatoryFlags, vk::MemoryPropertyFlags optionalFlags) {
 		uint32_t ret = -1;
 		for (uint32_t i = 0; i < count; ++i) {
@@ -58,11 +38,19 @@ namespace nJinn {
 	Context * Context::context = nullptr;
 
 	Context::Context() :
-		instance(nullptr),
-		physicalDevice(nullptr),
-		device(nullptr),
-		validation(0)
+		validation(Config::getValue<uint32_t>("debugLevel"))
 	{
+		std::vector<const char *> enabledLayers;
+		std::vector<const char *> enabledExtensions;
+
+		enabledExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+		enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+
+		if (validation > 0) {
+			enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+			enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		}
+
 		vk::ApplicationInfo appInfo;
 
 		appInfo.apiVersion(VK_API_VERSION);
@@ -71,11 +59,12 @@ namespace nJinn {
 		appInfo.pEngineName(appName);
 
 		vk::InstanceCreateInfo instanceInfo;
-		instanceInfo.ppEnabledExtensionNames(extensions);
-		instanceInfo.enabledExtensionCount(countof(extensions));
-		instanceInfo.ppEnabledLayerNames(layers);
-		instanceInfo.enabledLayerCount(countof(layers));
-		instanceInfo.pApplicationInfo(&appInfo);
+		instanceInfo
+			.ppEnabledExtensionNames(enabledExtensions.data())
+			.enabledExtensionCount(enabledExtensions.size())
+			.ppEnabledLayerNames(enabledLayers.data())
+			.enabledLayerCount(enabledLayers.size())
+			.pApplicationInfo(&appInfo);
 
 		dc(vk::createInstance(&instanceInfo, nullptr, &instance));
 
@@ -123,19 +112,22 @@ namespace nJinn {
 			}
 		}
 
-		const char * deviceExtensions[] = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
+		enabledExtensions.clear();
+		enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+		vk::PhysicalDeviceFeatures enabledFeatures;
+
+		vk::getPhysicalDeviceFeatures(physicalDevice, &enabledFeatures);
 
 		vk::DeviceCreateInfo deviceInfo;
 		deviceInfo
 			.queueCreateInfoCount(queueInfos.size())
 			.pQueueCreateInfos(queueInfos.data())
-			.pEnabledFeatures(nullptr)
-			.enabledExtensionCount(countof(deviceExtensions))
-			.ppEnabledExtensionNames(deviceExtensions)
-			.enabledLayerCount(countof(layers))
-			.ppEnabledLayerNames(layers);
+			.pEnabledFeatures(&enabledFeatures)
+			.ppEnabledExtensionNames(enabledExtensions.data())
+			.enabledExtensionCount(enabledExtensions.size())
+			.ppEnabledLayerNames(enabledLayers.data())
+			.enabledLayerCount(enabledLayers.size());
 
 		dc(vk::createDevice(physicalDevice, &deviceInfo, nullptr, &device));
 
@@ -149,7 +141,6 @@ namespace nJinn {
 			vk::getDeviceQueue(device, qLoc.familyIndex, qLoc.indexInFamily, queues[i]);
 		}
 
-		validation = Config::getValue<uint32_t>("debugLevel");
 		const uint32_t levels[] = {
 			0,													// 0 disabled
 			VK_DEBUG_REPORT_ERROR_BIT_EXT,						// 1 error

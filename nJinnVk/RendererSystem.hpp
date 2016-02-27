@@ -32,6 +32,10 @@ namespace nJinn {
 		vk::DescriptorSetLayout descriptorSetLayouts[descriptorSetCount];
 		vk::PipelineLayout pipelineLayout;
 		vk::Sampler immutableSamplers[immutableSamplerCount];
+		vk::DescriptorPool descPool;
+		vk::DescriptorSet descSet;
+		vk::Buffer buff;
+		vk::DeviceMemory memory;
 
 
 		Mesh::p someMesh;

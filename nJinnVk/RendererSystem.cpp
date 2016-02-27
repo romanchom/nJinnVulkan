@@ -139,6 +139,71 @@ namespace nJinn {
 			.depthCompareOp(vk::CompareOp::eAlways);
 
 		somePipe = Context::pipeFact().createPipeline(someMaterial, *someMesh, pipelineLayout, Application::sScreen->renderPass, 0, &rast, &ds); 
+
+		vk::DescriptorPoolSize poolSizes[2];
+		poolSizes[0]
+			.type(vk::DescriptorType::eUniformBuffer)
+			.descriptorCount(10);
+		poolSizes[1]
+			.type(vk::DescriptorType::eSampler)
+			.descriptorCount(20);
+
+
+		vk::DescriptorPoolCreateInfo poolInfo;
+		poolInfo
+			.maxSets(10000)
+			.poolSizeCount(2)
+			.pPoolSizes(poolSizes);
+
+		dc(vk::createDescriptorPool(Context::dev(), &poolInfo, nullptr, &descPool));
+
+		vk::DescriptorSetAllocateInfo setInfo;
+		setInfo
+			.descriptorPool(descPool)
+			.descriptorSetCount(1)
+			.pSetLayouts(&descriptorSetLayouts[worldDescriptorSetIndex]);
+
+		dc(vk::allocateDescriptorSets(Context::dev(), &setInfo, &descSet));
+
+		vk::BufferCreateInfo buffInfo;
+		buffInfo
+			.usage(vk::BufferUsageFlagBits::eUniformBuffer)
+			.size(100);
+
+		vk::createBuffer(Context::dev(), &buffInfo, nullptr, &buff);
+
+		vk::MemoryAllocateInfo allocInfo;
+		allocInfo
+			.allocationSize(1024)
+			.memoryTypeIndex(Context::uploadMemoryType());
+
+		vk::allocateMemory(Context::dev(), &allocInfo, nullptr, &memory);
+
+		vk::bindBufferMemory(Context::dev(), buff, memory, 0);
+
+		float * data;
+
+		vk::mapMemory(Context::dev(), memory, 0, 100, vk::MemoryMapFlags(), (void **) &data);
+
+		data[0] = 1;
+		data[1] = -0.5f;
+
+		vk::DescriptorBufferInfo descBuffInfo;
+		descBuffInfo
+			.buffer(buff)
+			.offset(0)
+			.range(100);
+
+		vk::WriteDescriptorSet descWrite;
+		descWrite
+			.dstSet(descSet)
+			.dstBinding(0)
+			.dstArrayElement(0)
+			.descriptorCount(1)
+			.descriptorType(vk::DescriptorType::eUniformBuffer)
+			.pBufferInfo(&descBuffInfo);
+
+		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);
 	}
 
 	RendererSystem::~RendererSystem()
@@ -183,6 +248,7 @@ namespace nJinn {
 		vk::cmdSetViewport(cmdBuf, 0, 1, &view);
 		vk::cmdSetScissor(cmdBuf, 0, 1, &rendArea);
 		vk::cmdBindPipeline(cmdBuf, vk::PipelineBindPoint::eGraphics, somePipe);
+		vk::cmdBindDescriptorSets(cmdBuf, vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, 1, &descSet, 0, nullptr);
 		someMesh->bindMesh(cmdBuf);
 		someMesh->draw(cmdBuf);
 		vk::cmdEndRenderPass(cmdBuf);

@@ -1,6 +1,8 @@
 #include "stdafx.hpp"
 #include "Material.hpp"
 
+#include <regex>
+
 namespace nJinn {
 	Material::Material(const std::string & vert, const std::string & frag, bool transparent)
 	{

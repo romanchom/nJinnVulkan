@@ -2,6 +2,7 @@
 #include "Application.hpp"
 
 #include <chrono>
+#include <iostream>
 
 #include "Config.hpp"
 #include "Screen.hpp"
@@ -26,8 +27,6 @@ namespace nJinn {
 		mGame->onInitialize();
 		size_t frame = 0;
 		CommandBuffer buf;
-		vk::ClearColorValue color;
-		color.float32({ 0, 0, 1, 1 });
 
 		RendererSystem * rend = new RendererSystem();
 
@@ -42,8 +41,6 @@ namespace nJinn {
 			buf.beginRecording();
 
 			sScreen->currentFrame->transitionForDraw(buf);
-			//vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-			//vk::cmdClearColorImage(buf, sScreen->currentFrame->image, vk::ImageLayout::eColorAttachmentOptimal, &color, 1, &range);
 
 			rend->update(buf);
 
@@ -68,16 +65,18 @@ namespace nJinn {
 				.pSignalSemaphores(&sScreen->currentFrame->renderingCompleteSemaphore);
 
 			vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
-			//vk::queueWaitIdle(Context::mainQueue());
 			sScreen->present();
-			if (++frame > 10) {
-				auto end = clock::now();
-				std::chrono::duration<double> diff = end - begin;
+
+			++frame;
+			auto end = clock::now();
+			std::chrono::duration<double> diff = end - begin;
+			if (diff.count() > 0.2) {
 				std::cout << "FPS: " << frame / diff.count() << std::endl;
 				begin = clock::now();
 				frame = 0;
 			}
 		}
+		delete rend;
 		finalize();
 	}
 

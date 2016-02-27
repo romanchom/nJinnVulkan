@@ -34,7 +34,7 @@ namespace nJinn {
 
 		PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
 		PFN_vkDestroyDebugReportCallbackEXT	DestroyDebugReportCallback;
-		bool validation;
+		const bool validation;
 		// end debug section
 	
 	public:
