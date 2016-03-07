@@ -36,6 +36,12 @@
     <Filter Include="Source Files\api\memory">
       <UniqueIdentifier>{c399f23d-7fce-4f3b-a9cb-07f6240fb52e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\game">
+      <UniqueIdentifier>{cefa9d98-9d7d-491f-9479-909868aea33a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game">
+      <UniqueIdentifier>{7ba31852-b772-467b-abcb-516b9adf4e35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
@@ -95,8 +101,32 @@
     <ClInclude Include="PipelineFactory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameObject.hpp">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.hpp">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.hpp">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialFamily.hpp">
+      <Filter>Header Files\resources</Filter>
+    </ClInclude>
     <ClInclude Include="Material.hpp">
       <Filter>Header Files\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.hpp">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="UniformBufferAllocator.hpp">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="UniformBuffer.hpp">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -145,20 +175,37 @@
     <ClCompile Include="PipelineFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files\resources</Filter>
-    </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files\resources</Filter>
     </ClCompile>
     <ClCompile Include="Semaphore.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialFamily.cpp">
+      <Filter>Source Files\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="UniformBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\triangle2.frag" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
@@ -170,7 +217,9 @@
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
-    <CustomBuild Include="shaders\triangle.vert" />
-    <CustomBuild Include="shaders\triangle2.frag" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <vulkan.hpp>
-#include "Material.hpp"
+#include "MaterialFamily.hpp"
 #include "Mesh.hpp"
 
 namespace nJinn {
@@ -13,7 +13,7 @@ namespace nJinn {
 		PipelineFactory();
 		~PipelineFactory();
 
-		vk::Pipeline createPipeline(Material & material, Mesh & mesh, vk::PipelineLayout layout, vk::RenderPass pass, uint32_t subpass,
+		vk::Pipeline createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass,
 			vk::PipelineRasterizationStateCreateInfo * rasterInfo, vk::PipelineDepthStencilStateCreateInfo * depthStencilInfo);
 	};
 }

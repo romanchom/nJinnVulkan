@@ -103,7 +103,7 @@ namespace nJinn {
 			.pTessellationState(&tessInfo);
 	}
 
-	void Mesh::bindMesh(vk::CommandBuffer cmdbuf)
+	void Mesh::bind(vk::CommandBuffer cmdbuf)
 	{
 		vk::Buffer b[] = {
 			buffer, buffer

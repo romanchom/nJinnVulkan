@@ -3,7 +3,8 @@
 #include <vulkan.hpp>
 
 #include "Mesh.hpp"
-#include "Material.hpp"
+#include "MaterialFamily.hpp"
+#include "CommandBuffer.hpp"
 
 namespace nJinn {
 	class RendererSystem {
@@ -27,7 +28,7 @@ namespace nJinn {
 		RendererSystem();
 		~RendererSystem();
 
-		void update(vk::CommandBuffer cmdBuf);
+		void update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsCw);
 
 		vk::DescriptorSetLayout descriptorSetLayouts[descriptorSetCount];
 		vk::PipelineLayout pipelineLayout;
@@ -38,8 +39,6 @@ namespace nJinn {
 		vk::DeviceMemory memory;
 
 
-		Mesh::p someMesh;
-		Material someMaterial;
-		vk::Pipeline somePipe;
+		CommandBuffer cmdbuf;
 	};
 }

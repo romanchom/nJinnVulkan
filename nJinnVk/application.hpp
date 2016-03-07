@@ -20,21 +20,23 @@ namespace nJinn {
 
 	class Application
 	{
-	public:
-		template<typename T>
-		static int initialize(APPLICATION_PARAMS);
-		static void quit();
-	//private:
+	private:
+		Application() = delete;
 		static void run();
 		static void finalize();
-		Application() = delete;
 		static void doInitialize(APPLICATION_PARAMS);
 		static GameBase * mGame;
 		static HINSTANCE shInstance;
 		static int snCmdShow;
 		static class Screen * sScreen;
+		static class RendererSystem * sRenderer;
 
 		friend class Screen;
+	public:
+		template<typename T>
+		static int initialize(APPLICATION_PARAMS);
+		static void quit();
+		static Screen * screen(size_t index = 0) { return sScreen; }
 	};
 
 	template<typename T>

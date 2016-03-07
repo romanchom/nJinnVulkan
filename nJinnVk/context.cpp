@@ -193,6 +193,7 @@ namespace nJinn {
 	{
 		vk::deviceWaitIdle(Context::dev());
 		delete context->pipelineFactory;
+		MaterialFamily::collect();
 		Mesh::collect();
 		Shader::collect();
 		ResourceUploader::destroy();

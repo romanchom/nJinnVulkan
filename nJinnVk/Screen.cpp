@@ -16,16 +16,16 @@ namespace nJinn {
 	Screen::Screen(uint32_t width, uint32_t height) :
 		mWindowHandle(nullptr),
 		queueIndex(-1),
-		swapChain(nullptr),
-		renderPass(nullptr),
-		surface(nullptr),
-		width(-1),
-		height(-1),
-		currentFrameIndex(0),
-		currentFrame(frames + currentFrameIndex),
-		currentAcquireFrameSemaphore(nullptr),
-		currentFence(0),
-		totalFrames(0)
+		mSwapChain(nullptr),
+		mRenderPass(nullptr),
+		mSurface(nullptr),
+		mWidth(-1),
+		mHeight(-1),
+		mCurrentFrameIndex(0),
+		mCurrentFrame(mFrames + mCurrentFrameIndex),
+		mCurrentAcquireFrameSemaphore(nullptr),
+		mCurrentFence(0),
+		mTotalFrames(0)
 	{
 		WNDCLASSEX windowClass = { 0 };
 		windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -58,13 +58,13 @@ namespace nJinn {
 		vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo = {};
 		surfaceCreateInfo.hinstance(Application::shInstance);
 		surfaceCreateInfo.hwnd((HWND) mWindowHandle);
-		dc(vk::createWin32SurfaceKHR(Context::inst(), &surfaceCreateInfo, nullptr, &surface));
+		dc(vk::createWin32SurfaceKHR(Context::inst(), &surfaceCreateInfo, nullptr, &mSurface));
 
 		std::vector<vk::QueueFamilyProperties> queueProperties = vk::getPhysicalDeviceQueueFamilyProperties(Context::physDev());
 		for (int i = 0; i < queueProperties.size(); ++i) {
 			if (queueProperties[i].queueFlags() & vk::QueueFlagBits::eGraphics) {
 				uint32_t supported = 0;
-				dc(vk::getPhysicalDeviceSurfaceSupportKHR(Context::physDev(), i, surface, supported));
+				dc(vk::getPhysicalDeviceSurfaceSupportKHR(Context::physDev(), i, mSurface, supported));
 				if (supported) {
 					queueIndex = i;
 					break;
@@ -75,10 +75,10 @@ namespace nJinn {
 		assert(queueIndex != -1);
 
 		std::vector<vk::SurfaceFormatKHR> surfaceFormats;
-		dc(vk::getPhysicalDeviceSurfaceFormatsKHR(Context::physDev(), surface, surfaceFormats));
+		dc(vk::getPhysicalDeviceSurfaceFormatsKHR(Context::physDev(), mSurface, surfaceFormats));
 
 		if (1 == surfaceFormats.size() && vk::Format::eUndefined == surfaceFormats[0].format()) {
-			colorFormat = vk::Format::eB8G8R8A8Srgb;
+			mColorFormat = vk::Format::eB8G8R8A8Srgb;
 		}
 		else {
 			vk::Format prefferedFormats[] = { 
@@ -95,8 +95,8 @@ namespace nJinn {
 					++it;
 				}
 				if (surfaceFormats.end() != it) {
-					colorFormat = f;
-					colorSpace = it->colorSpace();
+					mColorFormat = f;
+					mColorSpace = it->colorSpace();
 					break;
 				}
 			}
@@ -107,19 +107,19 @@ namespace nJinn {
 
 	Screen::~Screen()
 	{
-		vk::destroyRenderPass(Context::dev(), renderPass, nullptr);
-		vk::destroySurfaceKHR(Context::inst(), surface, nullptr);
+		vk::destroyRenderPass(Context::dev(), mRenderPass, nullptr);
+		vk::destroySurfaceKHR(Context::inst(), mSurface, nullptr);
 	}
 
 	void Screen::resize(uint32_t width, uint32_t height)
 	{
-		vk::SwapchainKHR oldSwapChain = swapChain;
+		vk::SwapchainKHR oldSwapChain = mSwapChain;
 
 		vk::SurfaceCapabilitiesKHR surfaceCaps;
-		dc(vk::getPhysicalDeviceSurfaceCapabilitiesKHR(Context::physDev(), surface, surfaceCaps));
+		dc(vk::getPhysicalDeviceSurfaceCapabilitiesKHR(Context::physDev(), mSurface, surfaceCaps));
 
 		std::vector<vk::PresentModeKHR> presentModes;
-		vk::getPhysicalDeviceSurfacePresentModesKHR(Context::physDev(), surface, presentModes);
+		vk::getPhysicalDeviceSurfacePresentModesKHR(Context::physDev(), mSurface, presentModes);
 
 		vk::Extent2D swapChainExtent;
 		if (surfaceCaps.currentExtent().width() == -1) {
@@ -128,8 +128,8 @@ namespace nJinn {
 		} else {
 			swapChainExtent = surfaceCaps.currentExtent();
 		}
-		this->width = swapChainExtent.width();
-		this->height = swapChainExtent.height();
+		mWidth = swapChainExtent.width();
+		mHeight = swapChainExtent.height();
 
 		vk::PresentModeKHR presentMode = vk::PresentModeKHR::eVkPresentModeFifoKhr;
 		for (auto pm : presentModes) {
@@ -141,10 +141,10 @@ namespace nJinn {
 
 		vk::SwapchainCreateInfoKHR swapChainInfo;
 		swapChainInfo
-			.surface(surface)
+			.surface(mSurface)
 			.minImageCount(frameCount)
-			.imageFormat(colorFormat)
-			.imageColorSpace(colorSpace)
+			.imageFormat(mColorFormat)
+			.imageColorSpace(mColorSpace)
 			.imageExtent(swapChainExtent)
 			.imageUsage(vk::ImageUsageFlagBits::eColorAttachment)
 			.preTransform(vk::SurfaceTransformFlagBitsKHR::eIdentity)
@@ -157,7 +157,7 @@ namespace nJinn {
 			.clipped(true)
 			.compositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
 
-		dc(vk::createSwapchainKHR(Context::dev(), &swapChainInfo, nullptr, &swapChain));
+		dc(vk::createSwapchainKHR(Context::dev(), &swapChainInfo, nullptr, &mSwapChain));
 
 		if (oldSwapChain) {
 			vk::destroySwapchainKHR(Context::dev(), oldSwapChain, nullptr);
@@ -166,13 +166,13 @@ namespace nJinn {
 		
 
 		std::vector<vk::Image> images;
-		dc(vk::getSwapchainImagesKHR(Context::dev(), swapChain, images));
+		dc(vk::getSwapchainImagesKHR(Context::dev(), mSwapChain, images));
 
 		assert(frameCount == images.size());
 
 		vk::AttachmentDescription attachment;
 		attachment
-			.format(colorFormat)
+			.format(mColorFormat)
 			.samples(vk::SampleCountFlagBits::e1)
 			.loadOp(vk::AttachmentLoadOp::eClear)
 			.storeOp(vk::AttachmentStoreOp::eStore)
@@ -197,56 +197,45 @@ namespace nJinn {
 			.subpassCount(1)
 			.pSubpasses(&subpass);
 
-		dc(vk::createRenderPass(Context::dev(), &renderPassInfo, nullptr, &renderPass));
+		dc(vk::createRenderPass(Context::dev(), &renderPassInfo, nullptr, &mRenderPass));
 
 		for (size_t i = 0; i < frameCount; ++i) {
-			frames[i].create(*this, i, images[i]);
+			mFrames[i].create(*this, i, images[i]);
 		}
 		vk::FenceCreateInfo fenceInfo;
 		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
 		for (size_t i = 0; i < maxQueuedFrames; ++i) {
-			dc(vk::createFence(Context::dev(), &fenceInfo, nullptr, fences + i));
+			dc(vk::createFence(Context::dev(), &fenceInfo, nullptr, mFences + i));
 			fenceInfo.flags(vk::FenceCreateFlags());
 		}
 
-		uint32_t imageIndex;
-		dc(vk::acquireNextImageKHR(Context::dev(), swapChain, -1, nullptr, nullptr, imageIndex));
-		currentFrameIndex = imageIndex;
-		currentFrame = frames + currentFrameIndex;
-		//acquireFrame();
-		//present();
+		acquireFrameIndex();
 	}
 
 	void Screen::present()
 	{
-		vk::queueSubmit(Context::mainQueue(), 0, nullptr, fences[currentFence]);
-		//std::cout << "Presenting frame: " << totalFrames << std::endl;
-		currentFrame->present();
-		++totalFrames;
+		vk::queueSubmit(Context::mainQueue(), 0, nullptr, mFences[mCurrentFence]);
+		mCurrentFrame->present();
+		++mTotalFrames;
 	}
 
 	void Screen::acquireFrame()
 	{
-		vk::Fence * pFence = &fences[currentFence];
-
-		auto then = std::chrono::high_resolution_clock::now();
+		vk::Fence * pFence = &mFences[mCurrentFence];
 		vk::waitForFences(Context::dev(), 1, pFence, 1, -1);
-		auto now = std::chrono::high_resolution_clock::now();
-		//std::cout << "Curr fence " << currentFence << ", Waited for " << (now - then).count() << "ns" << std::endl;
-
 		vk::resetFences(Context::dev(), 1, pFence);
 
-		uint32_t imageIndex;
-		currentAcquireFrameSemaphore = currentFrame->imageAquiredSemaphore;
-		dc(vk::acquireNextImageKHR(Context::dev(), swapChain, -1, currentAcquireFrameSemaphore, nullptr, imageIndex));
-		currentFrameIndex = imageIndex;
-		currentFrame = frames + currentFrameIndex;
-		++currentFence %= maxQueuedFrames;
-		//std::cout << "Acquired frame: " << currentFrameIndex << std::endl;
+		mCurrentAcquireFrameSemaphore = mCurrentFrame->waitingSemaphore();
+		acquireFrameIndex(mCurrentAcquireFrameSemaphore);
+		++mCurrentFence %= maxQueuedFrames;
 	}
 
-	void Screen::aquireFrameIndex()
+	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore)
 	{
+		uint32_t imageIndex;
+		dc(vk::acquireNextImageKHR(Context::dev(), mSwapChain, -1, signalSemaphore, nullptr, imageIndex));
+		mCurrentFrameIndex = imageIndex;
+		mCurrentFrame = mFrames + mCurrentFrameIndex;
 	}
 	
 	bool Screen::shouldClose()
@@ -278,9 +267,7 @@ namespace nJinn {
 	Screen::Frame::Frame() :
 		image(nullptr),
 		view(nullptr),
-		frameBuffer(nullptr),
-		imageAquiredSemaphore(nullptr),
-		renderingCompleteSemaphore(nullptr)
+		frameBuffer(nullptr)
 	{}
 
 	Screen::Frame::~Frame()
@@ -298,7 +285,7 @@ namespace nJinn {
 
 		vk::ImageViewCreateInfo viewInfo;
 		viewInfo
-			.format(info.colorFormat)
+			.format(info.mColorFormat)
 			.components(vk::ComponentMapping())
 			.subresourceRange(vk::ImageSubresourceRange(
 				vk::ImageAspectFlagBits::eColor,
@@ -312,24 +299,21 @@ namespace nJinn {
 		framebufferInfo
 			.attachmentCount(1)
 			.pAttachments(&view)
-			.renderPass(info.renderPass)
-			.height(info.height)
-			.width(info.width)
+			.renderPass(info.renderPass())
+			.height(info.mHeight)
+			.width(info.mWidth)
 			.layers(1);
 
 		vk::createFramebuffer(Context::dev(), &framebufferInfo, nullptr, &frameBuffer);
 
 		vk::SemaphoreCreateInfo semaphoreInfo;
 
-		vk::createSemaphore(Context::dev(), &semaphoreInfo, nullptr, &imageAquiredSemaphore);
-		vk::createSemaphore(Context::dev(), &semaphoreInfo, nullptr, &renderingCompleteSemaphore);
-
 		imageIndex = index;
 		presentInfo
 			.pImageIndices(&imageIndex)
-			.pSwapchains(&info.swapChain)
+			.pSwapchains(&info.mSwapChain)
 			.swapchainCount(1)
-			.pWaitSemaphores(&renderingCompleteSemaphore)
+			.pWaitSemaphores(renderingCompleteSemaphore.get())
 			.waitSemaphoreCount(1);
 
 		vk::FenceCreateInfo fenceInfo;
@@ -339,8 +323,8 @@ namespace nJinn {
 			.oldLayout(vk::ImageLayout::ePresentSrcKhr)
 			.newLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.dstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
-			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
-			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
 			.image(image);
 
@@ -348,8 +332,8 @@ namespace nJinn {
 			.oldLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.newLayout(vk::ImageLayout::ePresentSrcKhr)
 			.srcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
-			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
-			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
 			.image(image);
 
@@ -357,23 +341,20 @@ namespace nJinn {
 		defineImageBarrier
 			.oldLayout(vk::ImageLayout::eUndefined)
 			.newLayout(vk::ImageLayout::ePresentSrcKhr)
-			.srcQueueFamilyIndex(Context::mainQueueFamilyIndex())
-			.dstQueueFamilyIndex(Context::mainQueueFamilyIndex())
+			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
 			.image(image);
 
 		CommandBuffer buffer;
 		buffer.beginRecording();
-		
 		transition(buffer, defineImageBarrier);
-
 		buffer.endRecording();
 
-		vk::CommandBuffer b = buffer;
 		vk::SubmitInfo submitInfo;
 		submitInfo
 			.commandBufferCount(1)
-			.pCommandBuffers(&b);
+			.pCommandBuffers(buffer.get());
 
 		vk::queueSubmit(Context::mainQueue(), 0, &submitInfo, nullptr);
 		vk::queueWaitIdle(Context::mainQueue());

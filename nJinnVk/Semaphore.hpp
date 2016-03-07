@@ -12,7 +12,7 @@ namespace nJinn {
 		Semaphore();
 		~Semaphore();
 
-		operator vk::Semaphore() { return semaphore; }
+		operator vk::Semaphore() const { return semaphore; }
 
 		vk::Semaphore * get() { return &semaphore; }
 	};

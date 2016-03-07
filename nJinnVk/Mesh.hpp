@@ -11,7 +11,7 @@ namespace nJinn {
 		Mesh(const std::string & name);
 		~Mesh();
 		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
-		void bindMesh(vk::CommandBuffer cmdbuf);
+		void bind(vk::CommandBuffer cmdbuf);
 		void draw(vk::CommandBuffer cmdbuf);
 	private:
 		vk::Buffer buffer;

@@ -12,12 +12,15 @@
 #include "ResourceUploader.hpp"
 #include "Material.hpp"
 #include "RendererSystem.hpp"
+#include "Component.hpp"
+#include "GameObject.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
 	HINSTANCE Application::shInstance = 0;
 	int Application::snCmdShow = 1;
-	class Screen * Application::sScreen = nullptr;
+	Screen * Application::sScreen = nullptr;
+	RendererSystem * Application::sRenderer = nullptr;
 
 	typedef std::chrono::high_resolution_clock clock;
 
@@ -26,45 +29,26 @@ namespace nJinn {
 		auto begin = clock::now();
 		mGame->onInitialize();
 		size_t frame = 0;
-		CommandBuffer buf;
-
-		RendererSystem * rend = new RendererSystem();
-
+		sRenderer = new RendererSystem();
 		while (true) {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
 
 			// update
+			ComponentBase::updateComponents();
 
 			ResourceUploader::execute();
 
-			buf.beginRecording();
-
-			sScreen->currentFrame->transitionForDraw(buf);
-
-			rend->update(buf);
-
-			sScreen->currentFrame->transitionForPresent(buf);
-
-			buf.endRecording();
-
-			vk::CommandBuffer buff = buf;
-			vk::PipelineStageFlags src = vk::PipelineStageFlagBits::eAllGraphics;
 			vk::Semaphore waitSemaphores[] = {
-				sScreen->currentAcquireFrameSemaphore,
+				sScreen->waitingSemaphore(),
 				ResourceUploader::semaphore()
 			};
-			vk::SubmitInfo submitInfo;
-			submitInfo
-				.commandBufferCount(1)
-				.pCommandBuffers(&buff)
-				.pWaitSemaphores(waitSemaphores)
-				.waitSemaphoreCount(countof(waitSemaphores))
-				.pWaitDstStageMask(&src)
-				.signalSemaphoreCount(1)
-				.pSignalSemaphores(&sScreen->currentFrame->renderingCompleteSemaphore);
-
-			vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
+			vk::Semaphore signalSemaphores[] = {
+				sScreen->renderCompleteSemaphore()
+			};
+			
+			sRenderer->update(waitSemaphores, 2, signalSemaphores, 1);
+			
 			sScreen->present();
 
 			++frame;
@@ -76,7 +60,6 @@ namespace nJinn {
 				frame = 0;
 			}
 		}
-		delete rend;
 		finalize();
 	}
 
@@ -88,6 +71,9 @@ namespace nJinn {
 	void Application::finalize()
 	{
 		mGame->onExit();
+		vk::queueWaitIdle(Context::mainQueue());
+		GameObject::clearScene();
+		delete sRenderer;
 		Context::destroy();
 	}
 

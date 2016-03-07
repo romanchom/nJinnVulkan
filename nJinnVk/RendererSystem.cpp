@@ -5,6 +5,7 @@
 #include "PipelineFactory.hpp"
 #include "Application.hpp"
 #include "Screen.hpp"
+#include "Renderer.hpp"
 
 namespace nJinn {
 	void RendererSystem::createWorldDescriptorSet()
@@ -124,23 +125,9 @@ namespace nJinn {
 	void RendererSystem::destroyLayout()
 	{
 	}
-	RendererSystem::RendererSystem() :
-		someMaterial("shaders/triangle.vert.spv", "shaders/triangle.frag.spv", false)
+	RendererSystem::RendererSystem()
 	{
-		createLayout();
-		someMesh = Mesh::load("asteroid2.vbm");
-
-		vk::PipelineRasterizationStateCreateInfo rast;
-		vk::PipelineDepthStencilStateCreateInfo ds;
-		ds
-			.depthTestEnable(0)
-			.stencilTestEnable(0)
-			.maxDepthBounds(1)
-			.depthCompareOp(vk::CompareOp::eAlways);
-
-		somePipe = Context::pipeFact().createPipeline(someMaterial, *someMesh, pipelineLayout, Application::sScreen->renderPass, 0, &rast, &ds); 
-
-		vk::DescriptorPoolSize poolSizes[2];
+		/*vk::DescriptorPoolSize poolSizes[2];
 		poolSizes[0]
 			.type(vk::DescriptorType::eUniformBuffer)
 			.descriptorCount(10);
@@ -203,22 +190,25 @@ namespace nJinn {
 			.descriptorType(vk::DescriptorType::eUniformBuffer)
 			.pBufferInfo(&descBuffInfo);
 
-		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);
+		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);*/
 	}
 
 	RendererSystem::~RendererSystem()
 	{
-		vk::destroyPipelineLayout(Context::dev(), pipelineLayout, nullptr);
+		/*vk::destroyPipelineLayout(Context::dev(), pipelineLayout, nullptr);
 		for (size_t i = 0; i < descriptorSetCount; ++i) {
 			vk::destroyDescriptorSetLayout(Context::dev(), descriptorSetLayouts[i], nullptr);
 		}
 		for (size_t i = 0; i < immutableSamplerCount; ++i) {
 			vk::destroySampler(Context::dev(), immutableSamplers[i], nullptr);
-		}
+		}*/
 	}
 
-	void RendererSystem::update(vk::CommandBuffer cmdBuf)
+	void RendererSystem::update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsC)
 	{
+		cmdbuf.beginRecording();
+		Application::screen()->transitionForDraw(cmdbuf);
+		
 		uint32_t asd[] = { 0, 0, 1280, 720 };
 		vk::Rect2D rendArea;
 		memcpy(&rendArea, asd, 16);
@@ -227,10 +217,12 @@ namespace nJinn {
 		vk::ClearValue val;
 		memcpy(&val, vals, 16);
 
+		Screen * scr = Application::screen();
+
 		vk::Viewport view;
 		view
-			.height(720)
-			.width(1280)
+			.width(scr->width())
+			.height(scr->height())
 			.minDepth(0)
 			.maxDepth(1)
 			.x(0)
@@ -238,19 +230,46 @@ namespace nJinn {
 
 		vk::RenderPassBeginInfo info;
 		info
-			.renderPass(Application::sScreen->renderPass)
-			.framebuffer(Application::sScreen->currentFrame->frameBuffer)
+			.renderPass(scr->renderPass())
+			.framebuffer(scr->framebuffer())
 			.renderArea(rendArea)
 			.clearValueCount(1)
 			.pClearValues(&val);
 
-		vk::cmdBeginRenderPass(cmdBuf, &info, vk::SubpassContents::eInline);
-		vk::cmdSetViewport(cmdBuf, 0, 1, &view);
-		vk::cmdSetScissor(cmdBuf, 0, 1, &rendArea);
-		vk::cmdBindPipeline(cmdBuf, vk::PipelineBindPoint::eGraphics, somePipe);
-		vk::cmdBindDescriptorSets(cmdBuf, vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, 1, &descSet, 0, nullptr);
-		someMesh->bindMesh(cmdBuf);
-		someMesh->draw(cmdBuf);
-		vk::cmdEndRenderPass(cmdBuf);
+		vk::cmdBeginRenderPass(cmdbuf, &info, vk::SubpassContents::eInline);
+		vk::cmdSetViewport(cmdbuf, 0, 1, &view);
+		vk::cmdSetScissor(cmdbuf, 0, 1, &rendArea);
+
+
+		for (auto rend : Renderer::sRenderers) {
+			//rend->mForwardMaterial->family()->bind();
+			rend->draw(cmdbuf);
+		}
+
+		/*
+		vk::cmdBindPipeline(cmdbuf, vk::PipelineBindPoint::eGraphics, somePipe);
+		vk::cmdBindDescriptorSets(cmdbuf, vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, 1, &descSet, 0, nullptr);
+		someMesh->bindMesh(cmdbuf);
+		someMesh->draw(cmdbuf);
+		*/
+
+		vk::cmdEndRenderPass(cmdbuf);
+		Application::screen()->transitionForPresent(cmdbuf);
+		cmdbuf.endRecording();
+
+		vk::PipelineStageFlags src = vk::PipelineStageFlagBits::eAllGraphics;
+
+		vk::SubmitInfo submitInfo;
+		submitInfo
+			.commandBufferCount(1)
+			.pCommandBuffers(cmdbuf.get())
+			.pWaitSemaphores(wSems)
+			.waitSemaphoreCount(wSemC)
+			.pWaitDstStageMask(&src)
+			.signalSemaphoreCount(sSemsC)
+			.pSignalSemaphores(sSems);
+
+		vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
+
 	}
 }

@@ -81,14 +81,20 @@
     <ClInclude Include="BlockAllocator.hpp" />
     <ClInclude Include="BucketAllocator.hpp" />
     <ClInclude Include="CommandBuffer.hpp" />
+    <ClInclude Include="Component.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
+    <ClInclude Include="Exception.hpp" />
+    <ClInclude Include="GameObject.hpp" />
+    <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="MemoryAllocation.hpp" />
     <ClInclude Include="MemoryManager.hpp" />
     <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="PipelineFactory.hpp" />
+    <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="RendererSystem.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
@@ -96,20 +102,27 @@
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="TrackedResource.hpp" />
+    <ClInclude Include="UniformBuffer.hpp" />
+    <ClInclude Include="UniformBufferAllocator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BlockAllocator.cpp" />
     <ClCompile Include="BucketAllocator.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialFamily.cpp" />
     <ClCompile Include="MemoryAllocation.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="PipelineFactory.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererSystem.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
@@ -118,6 +131,7 @@
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UniformBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\*">
