@@ -10,12 +10,12 @@ layout (location = 3) in vec3 inTangent;
 
 layout (location = 0) out vec3 color;
 
-/*layout (set = 0, binding = 0) uniform asd{
-	vec2 someUniform;
-};*/
+layout (set = 1, binding = 0) uniform asd{
+	vec4 someUniform;
+};
 
 void main() 
 {
 	color = inNormal * 0.5 + 0.5;
-	gl_Position = vec4(inPos * 0.1, 1.0);
+	gl_Position = vec4(inPos * 0.1 + someUniform.xyz, 1.0);
 }

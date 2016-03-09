@@ -9,11 +9,11 @@
 namespace nJinn {
 	class RendererSystem {
 	private:
-		void createWorldDescriptorSet();
+		/*void createWorldDescriptorSet();
 		void createObjectDescriptorSet();
 		void createDrawDescriptorSet();
 		void createLayout();
-		void destroyLayout();
+		void destroyLayout();*/
 		enum {
 			worldDescriptorSetIndex = 0,
 			objectDescriptorSetIndex,
@@ -30,14 +30,7 @@ namespace nJinn {
 
 		void update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsCw);
 
-		vk::DescriptorSetLayout descriptorSetLayouts[descriptorSetCount];
-		vk::PipelineLayout pipelineLayout;
 		vk::Sampler immutableSamplers[immutableSamplerCount];
-		vk::DescriptorPool descPool;
-		vk::DescriptorSet descSet;
-		vk::Buffer buff;
-		vk::DeviceMemory memory;
-
 
 		CommandBuffer cmdbuf;
 	};

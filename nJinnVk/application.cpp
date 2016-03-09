@@ -14,6 +14,7 @@
 #include "RendererSystem.hpp"
 #include "Component.hpp"
 #include "GameObject.hpp"
+#include "UniformBuffer.hpp"
 
 namespace nJinn {
 	GameBase * Application::mGame = nullptr;
@@ -34,6 +35,7 @@ namespace nJinn {
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
 
+			UniformBuffer::update();
 			// update
 			ComponentBase::updateComponents();
 

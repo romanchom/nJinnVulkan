@@ -7,6 +7,7 @@
 #include "Material.hpp"
 #include "MaterialFamily.hpp"
 #include "Screen.hpp"
+#include <chrono>
 
 namespace nJinn {
 	void MeshRenderer::initialize()
@@ -19,12 +20,49 @@ namespace nJinn {
 			.maxDepthBounds(1)
 			.depthCompareOp(vk::CompareOp::eAlways);
 		mPipeline = Context::pipeFact().createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen()->renderPass(), 0, &rasterinfo, &depthstencilInfo);
+
+
+		mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();
+
+		mUniforms.initialize(16);
+
+		vk::DescriptorBufferInfo bufferInfo;
+		mUniforms.fillDescriptorInfo(bufferInfo);
+
+		vk::WriteDescriptorSet descWrite;
+		descWrite
+			.descriptorCount(1)
+			.descriptorType(vk::DescriptorType::eUniformBufferDynamic)
+			.dstArrayElement(0)
+			.dstBinding(0)
+			.dstSet(mDescSet)
+			.pBufferInfo(&bufferInfo);
+
+		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);
+	}
+
+	struct uniforms {
+		float x, y, z, w;
+	};
+
+	void MeshRenderer::update()
+	{
+		uniforms * uni = mUniforms.acquire<uniforms>();
+		std::chrono::duration<double> a = std::chrono::high_resolution_clock::now().time_since_epoch();
+		double s = sin(a.count());
+		double c = cos(a.count());
+		uni->x = c * 0.5;
+		uni->y = s * 0.5;
+		uni->z = 0.2f;
+		uni->w = 0.2f;
 	}
 
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
 	{
 		vk::cmdBindPipeline(cmdbuf, vk::PipelineBindPoint::eGraphics, mPipeline);
 		mForwardMaterial->bind(cmdbuf);
+		uint32_t offset = mUniforms.offset();
+		vk::cmdBindDescriptorSets(cmdbuf, vk::PipelineBindPoint::eGraphics, mForwardMaterial->family()->layout(), 1, 1, &mDescSet, 1, &offset);
 		// bind renderer descriptor sets
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);

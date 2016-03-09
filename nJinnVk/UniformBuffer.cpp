@@ -62,7 +62,7 @@ namespace nJinn {
 
 	bool UniformAllocator::occupied()
 	{
-		return mFreeSpace == mTotalSpace;
+		return mFreeSpace != mTotalSpace;
 	}
 
 	bool UniformAllocator::operator<(const UniformAllocator & that)
@@ -74,13 +74,13 @@ namespace nJinn {
 		return !alloc.occupied();
 	}
 
-	void UniformBufferBase::collect()
+	void UniformBuffer::collect()
 	{
 		sAllocators.remove_if(isFree);
 		sAllocators.sort();
 	}
 
-	void UniformBufferBase::update()
+	void UniformBuffer::update()
 	{
 		if (!Context::isUploadMemoryTypeCoherent()) {
 			vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
@@ -95,9 +95,16 @@ namespace nJinn {
 		}
 	}
 
-	UniformBufferBase::UniformBufferBase(size_t size) :
-		mSize(size)
+	std::list<UniformAllocator> UniformBuffer::sAllocators;
+
+	UniformBuffer::~UniformBuffer()
 	{
+		mAllocator->free(mSize);
+	}
+
+	void UniformBuffer::initialize(size_t size)
+	{
+		mSize = size;
 		int tryCount = sAllocators.size();
 		while (tryCount > 0) {
 			auto it = sAllocators.begin();
@@ -115,15 +122,18 @@ namespace nJinn {
 		mAllocator->allocate(size);
 	}
 
-	UniformBufferBase::~UniformBufferBase()
-	{
-		mAllocator->free(mSize);
-	}
-
-	void * UniformBufferBase::acquirePointer()
+	void * UniformBuffer::acquirePointer()
 	{
 		auto v = mAllocator->acquire(mSize);
 		mCurrentOffset = v.second;
 		return v.first;
+	}
+
+	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info)
+	{
+		info
+			.buffer(mAllocator->buffer())
+			.offset(0)
+			.range(mSize);
 	}
 }

@@ -30,9 +30,10 @@ namespace nJinn {
 		void writtenRange(vk::MappedMemoryRange & range);
 		bool occupied();
 		bool operator<(const UniformAllocator & that);
+		vk::Buffer buffer() { return mBuffer; }
 	};
 
-	class UniformBufferBase {
+	class UniformBuffer {
 	private:
 		static std::list<UniformAllocator> sAllocators;
 	private:
@@ -40,23 +41,22 @@ namespace nJinn {
 		size_t mCurrentOffset;
 		UniformAllocator * mAllocator;
 	public:
-		UniformBufferBase(size_t size);
-		~UniformBufferBase();
+		~UniformBuffer();
+		void initialize(size_t size);
 
 		void * acquirePointer();
+		template<typename T>
+		T * acquire();
+
 		size_t offset() { return mCurrentOffset; }
+		void fillDescriptorInfo(vk::DescriptorBufferInfo & info);
 
 		static void collect();
 		static void update();
 	};
 
 	template<typename T>
-	class UniformBuffer : public UniformBufferBase {
-		UniformBuffer() :
-			UniformBufferBase(sizeof(T))
-		{}
-		T * acquire() {
-			return reinterpret_cast<T *>(acquirePointer());
-		}
-	};
+	inline T * UniformBuffer::acquire() {
+		return reinterpret_cast<T *>(acquirePointer());
+	}
 }

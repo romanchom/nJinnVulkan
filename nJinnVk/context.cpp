@@ -9,6 +9,7 @@
 #include "ResourceUploader.hpp"
 #include "Mesh.hpp"
 #include "PipelineFactory.hpp"
+#include "UniformBuffer.hpp"
 
 namespace nJinn {
 	static const char * appName = "nJinnVk";
@@ -197,6 +198,7 @@ namespace nJinn {
 		Mesh::collect();
 		Shader::collect();
 		ResourceUploader::destroy();
+		UniformBuffer::collect();
 		delete context;
 		context = nullptr;
 	}

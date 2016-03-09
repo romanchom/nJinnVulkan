@@ -8,7 +8,7 @@
 #include "Renderer.hpp"
 
 namespace nJinn {
-	void RendererSystem::createWorldDescriptorSet()
+	/*void RendererSystem::createWorldDescriptorSet()
 	{
 		vk::SamplerCreateInfo samplerInfo;
 		samplerInfo
@@ -124,7 +124,7 @@ namespace nJinn {
 	}
 	void RendererSystem::destroyLayout()
 	{
-	}
+	}*/
 	RendererSystem::RendererSystem()
 	{
 		/*vk::DescriptorPoolSize poolSizes[2];
@@ -209,15 +209,15 @@ namespace nJinn {
 		cmdbuf.beginRecording();
 		Application::screen()->transitionForDraw(cmdbuf);
 		
-		uint32_t asd[] = { 0, 0, 1280, 720 };
+		Screen * scr = Application::screen();
+
+		uint32_t asd[] = { 0, 0, scr->width(), scr->height() };
 		vk::Rect2D rendArea;
 		memcpy(&rendArea, asd, 16);
 
-		float vals[] = { 0.3f, 0.3f, 0.0f, 1.0f };
+		float vals[] = { 0.1f, 0.1f, 0.0f, 1.0f };
 		vk::ClearValue val;
 		memcpy(&val, vals, 16);
-
-		Screen * scr = Application::screen();
 
 		vk::Viewport view;
 		view
