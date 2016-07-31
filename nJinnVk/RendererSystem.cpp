@@ -221,24 +221,24 @@ namespace nJinn {
 
 		vk::Viewport view;
 		view
-			.width(scr->width())
-			.height(scr->height())
-			.minDepth(0)
-			.maxDepth(1)
-			.x(0)
-			.y(0);
+			.setWidth(scr->width())
+			.setHeight(scr->height())
+			.setMinDepth(0)
+			.setMaxDepth(1)
+			.setX(0)
+			.setY(0);
 
 		vk::RenderPassBeginInfo info;
 		info
-			.renderPass(scr->renderPass())
-			.framebuffer(scr->framebuffer())
-			.renderArea(rendArea)
-			.clearValueCount(1)
-			.pClearValues(&val);
+			.setRenderPass(scr->renderPass())
+			.setFramebuffer(scr->framebuffer())
+			.setRenderArea(rendArea)
+			.setClearValueCount(1)
+			.setPClearValues(&val);
 
-		vk::cmdBeginRenderPass(cmdbuf, &info, vk::SubpassContents::eInline);
-		vk::cmdSetViewport(cmdbuf, 0, 1, &view);
-		vk::cmdSetScissor(cmdbuf, 0, 1, &rendArea);
+		cmdbuf->beginRenderPass(info, vk::SubpassContents::eInline);
+		cmdbuf->setViewport(0, 1, &view);
+		cmdbuf->setScissor(0, 1, &rendArea);
 
 
 		for (auto rend : Renderer::sRenderers) {
@@ -253,7 +253,7 @@ namespace nJinn {
 		someMesh->draw(cmdbuf);
 		*/
 
-		vk::cmdEndRenderPass(cmdbuf);
+		cmdbuf->endRenderPass();
 		Application::screen()->transitionForPresent(cmdbuf);
 		cmdbuf.endRecording();
 
@@ -261,15 +261,14 @@ namespace nJinn {
 
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.commandBufferCount(1)
-			.pCommandBuffers(cmdbuf.get())
-			.pWaitSemaphores(wSems)
-			.waitSemaphoreCount(wSemC)
-			.pWaitDstStageMask(&src)
-			.signalSemaphoreCount(sSemsC)
-			.pSignalSemaphores(sSems);
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(cmdbuf.get())
+			.setPWaitSemaphores(wSems)
+			.setWaitSemaphoreCount(wSemC)
+			.setPWaitDstStageMask(&src)
+			.setSignalSemaphoreCount(sSemsC)
+			.setPSignalSemaphores(sSems);
 
-		vk::queueSubmit(Context::mainQueue(), 1, &submitInfo, nullptr);
-
+		Context::mainQueue().submit(1, &submitInfo, nullptr);
 	}
 }

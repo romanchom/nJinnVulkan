@@ -7,7 +7,7 @@
 #include <cassert>
 #define VKCPP_ENHANCED_MODE
 #undef MemoryBarrier
-#include "vk_cpp.h"
+#include "vk_cpp.hpp"
 
 #ifdef _DEBUG
 #include <sstream>

@@ -15,19 +15,19 @@ namespace nJinn {
 
 		vk::ShaderModuleCreateInfo moduleInfo;
 		moduleInfo
-			.codeSize(file.size())
-			.pCode(reinterpret_cast<const uint32_t *>(file.data()));
+			.setCodeSize(file.size())
+			.setPCode(reinterpret_cast<const uint32_t *>(file.data()));
 
-		dc(vk::createShaderModule(Context::dev(), &moduleInfo, nullptr, &shaderModule));
+		shaderModule = Context::dev().createShaderModule(moduleInfo);
 
 		shaderInfo
-			.stage(name.second)
-			.module(shaderModule)
-			.pName("main");
+			.setStage(name.second)
+			.setModule(shaderModule)
+			.setPName("main");
 	}
 
 	Shader::~Shader()
 	{
-		vk::destroyShaderModule(Context::dev(), shaderModule, nullptr);
+		Context::dev().destroyShaderModule(shaderModule);
 	}
 }

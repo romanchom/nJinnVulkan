@@ -73,7 +73,7 @@ namespace nJinn {
 	void Application::finalize()
 	{
 		mGame->onExit();
-		vk::queueWaitIdle(Context::mainQueue());
+		Context::mainQueue().waitIdle();
 		GameObject::clearScene();
 		delete sRenderer;
 		Context::destroy();

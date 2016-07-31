@@ -9,24 +9,24 @@ namespace nJinn {
 	{
 		vk::CommandPoolCreateInfo poolInfo;
 		poolInfo
-			.flags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer | vk::CommandPoolCreateFlagBits::eTransient)
-			.queueFamilyIndex(Context::mainQueueFamilyIndex());
+			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer | vk::CommandPoolCreateFlagBits::eTransient)
+			.setQueueFamilyIndex(Context::mainQueueFamilyIndex());
 			
-		dc(vk::createCommandPool(Context::dev(), &poolInfo, nullptr, &pool));
+		pool = Context::dev().createCommandPool(poolInfo);
 
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo
-			.commandBufferCount(bufferCount)
-			.commandPool(pool)
-			.level(vk::CommandBufferLevel::ePrimary);
+			.setCommandBufferCount(bufferCount)
+			.setCommandPool(pool)
+			.setLevel(vk::CommandBufferLevel::ePrimary);
 
-		dc(vk::allocateCommandBuffers(Context::dev(), &bufferInfo, buffer));
+		Context::dev().allocateCommandBuffers(&bufferInfo, buffer);
 
-		beginInfo.flags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+		beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 	}
 
 	CommandBuffer::~CommandBuffer()
 	{
-		vk::destroyCommandPool(Context::dev(), pool, nullptr);
+		Context::dev().destroyCommandPool(pool);
 	}
 }

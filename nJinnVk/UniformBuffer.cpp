@@ -12,29 +12,27 @@ namespace nJinn {
 	{
 		vk::BufferCreateInfo bufferInfo;
 		bufferInfo
-			.size(uniformSize * 2)
-			.usage(vk::BufferUsageFlagBits::eUniformBuffer);
-
-		dc(vk::createBuffer(Context::dev(), &bufferInfo, nullptr, &mBuffer));
-
-		vk::MemoryRequirements memReq;
-		vk::getBufferMemoryRequirements(Context::dev(), mBuffer, &memReq);
+			.setSize(uniformSize * 2)
+			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer);
+		
+		mBuffer = Context::dev().createBuffer(bufferInfo);
+		vk::MemoryRequirements memReq = Context::dev().getBufferMemoryRequirements(mBuffer);
 
 		vk::MemoryAllocateInfo allocInfo;
 		allocInfo
-			.allocationSize(memReq.size())
-			.memoryTypeIndex(Context::uploadMemoryType());
+			.setAllocationSize(memReq.size)
+			.setMemoryTypeIndex(Context::uploadMemoryType());
 
-		dc(vk::allocateMemory(Context::dev(), &allocInfo, nullptr, &mMemory));
-		dc(vk::bindBufferMemory(Context::dev(), mBuffer, mMemory, 0));
-		dc(vk::mapMemory(Context::dev(), mMemory, 0, uniformSize * 2, vk::MemoryMapFlags(), reinterpret_cast<void **>(&mPointer)));
+		mMemory = Context::dev().allocateMemory(allocInfo);
+		Context::dev().bindBufferMemory(mBuffer, mMemory, 0);
+		mPointer = (char *) Context::dev().mapMemory(mMemory, 0, uniformSize * 2, vk::MemoryMapFlags());
 	}
 
 	UniformAllocator::~UniformAllocator()
 	{
-		vk::destroyBuffer(Context::dev(), mBuffer, nullptr);
-		vk::unmapMemory(Context::dev(), mMemory);
-		vk::freeMemory(Context::dev(), mMemory, nullptr);
+		Context::dev().destroyBuffer(mBuffer);
+		Context::dev().unmapMemory(mMemory);
+		Context::dev().freeMemory(mMemory);
 	}
 
 	void UniformAllocator::update()
@@ -55,9 +53,9 @@ namespace nJinn {
 	void UniformAllocator::writtenRange(vk::MappedMemoryRange & range)
 	{
 		range
-			.memory(mMemory)
-			.offset(mCycle * mTotalSpace)
-			.size(mCurrentOffset);
+			.setMemory(mMemory)
+			.setOffset(mCycle * mTotalSpace)
+			.setSize(mCurrentOffset);
 	}
 
 	bool UniformAllocator::occupied()
@@ -88,7 +86,7 @@ namespace nJinn {
 			for (UniformAllocator & alloc : sAllocators) {
 				alloc.writtenRange(ranges[i++]);
 			}
-			dc(vk::flushMappedMemoryRanges(Context::dev(), i, ranges));
+			Context::dev().flushMappedMemoryRanges(i, ranges);
 		}
 		for (UniformAllocator & alloc : sAllocators) {
 			alloc.update();
@@ -132,8 +130,8 @@ namespace nJinn {
 	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info)
 	{
 		info
-			.buffer(mAllocator->buffer())
-			.offset(0)
-			.range(mSize);
+			.setBuffer(mAllocator->buffer())
+			.setOffset(0)
+			.setRange(mSize);
 	}
 }

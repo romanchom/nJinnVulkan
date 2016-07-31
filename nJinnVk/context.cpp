@@ -17,7 +17,7 @@ namespace nJinn {
 	uint32_t getOptimalMemoryType(const vk::MemoryType * memoryTypes, size_t count, vk::MemoryPropertyFlags mandatoryFlags, vk::MemoryPropertyFlags optionalFlags) {
 		uint32_t ret = -1;
 		for (uint32_t i = 0; i < count; ++i) {
-			vk::MemoryPropertyFlags flags = memoryTypes[i].propertyFlags();
+			vk::MemoryPropertyFlags flags = memoryTypes[i].propertyFlags;
 			if ((flags & mandatoryFlags) == mandatoryFlags) {
 				if(ret == -1) ret = i;
 				else if (flags & optionalFlags) ret = i;
@@ -54,27 +54,27 @@ namespace nJinn {
 
 		vk::ApplicationInfo appInfo;
 
-		appInfo.apiVersion(VK_API_VERSION);
-		appInfo.applicationVersion(1);
-		appInfo.pApplicationName(appName);
-		appInfo.pEngineName(appName);
+		appInfo
+			.setApiVersion(0) // TODO possibly change 0 to something else
+			.setApplicationVersion(1)
+			.setPApplicationName(appName)
+			.setPEngineName(appName);
 
 		vk::InstanceCreateInfo instanceInfo;
 		instanceInfo
-			.ppEnabledExtensionNames(enabledExtensions.data())
-			.enabledExtensionCount(enabledExtensions.size())
-			.ppEnabledLayerNames(enabledLayers.data())
-			.enabledLayerCount(enabledLayers.size())
-			.pApplicationInfo(&appInfo);
+			.setPpEnabledExtensionNames(enabledExtensions.data())
+			.setEnabledExtensionCount(enabledExtensions.size())
+			.setPpEnabledLayerNames(enabledLayers.data())
+			.setEnabledLayerCount(enabledLayers.size())
+			.setPApplicationInfo(&appInfo);
 
-		dc(vk::createInstance(&instanceInfo, nullptr, &instance));
+		instance = vk::createInstance(instanceInfo);
 
-		std::vector<vk::PhysicalDevice> physicalDevices;
-		dc(vk::enumeratePhysicalDevices(instance, physicalDevices));
+		std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
 		physicalDevice = physicalDevices[0];
 
-		std::vector<vk::QueueFamilyProperties> queuesProperties = vk::getPhysicalDeviceQueueFamilyProperties(physicalDevice);
+		std::vector<vk::QueueFamilyProperties> queuesProperties = physicalDevice.getQueueFamilyProperties();
 		vk::QueueFlags queueTypes[3] = {
 			vk::QueueFlagBits::eGraphics,
 			vk::QueueFlagBits::eTransfer,
@@ -89,11 +89,12 @@ namespace nJinn {
 		queueLocation qLocations[queueCount];
 		std::vector<size_t> queueInstanceCounts(queuesProperties.size());
 
-		for (auto type : queueTypes) {
-			for (size_t i = 0; i < queuesProperties.size(); ++i) {
-				if (queuesProperties[i].queueFlags() & type) {
-					qLocations[type].familyIndex = i;
-					qLocations[type].indexInFamily = queueInstanceCounts[i]++;
+		for (int i = 0; i < 0; ++i) {
+			auto type = queueTypes[i];
+			for (size_t j = 0; j < queuesProperties.size(); ++j) {
+				if (queuesProperties[j].queueFlags & type) {
+					qLocations[i].familyIndex = i;
+					qLocations[i].indexInFamily = queueInstanceCounts[i]++;
 					break;
 				}
 			}
@@ -106,9 +107,9 @@ namespace nJinn {
 			if (queueInstanceCounts[i] > 0) {
 				queueInfos.emplace_back();
 				queueInfos.back()
-					.queueFamilyIndex(i)
-					.queueCount(queueInstanceCounts[i])
-					.pQueuePriorities(priorities + queueIndex);
+					.setQueueFamilyIndex(i)
+					.setQueueCount(queueInstanceCounts[i])
+					.setPQueuePriorities(priorities + queueIndex);
 				queueIndex += queueInstanceCounts[i];
 			}
 		}
@@ -116,30 +117,26 @@ namespace nJinn {
 		enabledExtensions.clear();
 		enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-		vk::PhysicalDeviceFeatures enabledFeatures;
-
-		vk::getPhysicalDeviceFeatures(physicalDevice, &enabledFeatures);
+		vk::PhysicalDeviceFeatures enabledFeatures = physicalDevice.getFeatures();
 
 		vk::DeviceCreateInfo deviceInfo;
 		deviceInfo
-			.queueCreateInfoCount(queueInfos.size())
-			.pQueueCreateInfos(queueInfos.data())
-			.pEnabledFeatures(&enabledFeatures)
-			.ppEnabledExtensionNames(enabledExtensions.data())
-			.enabledExtensionCount(enabledExtensions.size())
-			.ppEnabledLayerNames(enabledLayers.data())
-			.enabledLayerCount(enabledLayers.size());
+			.setQueueCreateInfoCount(queueInfos.size())
+			.setPQueueCreateInfos(queueInfos.data())
+			.setPEnabledFeatures(&enabledFeatures)
+			.setPpEnabledExtensionNames(enabledExtensions.data())
+			.setEnabledExtensionCount(enabledExtensions.size())
+			.setPpEnabledLayerNames(enabledLayers.data())
+			.setEnabledLayerCount(enabledLayers.size());
 
-		dc(vk::createDevice(physicalDevice, &deviceInfo, nullptr, &device));
+		device = physicalDevice.createDevice(deviceInfo);
 
-		vk::PhysicalDeviceMemoryProperties memoryProperties;
-
-		vk::getPhysicalDeviceMemoryProperties(physicalDevice, memoryProperties);
+		vk::PhysicalDeviceMemoryProperties memoryProperties = physicalDevice.getMemoryProperties();
 
 		for (size_t i = 0; i < queueCount; ++i) {
 			auto & qLoc = qLocations[i];
 			queueFamilyIndicies[i] = qLoc.familyIndex;
-			vk::getDeviceQueue(device, qLoc.familyIndex, qLoc.indexInFamily, queues[i]);
+			queues[i] = device.getQueue(qLoc.familyIndex, qLoc.indexInFamily);
 		}
 
 		const uint32_t levels[] = {
@@ -168,19 +165,16 @@ namespace nJinn {
 			CreateDebugReportCallback(instance, &debugInfo, nullptr, &debugReportCallback);
 		}
 
-		vk::PhysicalDeviceMemoryProperties memProps;
-		vk::getPhysicalDeviceMemoryProperties(physicalDevice, memProps);
-		
-		bufferMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
+		bufferMemoryTypeIndex = getOptimalMemoryType(memoryProperties.memoryTypes, memoryProperties.memoryTypeCount,
 			vk::MemoryPropertyFlagBits::eDeviceLocal,
 			vk::MemoryPropertyFlags());
 
-		uploadMemoryTypeIndex = getOptimalMemoryType(memProps.memoryTypes(), memProps.memoryTypeCount(),
+		uploadMemoryTypeIndex = getOptimalMemoryType(memoryProperties.memoryTypes, memoryProperties.memoryTypeCount,
 			vk::MemoryPropertyFlagBits::eHostVisible,
 			vk::MemoryPropertyFlagBits::eHostCoherent | 
 			vk::MemoryPropertyFlagBits::eHostCached);
 
-		isUploadMemoryCoherent = (memProps.memoryTypes()[uploadMemoryTypeIndex].propertyFlags() & vk::MemoryPropertyFlagBits::eHostCoherent);
+		isUploadMemoryCoherent = bool(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
 	}
 
 	void Context::create()
@@ -192,7 +186,7 @@ namespace nJinn {
 
 	void Context::destroy()
 	{
-		vk::deviceWaitIdle(Context::dev());
+		Context::dev().waitIdle();
 		delete context->pipelineFactory;
 		MaterialFamily::collect();
 		Mesh::collect();
@@ -208,9 +202,9 @@ namespace nJinn {
 		if (validation) {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
-		vk::destroyDevice(device, nullptr);
+		device.destroy();
 		exit(0); // TODO FIXME temporary workaround crash during instance destruction
-		vk::destroyInstance(instance, nullptr);
+		instance.destroy();
 	}
 
 	// FIXME

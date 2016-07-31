@@ -25,38 +25,35 @@ namespace nJinn {
 
 	PipelineFactory::PipelineFactory()
 	{
-		vk::PhysicalDeviceProperties props;
-		vk::getPhysicalDeviceProperties(Context::physDev(), &props);
+		vk::PhysicalDeviceProperties props = Context::physDev().getProperties();
 		vk::PipelineCacheCreateInfo cacheInfo;
 		try {
-			bi::mapped_file_source file(cacheUuidToFileName(props.pipelineCacheUUID())); // TODO handle problems
+			bi::mapped_file_source file(cacheUuidToFileName(props.pipelineCacheUUID)); // TODO handle problems
 
 			cacheInfo
-				.initialDataSize(file.size())
-				.pInitialData(file.data());
-			dc(vk::createPipelineCache(Context::dev(), &cacheInfo, nullptr, &cache));
+				.setInitialDataSize(file.size())
+				.setPInitialData(file.data());
+			cache = Context::dev().createPipelineCache(cacheInfo);
 		} catch (...) {
-			dc(vk::createPipelineCache(Context::dev(), &cacheInfo, nullptr, &cache));
+			cache = Context::dev().createPipelineCache(cacheInfo);
 		}
 	}
 
 	PipelineFactory::~PipelineFactory()
 	{
-		vk::PhysicalDeviceProperties props;
-		vk::getPhysicalDeviceProperties(Context::physDev(), &props);
+		vk::PhysicalDeviceProperties props = Context::physDev().getProperties();
 		size_t dataSize;
-		dc(vk::getPipelineCacheData(Context::dev(), cache, &dataSize, nullptr));
+		Context::dev().getPipelineCacheData(cache, &dataSize, nullptr);
 
 		bi::mapped_file_params params;
 		params.new_file_size = dataSize;
 		params.length = dataSize;
 		params.offset = 0;
-		params.path = cacheUuidToFileName(props.pipelineCacheUUID());
+		params.path = cacheUuidToFileName(props.pipelineCacheUUID);
 
 		bi::mapped_file_sink file(params);
-		dc(vk::getPipelineCacheData(Context::dev(), cache, &dataSize, file.data()));
-
-		vk::destroyPipelineCache(Context::dev(), cache, nullptr);
+		Context::dev().getPipelineCacheData(cache, &dataSize, file.data());
+		Context::dev().destroyPipelineCache(cache);
 	}
 
 	vk::Pipeline PipelineFactory::createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass,
@@ -64,8 +61,8 @@ namespace nJinn {
 	{
 		vk::PipelineViewportStateCreateInfo viewportState;
 		viewportState
-			.viewportCount(1)
-			.scissorCount(1);
+			.setViewportCount(1)
+			.setScissorCount(1);
 
 		vk::PipelineMultisampleStateCreateInfo multisampleState;
 		vk::DynamicState dynamicStates[] = {
@@ -75,24 +72,22 @@ namespace nJinn {
 
 		vk::PipelineDynamicStateCreateInfo dynamicState;
 		dynamicState
-			.pDynamicStates(dynamicStates)
-			.dynamicStateCount(countof(dynamicStates));
+			.setPDynamicStates(dynamicStates)
+			.setDynamicStateCount(countof(dynamicStates));
 
 		vk::GraphicsPipelineCreateInfo pipeInfo;
 		material.fillPipelineInfo(pipeInfo);
 		mesh.fillPipelineInfo(pipeInfo);
 		pipeInfo
-			.renderPass(pass)
-			.subpass(subpass)
-			.pRasterizationState(rasterInfo)
-			.pDepthStencilState(depthStencilInfo)
-			.pViewportState(&viewportState)
-			.pMultisampleState(&multisampleState)
-			.pDynamicState(&dynamicState);
+			.setRenderPass(pass)
+			.setSubpass(subpass)
+			.setPRasterizationState(rasterInfo)
+			.setPDepthStencilState(depthStencilInfo)
+			.setPViewportState(&viewportState)
+			.setPMultisampleState(&multisampleState)
+			.setPDynamicState(&dynamicState);
 
-		vk::Pipeline ret;
-
-		dc(vk::createGraphicsPipelines(Context::dev(), cache, 1, &pipeInfo, nullptr, &ret));
+		vk::Pipeline ret = Context::dev().createGraphicsPipeline(cache, pipeInfo);
 
 		return ret;
 	}

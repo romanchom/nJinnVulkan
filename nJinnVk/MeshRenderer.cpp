@@ -15,10 +15,10 @@ namespace nJinn {
 		vk::PipelineRasterizationStateCreateInfo rasterinfo;
 		vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
 		depthstencilInfo
-			.depthTestEnable(0)
-			.stencilTestEnable(0)
-			.maxDepthBounds(1)
-			.depthCompareOp(vk::CompareOp::eAlways);
+			.setDepthTestEnable(0)
+			.setStencilTestEnable(0)
+			.setMaxDepthBounds(1)
+			.setDepthCompareOp(vk::CompareOp::eAlways);
 		mPipeline = Context::pipeFact().createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen()->renderPass(), 0, &rasterinfo, &depthstencilInfo);
 
 
@@ -31,14 +31,14 @@ namespace nJinn {
 
 		vk::WriteDescriptorSet descWrite;
 		descWrite
-			.descriptorCount(1)
-			.descriptorType(vk::DescriptorType::eUniformBufferDynamic)
-			.dstArrayElement(0)
-			.dstBinding(0)
-			.dstSet(mDescSet)
-			.pBufferInfo(&bufferInfo);
+			.setDescriptorCount(1)
+			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
+			.setDstArrayElement(0)
+			.setDstBinding(0)
+			.setDstSet(mDescSet)
+			.setPBufferInfo(&bufferInfo);
 
-		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);
+		Context::dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
 
 	struct uniforms {
@@ -59,10 +59,10 @@ namespace nJinn {
 
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
 	{
-		vk::cmdBindPipeline(cmdbuf, vk::PipelineBindPoint::eGraphics, mPipeline);
+		cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
 		mForwardMaterial->bind(cmdbuf);
 		uint32_t offset = mUniforms.offset();
-		vk::cmdBindDescriptorSets(cmdbuf, vk::PipelineBindPoint::eGraphics, mForwardMaterial->family()->layout(), 1, 1, &mDescSet, 1, &offset);
+		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardMaterial->family()->layout(), 1, 1, &mDescSet, 1, &offset);
 		// bind renderer descriptor sets
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);

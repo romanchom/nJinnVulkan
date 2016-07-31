@@ -43,50 +43,47 @@ namespace nJinn {
 
 		vk::BufferCreateInfo bufferInfo;
 		bufferInfo
-			.size(totalSize)
-			.usage(vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst);
+			.setSize(totalSize)
+			.setUsage(vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst);
 
-		vk::createBuffer(Context::dev(), &bufferInfo, nullptr, &buffer);
+		buffer = Context::dev().createBuffer(bufferInfo);
 
-		vk::MemoryRequirements memReq;
-		vk::getBufferMemoryRequirements(Context::dev(), buffer, memReq);
+		vk::MemoryRequirements memReq = Context::dev().getBufferMemoryRequirements(buffer);
 
-		bufferMemory.allocate(memReq.size());
+		bufferMemory.allocate(memReq.size);
 
-		dc(vk::bindBufferMemory(Context::dev(), buffer, bufferMemory, 0));
+		Context::dev().bindBufferMemory(buffer, bufferMemory, 0);
 		size_t totalVertexAttributes = 0;
 		
 		for (size_t s = 0; s < meshData.vertexStreamCount(); ++s) {
 			const vbm::VertexStream & stream = meshData.vertexStream(s);
 			veretxBindingDescription[s]
-				.binding(s)
-				.inputRate(vk::VertexInputRate::eVertex)
-				.stride(stream.stride);
+				.setBinding(s)
+				.setInputRate(vk::VertexInputRate::eVertex)
+				.setStride(stream.stride);
 			vertexBufferOffsets[0] = stream.offsetFromBufferBegin;
 			uint32_t attributeCount = stream.vertexAttributeCount;
 			for (int a = 0; a < attributeCount; ++a) {
 				vk::VertexInputAttributeDescription & dst = vertexAttributeDescriptions[totalVertexAttributes++];
 				const vbm::VertexAttribute & src = meshData.vertexAttribute(s, a);
 				dst
-					.binding(s)
-					.location(a)
-					.offset(src.offset)
-					.format(formatTable[src.type][src.componentCount - 1]);
+					.setBinding(s)
+					.setLocation(a)
+					.setOffset(src.offset)
+					.setFormat(formatTable[src.type][src.componentCount - 1]);
 				int as = 5;
 			}
 		}
 
 		vertexDataLayout
-			.vertexBindingDescriptionCount(meshData.vertexStreamCount())
-			.pVertexBindingDescriptions(veretxBindingDescription)
-			.vertexAttributeDescriptionCount(totalVertexAttributes)
-			.pVertexAttributeDescriptions(vertexAttributeDescriptions);
+			.setVertexBindingDescriptionCount(meshData.vertexStreamCount())
+			.setPVertexBindingDescriptions(veretxBindingDescription)
+			.setVertexAttributeDescriptionCount(totalVertexAttributes)
+			.setPVertexAttributeDescriptions(vertexAttributeDescriptions);
 
-		inputAssemblyInfo.topology(vk::PrimitiveTopology::eTriangleList);
+		inputAssemblyInfo.setTopology(vk::PrimitiveTopology::eTriangleList);
 
-		tessInfo.patchControlPoints(3);
-
-		
+		tessInfo.setPatchControlPoints(3);
 
 		ResourceUploader::upload(meshData.data(), meshData.totalDataSize(), buffer);
 	}
@@ -98,9 +95,9 @@ namespace nJinn {
 	void Mesh::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)
 	{
 		info
-			.pVertexInputState(&vertexDataLayout)
-			.pInputAssemblyState(&inputAssemblyInfo)
-			.pTessellationState(&tessInfo);
+			.setPVertexInputState(&vertexDataLayout)
+			.setPInputAssemblyState(&inputAssemblyInfo)
+			.setPTessellationState(&tessInfo);
 	}
 
 	void Mesh::bind(vk::CommandBuffer cmdbuf)
@@ -108,13 +105,13 @@ namespace nJinn {
 		vk::Buffer b[] = {
 			buffer, buffer
 		};
-		vk::cmdBindIndexBuffer(cmdbuf, buffer, 0, indexType);
-		vk::cmdBindVertexBuffers(cmdbuf, 0, bindingCount, b, vertexBufferOffsets);
+		cmdbuf.bindIndexBuffer(buffer, 0, indexType);
+		cmdbuf.bindVertexBuffers(0, bindingCount, b, vertexBufferOffsets);
 	}
 
 	void Mesh::draw(vk::CommandBuffer cmdbuf)
 	{
 		//vk::cmdDraw(cmdbuf, 300, 1, 0, 0);
-		vk::cmdDrawIndexed(cmdbuf, indexCount, 1, 0, 0, 1);
+		cmdbuf.drawIndexed(indexCount, 1, 0, 0, 1);
 	}
 }

@@ -140,6 +140,8 @@
       <Message>Shader Compilation</Message>
       <Outputs>$(OutputPath)%(Identity).spv</Outputs>
       <TreatOutputAsContent>true</TreatOutputAsContent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(VK_SDK_PATH)\Bin\glslangValidator.exe -V -H %(Identity) -o $(OutputPath)%(Identity).spv</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(VK_SDK_PATH)\Bin\glslangValidator.exe -V -H %(Identity) -o $(OutputPath)%(Identity).spv</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

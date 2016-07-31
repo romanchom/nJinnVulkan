@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <LibraryPath>$(VK_SDK_PATH)\Bin;$(BOOST)\lib64-msvc-14.0;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VK_SDK_PATH)\Bin;$(BOOST)\stage\lib;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>Libraries</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>

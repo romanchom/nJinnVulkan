@@ -8,13 +8,16 @@ namespace nJinn {
 		CommandBuffer();
 		~CommandBuffer();
 
-		void beginRecording();
+		inline void beginRecording();
 
-		void endRecording();
+		inline void endRecording();
 		
 		operator vk::CommandBuffer() { return buffer[currentIndex]; }
 
 		vk::CommandBuffer * get() { return &buffer[currentIndex]; }
+		vk::CommandBuffer * operator->() {
+			return buffer + currentIndex;
+		}
 	private:
 		enum { bufferCount = 3 };
 		vk::CommandPool pool;
@@ -25,12 +28,12 @@ namespace nJinn {
 
 	inline void CommandBuffer::beginRecording() {
 		++currentIndex %= bufferCount; // TODO possibly centralize this
-		vk::resetCommandBuffer(*this, vk::CommandBufferResetFlagBits::eReleaseResources);
-		vk::beginCommandBuffer(*this, beginInfo);
+		get()->reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+		get()->begin(beginInfo);
 	}
 	
 	inline void CommandBuffer::endRecording()
 	{
-		vk::endCommandBuffer(*this);
+		get()->end();
 	}
 }

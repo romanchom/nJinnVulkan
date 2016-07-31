@@ -9,14 +9,14 @@ namespace nJinn {
 	{
 		vk::MemoryAllocateInfo info;
 		info
-			.allocationSize(size)
-			.memoryTypeIndex(Context::bufferMemoryType());
-		vk::allocateMemory(Context::dev(), &info, nullptr, &mDeviceMemory);
+			.setAllocationSize(size)
+			.setMemoryTypeIndex(Context::bufferMemoryType());
+		mDeviceMemory = Context::dev().allocateMemory(info);
 	}
 
 	BlockAllocator::~BlockAllocator()
 	{
-		vk::freeMemory(Context::dev(), mDeviceMemory, nullptr);
+		Context::dev().freeMemory(mDeviceMemory);
 	}
 
 	size_t BlockAllocator::alloc()

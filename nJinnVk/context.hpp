@@ -30,7 +30,7 @@ namespace nJinn {
 		class PipelineFactory * pipelineFactory;
 
 		// debug section
-		vk::DebugReportCallbackEXT debugReportCallback;
+		VkDebugReportCallbackEXT debugReportCallback;
 
 		PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
 		PFN_vkDestroyDebugReportCallbackEXT	DestroyDebugReportCallback;

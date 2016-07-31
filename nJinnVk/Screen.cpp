@@ -56,15 +56,15 @@ namespace nJinn {
 		ShowWindow((HWND) mWindowHandle, Application::snCmdShow);
 
 		vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.hinstance(Application::shInstance);
-		surfaceCreateInfo.hwnd((HWND) mWindowHandle);
-		dc(vk::createWin32SurfaceKHR(Context::inst(), &surfaceCreateInfo, nullptr, &mSurface));
+		surfaceCreateInfo.setHinstance(Application::shInstance);
+		surfaceCreateInfo.setHwnd((HWND) mWindowHandle);
+		mSurface = Context::inst().createWin32SurfaceKHR(surfaceCreateInfo);
 
-		std::vector<vk::QueueFamilyProperties> queueProperties = vk::getPhysicalDeviceQueueFamilyProperties(Context::physDev());
+		std::vector<vk::QueueFamilyProperties> queueProperties = Context::physDev().getQueueFamilyProperties();
 		for (int i = 0; i < queueProperties.size(); ++i) {
-			if (queueProperties[i].queueFlags() & vk::QueueFlagBits::eGraphics) {
+			if (queueProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) {
 				uint32_t supported = 0;
-				dc(vk::getPhysicalDeviceSurfaceSupportKHR(Context::physDev(), i, mSurface, supported));
+				supported = Context::physDev().getSurfaceSupportKHR(i, mSurface);
 				if (supported) {
 					queueIndex = i;
 					break;
@@ -74,10 +74,9 @@ namespace nJinn {
 
 		assert(queueIndex != -1);
 
-		std::vector<vk::SurfaceFormatKHR> surfaceFormats;
-		dc(vk::getPhysicalDeviceSurfaceFormatsKHR(Context::physDev(), mSurface, surfaceFormats));
+		std::vector<vk::SurfaceFormatKHR> surfaceFormats = Context::physDev().getSurfaceFormatsKHR(mSurface);
 
-		if (1 == surfaceFormats.size() && vk::Format::eUndefined == surfaceFormats[0].format()) {
+		if (1 == surfaceFormats.size() && vk::Format::eUndefined == surfaceFormats[0].format) {
 			mColorFormat = vk::Format::eB8G8R8A8Srgb;
 		}
 		else {
@@ -91,12 +90,12 @@ namespace nJinn {
 			for (vk::Format f : prefferedFormats) {
 				auto it = surfaceFormats.begin();
 				while (surfaceFormats.end() != it) {
-					if (it->format() == f) break;
+					if (it->format == f) break;
 					++it;
 				}
 				if (surfaceFormats.end() != it) {
 					mColorFormat = f;
-					mColorSpace = it->colorSpace();
+					mColorSpace = it->colorSpace;
 					break;
 				}
 			}
@@ -107,8 +106,8 @@ namespace nJinn {
 
 	Screen::~Screen()
 	{
-		vk::destroyRenderPass(Context::dev(), mRenderPass, nullptr);
-		vk::destroySurfaceKHR(Context::inst(), mSurface, nullptr);
+		Context::dev().destroyRenderPass(mRenderPass);
+		Context::inst().destroySurfaceKHR(mSurface);
 	}
 
 	void Screen::resize(uint32_t width, uint32_t height)
@@ -116,24 +115,23 @@ namespace nJinn {
 		vk::SwapchainKHR oldSwapChain = mSwapChain;
 
 		vk::SurfaceCapabilitiesKHR surfaceCaps;
-		dc(vk::getPhysicalDeviceSurfaceCapabilitiesKHR(Context::physDev(), mSurface, surfaceCaps));
+		surfaceCaps = Context::physDev().getSurfaceCapabilitiesKHR(mSurface);
 
-		std::vector<vk::PresentModeKHR> presentModes;
-		vk::getPhysicalDeviceSurfacePresentModesKHR(Context::physDev(), mSurface, presentModes);
+		std::vector<vk::PresentModeKHR> presentModes = Context::physDev().getSurfacePresentModesKHR(mSurface);
 
 		vk::Extent2D swapChainExtent;
-		if (surfaceCaps.currentExtent().width() == -1) {
-			swapChainExtent.width(width);
-			swapChainExtent.height(height);
+		if (surfaceCaps.currentExtent.width == -1) {
+			swapChainExtent.setWidth(width);
+			swapChainExtent.setHeight(height);
 		} else {
-			swapChainExtent = surfaceCaps.currentExtent();
+			swapChainExtent = surfaceCaps.currentExtent;
 		}
-		mWidth = swapChainExtent.width();
-		mHeight = swapChainExtent.height();
+		mWidth = swapChainExtent.width;
+		mHeight = swapChainExtent.height;
 
-		vk::PresentModeKHR presentMode = vk::PresentModeKHR::eVkPresentModeFifoKhr;
+		vk::PresentModeKHR presentMode = vk::PresentModeKHR::eFifo;
 		for (auto pm : presentModes) {
-			if (pm == vk::PresentModeKHR::eVkPresentModeMailboxKhr) {
+			if (pm == vk::PresentModeKHR::eMailbox) {
 				presentMode = pm;
 				break;
 			}
@@ -141,72 +139,71 @@ namespace nJinn {
 
 		vk::SwapchainCreateInfoKHR swapChainInfo;
 		swapChainInfo
-			.surface(mSurface)
-			.minImageCount(frameCount)
-			.imageFormat(mColorFormat)
-			.imageColorSpace(mColorSpace)
-			.imageExtent(swapChainExtent)
-			.imageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-			.preTransform(vk::SurfaceTransformFlagBitsKHR::eIdentity)
-			.imageArrayLayers(1)
-			.queueFamilyIndexCount(0)
-			.imageSharingMode(vk::SharingMode::eExclusive)
-			.pQueueFamilyIndices(nullptr)
-			.presentMode(presentMode)
-			.oldSwapchain(oldSwapChain)
-			.clipped(true)
-			.compositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
+			.setSurface(mSurface)
+			.setMinImageCount(frameCount)
+			.setImageFormat(mColorFormat)
+			.setImageColorSpace(mColorSpace)
+			.setImageExtent(swapChainExtent)
+			.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+			.setPreTransform(vk::SurfaceTransformFlagBitsKHR::eIdentity)
+			.setImageArrayLayers(1)
+			.setQueueFamilyIndexCount(0)
+			.setImageSharingMode(vk::SharingMode::eExclusive)
+			.setPQueueFamilyIndices(nullptr)
+			.setPresentMode(presentMode)
+			.setOldSwapchain(oldSwapChain)
+			.setClipped(true)
+			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
 
-		dc(vk::createSwapchainKHR(Context::dev(), &swapChainInfo, nullptr, &mSwapChain));
+		mSwapChain = Context::dev().createSwapchainKHR(swapChainInfo);
 
 		if (oldSwapChain) {
-			vk::destroySwapchainKHR(Context::dev(), oldSwapChain, nullptr);
+			Context::dev().destroySwapchainKHR(oldSwapChain);
 		}
 
 		
 
-		std::vector<vk::Image> images;
-		dc(vk::getSwapchainImagesKHR(Context::dev(), mSwapChain, images));
+		std::vector<vk::Image> images = Context::dev().getSwapchainImagesKHR(mSwapChain);
 
 		assert(frameCount == images.size());
 
 		vk::AttachmentDescription attachment;
 		attachment
-			.format(mColorFormat)
-			.samples(vk::SampleCountFlagBits::e1)
-			.loadOp(vk::AttachmentLoadOp::eClear)
-			.storeOp(vk::AttachmentStoreOp::eStore)
-			.stencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.stencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.initialLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.finalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+			.setFormat(mColorFormat)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 			
 		vk::AttachmentReference attachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal);
 
 		vk::SubpassDescription subpass;
 		subpass
-			.pipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-			.colorAttachmentCount(1)
-			.pColorAttachments(&attachmentReference);
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setColorAttachmentCount(1)
+			.setPColorAttachments(&attachmentReference);
 
 
 		vk::RenderPassCreateInfo renderPassInfo;
 		renderPassInfo
-			.attachmentCount(1)
-			.pAttachments(&attachment)
-			.subpassCount(1)
-			.pSubpasses(&subpass);
+			.setAttachmentCount(1)
+			.setPAttachments(&attachment)
+			.setSubpassCount(1)
+			.setPSubpasses(&subpass);
 
-		dc(vk::createRenderPass(Context::dev(), &renderPassInfo, nullptr, &mRenderPass));
+		mRenderPass = Context::dev().createRenderPass(renderPassInfo);
 
 		for (size_t i = 0; i < frameCount; ++i) {
 			mFrames[i].create(*this, i, images[i]);
 		}
 		vk::FenceCreateInfo fenceInfo;
-		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
+		fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 		for (size_t i = 0; i < maxQueuedFrames; ++i) {
-			dc(vk::createFence(Context::dev(), &fenceInfo, nullptr, mFences + i));
-			fenceInfo.flags(vk::FenceCreateFlags());
+			mFences[1] = Context::dev().createFence(fenceInfo);
+			fenceInfo.setFlags(vk::FenceCreateFlags());
 		}
 
 		acquireFrameIndex();
@@ -214,7 +211,7 @@ namespace nJinn {
 
 	void Screen::present()
 	{
-		vk::queueSubmit(Context::mainQueue(), 0, nullptr, mFences[mCurrentFence]);
+		Context::mainQueue().submit(0, nullptr, mFences[mCurrentFence]);
 		mCurrentFrame->present();
 		++mTotalFrames;
 	}
@@ -222,8 +219,8 @@ namespace nJinn {
 	void Screen::acquireFrame()
 	{
 		vk::Fence * pFence = &mFences[mCurrentFence];
-		vk::waitForFences(Context::dev(), 1, pFence, 1, -1);
-		vk::resetFences(Context::dev(), 1, pFence);
+		Context::dev().waitForFences(1, pFence, true, -1);
+		Context::dev().resetFences(1, pFence);
 
 		mCurrentAcquireFrameSemaphore = mCurrentFrame->waitingSemaphore();
 		acquireFrameIndex(mCurrentAcquireFrameSemaphore);
@@ -232,8 +229,7 @@ namespace nJinn {
 
 	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore)
 	{
-		uint32_t imageIndex;
-		dc(vk::acquireNextImageKHR(Context::dev(), mSwapChain, -1, signalSemaphore, nullptr, imageIndex));
+		uint32_t imageIndex = Context::dev().acquireNextImageKHR(mSwapChain, -1, signalSemaphore, nullptr).value;
 		mCurrentFrameIndex = imageIndex;
 		mCurrentFrame = mFrames + mCurrentFrameIndex;
 	}
@@ -285,66 +281,66 @@ namespace nJinn {
 
 		vk::ImageViewCreateInfo viewInfo;
 		viewInfo
-			.format(info.mColorFormat)
-			.components(vk::ComponentMapping())
-			.subresourceRange(vk::ImageSubresourceRange(
+			.setFormat(info.mColorFormat)
+			.setComponents(vk::ComponentMapping())
+			.setSubresourceRange(vk::ImageSubresourceRange(
 				vk::ImageAspectFlagBits::eColor,
 				0, 1, 0, 1))
-			.viewType(vk::ImageViewType::e2D)
-			.image(image);
+			.setViewType(vk::ImageViewType::e2D)
+			.setImage(image);
 
-		dc(vk::createImageView(Context::dev(), &viewInfo, nullptr, &view));
+		view = Context::dev().createImageView(viewInfo);
 
 		vk::FramebufferCreateInfo framebufferInfo;
 		framebufferInfo
-			.attachmentCount(1)
-			.pAttachments(&view)
-			.renderPass(info.renderPass())
-			.height(info.mHeight)
-			.width(info.mWidth)
-			.layers(1);
+			.setAttachmentCount(1)
+			.setPAttachments(&view)
+			.setRenderPass(info.renderPass())
+			.setHeight(info.mHeight)
+			.setWidth(info.mWidth)
+			.setLayers(1);
 
-		vk::createFramebuffer(Context::dev(), &framebufferInfo, nullptr, &frameBuffer);
+		frameBuffer = Context::dev().createFramebuffer(framebufferInfo);
 
 		vk::SemaphoreCreateInfo semaphoreInfo;
 
 		imageIndex = index;
 		presentInfo
-			.pImageIndices(&imageIndex)
-			.pSwapchains(&info.mSwapChain)
-			.swapchainCount(1)
-			.pWaitSemaphores(renderingCompleteSemaphore.get())
-			.waitSemaphoreCount(1);
+			.setPImageIndices(&imageIndex)
+			.setPSwapchains(&info.mSwapChain)
+			.setSwapchainCount(1)
+			.setPWaitSemaphores(renderingCompleteSemaphore.get())
+			.setWaitSemaphoreCount(1);
 
 		vk::FenceCreateInfo fenceInfo;
-		fenceInfo.flags(vk::FenceCreateFlagBits::eSignaled);
+		fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 
 		presentToDrawBarrier
-			.oldLayout(vk::ImageLayout::ePresentSrcKhr)
-			.newLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.dstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
-			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-			.image(image);
+			.setOldLayout(vk::ImageLayout::ePresentSrcKHR)
+			.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.setImage(image);
 
 		drawToPresentBarrier
-			.oldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.newLayout(vk::ImageLayout::ePresentSrcKhr)
-			.srcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
-			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-			.image(image);
+			.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setNewLayout(vk::ImageLayout::ePresentSrcKHR)
+			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.setImage(image);
 
 		vk::ImageMemoryBarrier defineImageBarrier;
 		defineImageBarrier
-			.oldLayout(vk::ImageLayout::eUndefined)
-			.newLayout(vk::ImageLayout::ePresentSrcKhr)
-			.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.subresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-			.image(image);
+			.setOldLayout(vk::ImageLayout::eUndefined)
+			.setNewLayout(vk::ImageLayout::ePresentSrcKHR)
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
+			.setImage(image);
 
 		CommandBuffer buffer;
 		buffer.beginRecording();
@@ -353,16 +349,16 @@ namespace nJinn {
 
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.commandBufferCount(1)
-			.pCommandBuffers(buffer.get());
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(buffer.get());
 
-		vk::queueSubmit(Context::mainQueue(), 0, &submitInfo, nullptr);
-		vk::queueWaitIdle(Context::mainQueue());
+		Context::mainQueue().submit(0, &submitInfo, nullptr);
+		Context::mainQueue().waitIdle();
 	}
 
 	void Screen::Frame::present()
 	{
-		dc(vk::queuePresentKHR(Context::mainQueue(), presentInfo));
+		Context::mainQueue().presentKHR(presentInfo);
 	}
 
 	void Screen::Frame::transitionForDraw(vk::CommandBuffer buffer)
@@ -377,7 +373,7 @@ namespace nJinn {
 
 	void Screen::Frame::transition(vk::CommandBuffer buffer, const vk::ImageMemoryBarrier & barrier)
 	{
-		vk::cmdPipelineBarrier(buffer,
+		buffer.pipelineBarrier(
 			vk::PipelineStageFlagBits::eAllCommands,
 			vk::PipelineStageFlagBits::eTopOfPipe,
 			vk::DependencyFlags(),
@@ -388,9 +384,9 @@ namespace nJinn {
 
 	void Screen::Frame::destroy()
 	{
-		vk::destroySemaphore(Context::dev(), renderingCompleteSemaphore, nullptr);
-		vk::destroySemaphore(Context::dev(), imageAquiredSemaphore, nullptr);
-		vk::destroyFramebuffer(Context::dev(), frameBuffer, nullptr);
-		vk::destroyImageView(Context::dev(), view, nullptr);
+		Context::dev().destroySemaphore(renderingCompleteSemaphore);
+		Context::dev().destroySemaphore(imageAquiredSemaphore);
+		Context::dev().destroyFramebuffer(frameBuffer);
+		Context::dev().destroyImageView(view);
 	}
 }
