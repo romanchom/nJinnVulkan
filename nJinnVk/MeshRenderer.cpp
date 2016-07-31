@@ -13,6 +13,7 @@ namespace nJinn {
 	void MeshRenderer::initialize()
 	{
 		vk::PipelineRasterizationStateCreateInfo rasterinfo;
+		rasterinfo.setLineWidth(1.0f);
 		vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
 		depthstencilInfo
 			.setDepthTestEnable(0)

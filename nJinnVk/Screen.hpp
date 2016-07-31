@@ -40,7 +40,8 @@ namespace nJinn
 		};
 
 		bool shouldClose();
-		void acquireFrameIndex(vk::Semaphore signalSemaphore = nullptr);
+		void acquireFrameIndex(vk::Semaphore signalSemaphore = nullptr, vk::Fence signalFence = nullptr);
+		void setCurrentFrame(uint32_t index);
 
 		void * mWindowHandle;
 

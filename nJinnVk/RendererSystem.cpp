@@ -257,7 +257,11 @@ namespace nJinn {
 		Application::screen()->transitionForPresent(cmdbuf);
 		cmdbuf.endRecording();
 
-		vk::PipelineStageFlags src = vk::PipelineStageFlagBits::eAllGraphics;
+		vk::PipelineStageFlags src[] = {
+			vk::PipelineStageFlagBits::eAllCommands,
+			vk::PipelineStageFlagBits::eAllCommands,
+			vk::PipelineStageFlagBits::eAllCommands,
+		};
 
 		vk::SubmitInfo submitInfo;
 		submitInfo
@@ -265,7 +269,7 @@ namespace nJinn {
 			.setPCommandBuffers(cmdbuf.get())
 			.setPWaitSemaphores(wSems)
 			.setWaitSemaphoreCount(wSemC)
-			.setPWaitDstStageMask(&src)
+			.setPWaitDstStageMask(src)
 			.setSignalSemaphoreCount(sSemsC)
 			.setPSignalSemaphores(sSems);
 

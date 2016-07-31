@@ -202,11 +202,15 @@ namespace nJinn {
 		vk::FenceCreateInfo fenceInfo;
 		fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
 		for (size_t i = 0; i < maxQueuedFrames; ++i) {
-			mFences[1] = Context::dev().createFence(fenceInfo);
+			mFences[i] = Context::dev().createFence(fenceInfo);
 			fenceInfo.setFlags(vk::FenceCreateFlags());
 		}
 
-		acquireFrameIndex();
+		setCurrentFrame(0);
+		//mCurrentAcquireFrameSemaphore = mCurrentFrame->waitingSemaphore();
+		//vk::Fence tempFence = Context::dev().createFence(vk::FenceCreateInfo());
+		//acquireFrameIndex(waitingSemaphore());
+		//Context::dev().waitForFences(1, &tempFence, 1, )
 	}
 
 	void Screen::present()
@@ -219,18 +223,22 @@ namespace nJinn {
 	void Screen::acquireFrame()
 	{
 		vk::Fence * pFence = &mFences[mCurrentFence];
-		Context::dev().waitForFences(1, pFence, true, -1);
+		assert(Context::dev().waitForFences(1, pFence, true, -1) == vk::Result::eSuccess);
 		Context::dev().resetFences(1, pFence);
 
 		mCurrentAcquireFrameSemaphore = mCurrentFrame->waitingSemaphore();
 		acquireFrameIndex(mCurrentAcquireFrameSemaphore);
-		++mCurrentFence %= maxQueuedFrames;
+		//++mCurrentFence %= maxQueuedFrames;
 	}
 
-	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore)
+	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore, vk::Fence signalFence)
 	{
-		uint32_t imageIndex = Context::dev().acquireNextImageKHR(mSwapChain, -1, signalSemaphore, nullptr).value;
-		mCurrentFrameIndex = imageIndex;
+		uint32_t imageIndex = Context::dev().acquireNextImageKHR(mSwapChain, -1, signalSemaphore, signalFence).value;
+		setCurrentFrame(imageIndex);
+	}
+
+	void Screen::setCurrentFrame(uint32_t index) {
+		mCurrentFrameIndex = index;
 		mCurrentFrame = mFrames + mCurrentFrameIndex;
 	}
 	
@@ -318,7 +326,7 @@ namespace nJinn {
 		presentToDrawBarrier
 			.setOldLayout(vk::ImageLayout::ePresentSrcKHR)
 			.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			//.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
 			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
@@ -327,7 +335,8 @@ namespace nJinn {
 		drawToPresentBarrier
 			.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			//.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			//.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead)
 			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
@@ -337,10 +346,13 @@ namespace nJinn {
 		defineImageBarrier
 			.setOldLayout(vk::ImageLayout::eUndefined)
 			.setNewLayout(vk::ImageLayout::ePresentSrcKHR)
+			//.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+			.setDstAccessMask( vk::AccessFlagBits::eColorAttachmentRead)
 			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
 			.setImage(image);
+
 
 		CommandBuffer buffer;
 		buffer.beginRecording();
@@ -352,7 +364,7 @@ namespace nJinn {
 			.setCommandBufferCount(1)
 			.setPCommandBuffers(buffer.get());
 
-		Context::mainQueue().submit(0, &submitInfo, nullptr);
+		Context::mainQueue().submit(1, &submitInfo, nullptr);
 		Context::mainQueue().waitIdle();
 	}
 

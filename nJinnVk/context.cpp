@@ -89,12 +89,12 @@ namespace nJinn {
 		queueLocation qLocations[queueCount];
 		std::vector<size_t> queueInstanceCounts(queuesProperties.size());
 
-		for (int i = 0; i < 0; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			auto type = queueTypes[i];
 			for (size_t j = 0; j < queuesProperties.size(); ++j) {
 				if (queuesProperties[j].queueFlags & type) {
-					qLocations[i].familyIndex = i;
-					qLocations[i].indexInFamily = queueInstanceCounts[i]++;
+					qLocations[i].familyIndex = j;
+					qLocations[i].indexInFamily = queueInstanceCounts[j]++;
 					break;
 				}
 			}
@@ -203,7 +203,7 @@ namespace nJinn {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
 		device.destroy();
-		exit(0); // TODO FIXME temporary workaround crash during instance destruction
+		//exit(0); // TODO FIXME temporary workaround crash during instance destruction
 		instance.destroy();
 	}
 
@@ -248,16 +248,16 @@ namespace nJinn {
 
 	VkBool32 VKAPI_PTR messageCallback(
 		VkDebugReportFlagsEXT flags,
-		VkDebugReportObjectTypeEXT objType,
-		uint64_t srcObject,
+		VkDebugReportObjectTypeEXT objectType,
+		uint64_t object,
 		size_t location,
-		int32_t msgCode,
+		int32_t messageCode,
 		const char* pLayerPrefix,
-		const char* pMsg,
+		const char* pMessage,
 		void* pUserData)
 	{
 		for (const int32_t code : ignoredCodes) {
-			if (code == msgCode) return 0;
+			if (code == messageCode) return 0;
 		}
 
 		const char * type = nullptr;
@@ -268,10 +268,10 @@ namespace nJinn {
 		else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) type = "DBG";
 		
 		std::cout << type;
-		std::cout << " : object " << objectNames[objType] << "[" << std::hex << srcObject << std::dec;
+		std::cout << " : object " << objectNames[objectType] << "[" << std::hex << object << std::dec;
 		std::cout << "] : Layer " << pLayerPrefix;
-		std::cout << " : Code " << msgCode << "\n";
-		std::cout << "\"" << pMsg << "\"" << std::endl;
+		std::cout << " : Code " << messageCode << "\n";
+		std::cout << "\"" << pMessage << "\"" << std::endl;
 
 #ifdef _DEBUG
 		DebugBreak();

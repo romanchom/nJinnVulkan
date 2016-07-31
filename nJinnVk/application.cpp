@@ -32,6 +32,7 @@ namespace nJinn {
 		size_t frame = 0;
 		sRenderer = new RendererSystem();
 		while (true) {
+			//std::cout << "Frame: " << frame << std::endl;
 			if (sScreen->shouldClose()) break;
 			sScreen->acquireFrame();
 
