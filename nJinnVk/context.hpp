@@ -4,6 +4,8 @@
 #include "Console.hpp"
 
 namespace nJinn {
+	extern class Context * context;
+
 	class Context
 	{
 	private:
@@ -13,9 +15,6 @@ namespace nJinn {
 			computeQueueIndex,
 			queueCount,
 		};
-		static Context * context;
-		~Context();
-		Context();
 		Console console;
 		vk::Instance instance;
 		vk::PhysicalDevice physicalDevice;
@@ -38,8 +37,8 @@ namespace nJinn {
 		// end debug section
 	
 	public:
-		static void create();
-		static void destroy();
+		Context();
+		~Context();
 
 		static vk::Instance inst() { return context->instance; }
 		static vk::PhysicalDevice physDev() { return context->physicalDevice; }
@@ -59,4 +58,5 @@ namespace nJinn {
 
 		static class PipelineFactory & pipeFact() { return *context->pipelineFactory; }
 	};
+
 }

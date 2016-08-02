@@ -42,6 +42,9 @@
     <Filter Include="Source Files\game">
       <UniqueIdentifier>{7ba31852-b772-467b-abcb-516b9adf4e35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\utility">
+      <UniqueIdentifier>{8ea48770-f3f8-4613-84e1-9db99bea8917}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
@@ -128,6 +131,15 @@
     <ClInclude Include="Exception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemStartup.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TeeStream.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -200,6 +212,12 @@
       <Filter>Source Files\game</Filter>
     </ClCompile>
     <ClCompile Include="UniformBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemStartup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

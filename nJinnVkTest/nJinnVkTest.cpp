@@ -35,6 +35,9 @@ public:
 	}
 };
 
+#include <nJinnVk/Debug.hpp>
+
 MAIN_FUNCTION{
-	return Application::initialize<G>(APPLICATION_PARAMS_VAL);
+	Application app(APPLICATION_PARAMS_VAL);
+	return app.run<G>();
 }

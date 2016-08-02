@@ -5,17 +5,22 @@
 
 namespace nJinn {
 	class Config {
-		static boost::program_options::options_description optionsDescriptions;
-		static boost::program_options::variables_map variables;
+	private:
+		boost::program_options::options_description optionsDescriptions;
+		boost::program_options::variables_map variables;
 	public:
+		Config();
+
 		template<typename T>
-		static const T & getValue(const std::string & key);
+		const T & getValue(const std::string & key);
 
-		static boost::program_options::options_description_easy_init addOptions();
+		boost::program_options::options_description_easy_init addOptions();
 
-		static void create();
+		void parseDefaultConfigFile();
 
-		static void parseCommandLine(const wchar_t * line);
+		void parseCommandLine(const wchar_t * line);
+		void parseCommandLine(int argc, const char ** argv);
+		void parseConfigFile(const std::string & fileName);
 	};
 
 	template<typename T>
@@ -23,4 +28,6 @@ namespace nJinn {
 	{
 		return variables[key].as<T>();
 	}
+
+	extern Config config;
 }

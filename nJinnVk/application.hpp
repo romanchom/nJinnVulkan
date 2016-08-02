@@ -8,9 +8,18 @@
 #define APPLICATION_PARAMS_VAL lpCmdLine, hInstance
 #define APPLICATION_PARAMS const wchar_t * args, HINSTANCE hInstance
 
+#include <memory>
+
 namespace nJinn {
+	// TODO put it somwhere it belongs
+	namespace os {
+		extern HINSTANCE hInstance;
+		extern int nCmdShow;
+	}
+
 	class GameBase {
 	public:
+		virtual ~GameBase() {};
 		virtual void onInitialize() {}
 		virtual void onUpdate() {}
 		virtual void onPreRender() {}
@@ -21,30 +30,25 @@ namespace nJinn {
 	class Application
 	{
 	private:
-		Application() = delete;
-		static void run();
-		static void finalize();
-		static void doInitialize(APPLICATION_PARAMS);
-		static GameBase * mGame;
-		static HINSTANCE shInstance;
-		static int snCmdShow;
-		static class Screen * sScreen;
-		static class RendererSystem * sRenderer;
-
-		friend class Screen;
+		std::unique_ptr<GameBase> mGame;
+		std::unique_ptr<class SystemStartup> systemStartup;
+		void gameLoop();
 	public:
+		static class Screen * screen;
+		Application(APPLICATION_PARAMS);
+		~Application();
 		template<typename T>
-		static int initialize(APPLICATION_PARAMS);
-		static void quit();
-		static Screen * screen(size_t index = 0) { return sScreen; }
+		int run();
+		
+		void quit();
 	};
 
 	template<typename T>
-	inline int Application::initialize(APPLICATION_PARAMS)
+	inline int Application::run()
 	{
-		if (mGame) throw;
-		mGame = new T();
-		doInitialize(args, hInstance);
+		mGame = std::make_unique<T>();
+		gameLoop();
+
 		return 0;
 	}
 }

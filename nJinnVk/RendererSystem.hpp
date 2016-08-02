@@ -24,6 +24,7 @@ namespace nJinn {
 			objectDescriptorSetBindingCount = 4,
 			drawDescriptorSetBindingCount = 1
 		};
+		class Screen * screen;
 	public:
 		RendererSystem();
 		~RendererSystem();
@@ -33,5 +34,9 @@ namespace nJinn {
 		vk::Sampler immutableSamplers[immutableSamplerCount];
 
 		CommandBuffer cmdbuf;
+
+		void setScreen(class Screen * scr) { screen = scr; }
 	};
+
+	extern RendererSystem * rendererSystem;
 }

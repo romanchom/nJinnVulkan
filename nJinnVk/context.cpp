@@ -1,8 +1,7 @@
 #include "stdafx.hpp"
 #include "Context.hpp"
 
-#include <iostream>
-#include <iomanip>
+#include "Debug.hpp"
 
 #include "Config.hpp"
 
@@ -36,10 +35,10 @@ namespace nJinn {
 		const char* pMsg,
 		void* pUserData);
 
-	Context * Context::context = nullptr;
+	Context * context = nullptr;
 
 	Context::Context() :
-		validation(Config::getValue<uint32_t>("debugLevel"))
+		validation(config.getValue<uint32_t>("debugLevel"))
 	{
 		std::vector<const char *> enabledLayers;
 		std::vector<const char *> enabledExtensions;
@@ -175,30 +174,22 @@ namespace nJinn {
 			vk::MemoryPropertyFlagBits::eHostCached);
 
 		isUploadMemoryCoherent = bool(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
-	}
 
-	void Context::create()
-	{
-		context = new Context();
+		context = this;
 		ResourceUploader::create();
 		context->pipelineFactory = new PipelineFactory();
 	}
 
-	void Context::destroy()
+	Context::~Context()
 	{
-		Context::dev().waitIdle();
+		device.waitIdle();
 		delete context->pipelineFactory;
 		MaterialFamily::collect();
 		Mesh::collect();
 		Shader::collect();
 		ResourceUploader::destroy();
 		UniformBuffer::collect();
-		delete context;
-		context = nullptr;
-	}
 
-	Context::~Context()
-	{
 		if (validation) {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
@@ -267,11 +258,11 @@ namespace nJinn {
 		else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) type = "PERF";
 		else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) type = "DBG";
 		
-		std::cout << type;
-		std::cout << " : object " << objectNames[objectType] << "[" << std::hex << object << std::dec;
-		std::cout << "] : Layer " << pLayerPrefix;
-		std::cout << " : Code " << messageCode << "\n";
-		std::cout << "\"" << pMessage << "\"" << std::endl;
+		debug->log(type);
+		debug->log(" : object ", objectNames[objectType], "[", std::hex, object, std::dec);
+		debug->log("] : Layer ", pLayerPrefix);
+		debug->log(" : Code ", messageCode, "\n");
+		debug->log("\"", pMessage, "\"", "\n");
 
 #ifdef _DEBUG
 		DebugBreak();

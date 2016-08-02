@@ -20,7 +20,7 @@ namespace nJinn {
 			.setStencilTestEnable(0)
 			.setMaxDepthBounds(1)
 			.setDepthCompareOp(vk::CompareOp::eAlways);
-		mPipeline = Context::pipeFact().createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen()->renderPass(), 0, &rasterinfo, &depthstencilInfo);
+		mPipeline = Context::pipeFact().createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
 
 
 		mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();

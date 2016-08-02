@@ -31,7 +31,7 @@ namespace nJinn {
 		windowClass.cbSize = sizeof(WNDCLASSEX);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
 		windowClass.lpfnWndProc = WindowProc;
-		windowClass.hInstance = Application::shInstance;
+		windowClass.hInstance = os::hInstance;
 		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		windowClass.lpszClassName = L"WindowClass1";
 		RegisterClassEx(&windowClass);
@@ -50,13 +50,13 @@ namespace nJinn {
 			windowRect.bottom - windowRect.top,
 			NULL,		// We have no parent Window, NULL.
 			NULL,		// We aren't using menus, NULL.
-			Application::shInstance,
+			os::hInstance,
 			NULL);		// We aren't using multiple windows, NULL.
 
-		ShowWindow((HWND) mWindowHandle, Application::snCmdShow);
+		ShowWindow((HWND) mWindowHandle, os::nCmdShow);
 
 		vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.setHinstance(Application::shInstance);
+		surfaceCreateInfo.setHinstance(os::hInstance);
 		surfaceCreateInfo.setHwnd((HWND) mWindowHandle);
 		mSurface = Context::inst().createWin32SurfaceKHR(surfaceCreateInfo);
 

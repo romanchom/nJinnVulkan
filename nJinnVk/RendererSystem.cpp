@@ -8,6 +8,7 @@
 #include "Renderer.hpp"
 
 namespace nJinn {
+	RendererSystem * rendererSystem;
 	/*void RendererSystem::createWorldDescriptorSet()
 	{
 		vk::SamplerCreateInfo samplerInfo;
@@ -207,11 +208,10 @@ namespace nJinn {
 	void RendererSystem::update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsC)
 	{
 		cmdbuf.beginRecording();
-		Application::screen()->transitionForDraw(cmdbuf);
+		screen->transitionForDraw(cmdbuf);
 		
-		Screen * scr = Application::screen();
 
-		uint32_t asd[] = { 0, 0, scr->width(), scr->height() };
+		uint32_t asd[] = { 0, 0, screen->width(), screen->height() };
 		vk::Rect2D rendArea;
 		memcpy(&rendArea, asd, 16);
 
@@ -221,8 +221,8 @@ namespace nJinn {
 
 		vk::Viewport view;
 		view
-			.setWidth(scr->width())
-			.setHeight(scr->height())
+			.setWidth(screen->width())
+			.setHeight(screen->height())
 			.setMinDepth(0)
 			.setMaxDepth(1)
 			.setX(0)
@@ -230,8 +230,8 @@ namespace nJinn {
 
 		vk::RenderPassBeginInfo info;
 		info
-			.setRenderPass(scr->renderPass())
-			.setFramebuffer(scr->framebuffer())
+			.setRenderPass(screen->renderPass())
+			.setFramebuffer(screen->framebuffer())
 			.setRenderArea(rendArea)
 			.setClearValueCount(1)
 			.setPClearValues(&val);
@@ -254,7 +254,7 @@ namespace nJinn {
 		*/
 
 		cmdbuf->endRenderPass();
-		Application::screen()->transitionForPresent(cmdbuf);
+		screen->transitionForPresent(cmdbuf);
 		cmdbuf.endRecording();
 
 		vk::PipelineStageFlags src[] = {
