@@ -4,7 +4,7 @@
 #include "Context.hpp"
 
 namespace nJinn {
-	nJinn::CommandBuffer::CommandBuffer() :
+	CommandBuffer::CommandBuffer() :
 		currentIndex(-1)
 	{
 		vk::CommandPoolCreateInfo poolInfo;

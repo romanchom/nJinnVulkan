@@ -10,6 +10,7 @@
 #include "Context.hpp"
 #include "CommandBuffer.hpp"
 #include "Config.hpp"
+#include "Debug.hpp"
 
 namespace nJinn {
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -270,7 +271,7 @@ namespace nJinn {
 		info.flags = vk::FenceCreateFlagBits::eSignaled;
 		for (size_t i = 0; i < maxQueuedFrames; ++i) {
 			mFences[i] = context->dev().createFence(info);
-			info.flags = vk::FenceCreateFlags();
+			//info.flags = vk::FenceCreateFlags();
 		}
 		
 		setCurrentFrame(0);
@@ -308,7 +309,7 @@ namespace nJinn {
 
 	void Screen::present()
 	{
-		context->mainQueue().submit(0, nullptr, mFences[mCurrentFence]);
+		context->mainQueue().submit(0, nullptr, mFences[mTotalFrames % maxQueuedFrames]);
 		presentInfo.setPWaitSemaphores(&mCurrentFrame->renderingCompleteSemaphore);
 		context->mainQueue().presentKHR(presentInfo);
 		++mTotalFrames;
@@ -316,13 +317,16 @@ namespace nJinn {
 
 	void Screen::acquireFrame()
 	{
-		vk::Fence * pFence = &mFences[mCurrentFence];
-		assert(context->dev().waitForFences(1, pFence, true, -1) == vk::Result::eSuccess);
+		vk::Fence * pFence = mFences + (mTotalFrames % maxQueuedFrames);
+		// leave this loop as is
+		// vulkan tends to return from waitForFences, even if fences are not signalled
+		do{
+			context->dev().waitForFences(1, pFence, true, std::numeric_limits<uint64_t>::max());
+		}while (context->dev().getFenceStatus(*pFence) == vk::Result::eNotReady);
 		context->dev().resetFences(1, pFence);
 
 		mCurrentAcquireFrameSemaphore = mCurrentFrame->imageAquiredSemaphore;
 		acquireFrameIndex(mCurrentAcquireFrameSemaphore);
-		++mCurrentFence %= maxQueuedFrames;
 	}
 
 	void Screen::transitionForDraw(vk::CommandBuffer cmdbuf)
