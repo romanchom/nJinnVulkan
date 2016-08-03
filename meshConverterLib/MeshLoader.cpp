@@ -82,7 +82,7 @@ namespace meshLoader {
 		} while (fscanf(file, "%s", str) > 0);
 
 		if (verbose) {
-			if (positions.size() != 0) printf("Read %u vertex positions.\n", positions.size() / 3);
+			if (positions.size() != 0) printf("Read %llu vertex positions.\n", positions.size() / 3);
 			else throw std::exception("No vertex positions found. Aborting.");
 
 			printf("Reading vertex normals.\n");
@@ -107,7 +107,7 @@ namespace meshLoader {
 		} while (fscanf(file, "%s", str) > 0);
 
 		if (verbose) {
-			if (normals.size()) printf("Read %u vertex normals.\n", normals.size() / 3);
+			if (normals.size()) printf("Read %llu vertex normals.\n", normals.size() / 3);
 			else throw std::exception("No normals found. Aborting.");
 
 			printf("Reading vertex texture coordinates.\n");
@@ -130,7 +130,7 @@ namespace meshLoader {
 
 		} while (fscanf(file, "%s", str) > 0);
 		if (verbose) {
-			if (uvs.size()) printf("Read %u vertex texture coordinates.\n", uvs.size() / 2);
+			if (uvs.size()) printf("Read %llu vertex texture coordinates.\n", uvs.size() / 2);
 			else throw std::exception("Found no texture coordinates. Aborting.");
 
 			printf("Reading faces and optimizing.\n");
@@ -179,7 +179,7 @@ namespace meshLoader {
 			} while (fscanf(file, "%s", str) > 0);
 		}
 
-		if (verbose) printf("Read %u faces.\n", _indicies.size() / 3);
+		if (verbose) printf("Read %llu faces.\n", _indicies.size() / 3);
 		if (verbose) printf("File read succesfully.\n");
 
 		fclose(file);
@@ -225,19 +225,19 @@ namespace meshLoader {
 		vbm::Header & header = *reinterpret_cast<vbm::Header *>(p);
 		p += sizeof(vbm::Header);
 		header.magickNumber = vbm::Header::magickNumberValue;
-		header.indexTypeSize = indexTypeSize;
-		header.indiciesCount = _indicies.size();
-		header.totalDataSize = indexDataSize + vertexDataSize;
-		header.vertexCount = _attributes[0].data.size();
+		header.indexTypeSize = (uint32_t) indexTypeSize;
+		header.indiciesCount = (uint32_t) _indicies.size();
+		header.totalDataSize = (uint32_t) (indexDataSize + vertexDataSize);
+		header.vertexCount = (uint32_t) _attributes[0].data.size();
 		header.vetexStreamCount = 1;
 
 		const size_t attrCount = _attributes.size();
 
 		vbm::VertexStream & stream = *reinterpret_cast<vbm::VertexStream *>(p);
 		p += sizeof(vbm::VertexStream);
-		stream.offsetFromBufferBegin = indexDataSize;
-		stream.stride = vertexStride;
-		stream.vertexAttributeCount = attrCount;
+		stream.offsetFromBufferBegin = (uint32_t) indexDataSize;
+		stream.stride = (uint32_t) vertexStride;
+		stream.vertexAttributeCount = (uint32_t) attrCount;
 
 		uint32_t offset = 0;
 		for (size_t i = 0; i < attrCount; ++i) {
@@ -247,7 +247,7 @@ namespace meshLoader {
 			dst.componentCount = src.componentCount;
 			dst.offset = offset;
 			dst.type = static_cast<uint32_t>(src.typeConverter->type());
-			offset += src.typeConverter->size() * src.componentCount;
+			offset += (uint32_t) (src.typeConverter->size() * src.componentCount);
 		}
 
 		if (_shortIndexing) {
@@ -281,8 +281,8 @@ namespace meshLoader {
 		const Eigen::Vector3f * positions = (const Eigen::Vector3f *) _attributes[0].data.data();
 		const Eigen::Vector2f * uvs = (const Eigen::Vector2f *) _attributes[1].data.data();
 
-		const uint32_t indiciesCount = _indicies.size();
-		const uint32_t verticiesCount = tangentAttr.data.size() / 3;
+		const uint32_t indiciesCount = (uint32_t) _indicies.size();
+		const uint32_t verticiesCount = (uint32_t) (tangentAttr.data.size() / 3);
 
 		for (uint32_t i = 0; i < indiciesCount; i += 3) {
 			const uint32_t ind[3] = { _indicies[i], _indicies[i + 1], _indicies[i + 2] };
@@ -366,8 +366,8 @@ namespace meshLoader {
 
 	void MeshLoader::optimizeForCache(uint32_t cacheSize, bool verbose) {
 		if (verbose) printf("Optimizing mesh using cache size = %d.\n", cacheSize);
-		uint32_t indiciesCount = _indicies.size();
-		uint32_t verticiesCount = _attributes[0].data.size() / _attributes[0].componentCount;
+		uint32_t indiciesCount = (uint32_t) _indicies.size();
+		uint32_t verticiesCount = (uint32_t) (_attributes[0].data.size() / _attributes[0].componentCount);
 		uint32_t * const indicies = _indicies.data();
 
 
@@ -528,7 +528,7 @@ namespace meshLoader {
 		if (verbose) printf("Reordering verticies.\n");
 
 
-		uint32_t attrCount = _attributes.size();
+		uint32_t attrCount = (uint32_t) _attributes.size();
 		uint32_t * mapping = new uint32_t[verticiesCount * 2];
 		uint32_t * revMapping = mapping + verticiesCount;
 

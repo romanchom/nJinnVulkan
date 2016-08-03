@@ -37,18 +37,18 @@ namespace nJinn {
 	private:
 		static std::list<UniformAllocator> sAllocators;
 	private:
-		size_t mSize;
-		size_t mCurrentOffset;
+		uint32_t mSize;
+		uint32_t mCurrentOffset;
 		UniformAllocator * mAllocator;
 	public:
 		~UniformBuffer();
-		void initialize(size_t size);
+		void initialize(uint32_t size);
 
 		void * acquirePointer();
 		template<typename T>
 		T * acquire();
 
-		size_t offset() { return mCurrentOffset; }
+		uint32_t offset() { return mCurrentOffset; }
 		void fillDescriptorInfo(vk::DescriptorBufferInfo & info);
 
 		static void collect();

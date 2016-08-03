@@ -24,7 +24,7 @@ namespace nJinn {
 		vk::PipelineLayout mLayout;
 		vk::PipelineColorBlendStateCreateInfo blendState;
 		vk::PipelineColorBlendAttachmentState state;
-		size_t mStageCount;
+		uint32_t mStageCount;
 		vk::PipelineShaderStageCreateInfo stages[2];
 
 		vk::DescriptorPoolSize mPoolSizes[3];

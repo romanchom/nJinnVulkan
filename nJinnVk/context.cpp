@@ -63,9 +63,9 @@ namespace nJinn {
 		vk::InstanceCreateInfo instanceInfo;
 		instanceInfo
 			.setPpEnabledExtensionNames(enabledExtensions.data())
-			.setEnabledExtensionCount(enabledExtensions.size())
+			.setEnabledExtensionCount((uint32_t) enabledExtensions.size())
 			.setPpEnabledLayerNames(enabledLayers.data())
-			.setEnabledLayerCount(enabledLayers.size())
+			.setEnabledLayerCount((uint32_t) enabledLayers.size())
 			.setPApplicationInfo(&appInfo);
 
 		instance = vk::createInstance(instanceInfo);
@@ -82,12 +82,12 @@ namespace nJinn {
 		};
 
 		struct queueLocation {
-			size_t familyIndex = 0;
-			size_t indexInFamily = 0;
+			uint32_t familyIndex = 0;
+			uint32_t indexInFamily = 0;
 		};
 
 		queueLocation qLocations[queueCount];
-		std::vector<size_t> queueInstanceCounts(queuesProperties.size());
+		std::vector<int> queueInstanceCounts(queuesProperties.size());
 
 		for (int i = 0; i < 3; ++i) {
 			auto type = queueTypes[i];
@@ -102,8 +102,8 @@ namespace nJinn {
 
 		float priorities[3] = { 1.0f, 1.0f, 1.0f };
 		std::vector<vk::DeviceQueueCreateInfo> queueInfos;
-		size_t queueIndex = 0;
-		for (size_t i = 0; i < queuesProperties.size(); ++i) {
+		int queueIndex = 0;
+		for (int i = 0; i < queuesProperties.size(); ++i) {
 			if (queueInstanceCounts[i] > 0) {
 				queueInfos.emplace_back();
 				queueInfos.back()
@@ -121,13 +121,13 @@ namespace nJinn {
 
 		vk::DeviceCreateInfo deviceInfo;
 		deviceInfo
-			.setQueueCreateInfoCount(queueInfos.size())
+			.setQueueCreateInfoCount((uint32_t) queueInfos.size())
 			.setPQueueCreateInfos(queueInfos.data())
 			.setPEnabledFeatures(&enabledFeatures)
 			.setPpEnabledExtensionNames(enabledExtensions.data())
-			.setEnabledExtensionCount(enabledExtensions.size())
+			.setEnabledExtensionCount((uint32_t) enabledExtensions.size())
 			.setPpEnabledLayerNames(enabledLayers.data())
-			.setEnabledLayerCount(enabledLayers.size());
+			.setEnabledLayerCount((uint32_t) enabledLayers.size());
 
 		device = physicalDevice.createDevice(deviceInfo);
 

@@ -205,7 +205,7 @@ namespace nJinn {
 		}*/
 	}
 
-	void RendererSystem::update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsC)
+	void RendererSystem::update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsC)
 	{
 		cmdbuf.beginRecording();
 		screen->transitionForDraw(cmdbuf);
@@ -221,8 +221,8 @@ namespace nJinn {
 
 		vk::Viewport view;
 		view
-			.setWidth(screen->width())
-			.setHeight(screen->height())
+			.setWidth((float) screen->width())
+			.setHeight((float) screen->height())
 			.setMinDepth(0)
 			.setMaxDepth(1)
 			.setX(0)

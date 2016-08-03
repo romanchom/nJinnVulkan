@@ -19,7 +19,7 @@ namespace nJinn {
 		vk::Instance instance;
 		vk::PhysicalDevice physicalDevice;
 		vk::Device device;
-		size_t queueFamilyIndicies[queueCount];
+		uint32_t queueFamilyIndicies[queueCount];
 		vk::Queue queues[queueCount];
 
 		uint32_t bufferMemoryTypeIndex;
@@ -46,9 +46,9 @@ namespace nJinn {
 		vk::Queue transferQueue() { return queues[transferQueueIndex]; }
 		vk::Queue computeQueue() { return queues[computeQueueIndex]; }
 
-		size_t mainQueueFamilyIndex() { return queueFamilyIndicies[graphicsQueueIndex]; }
-		size_t transferQueueFamilyIndex() { return queueFamilyIndicies[transferQueueIndex]; }
-		size_t computeQueueFamilyIndex() { return queueFamilyIndicies[computeQueueIndex]; }
+		uint32_t mainQueueFamilyIndex() { return queueFamilyIndicies[graphicsQueueIndex]; }
+		uint32_t transferQueueFamilyIndex() { return queueFamilyIndicies[transferQueueIndex]; }
+		uint32_t computeQueueFamilyIndex() { return queueFamilyIndicies[computeQueueIndex]; }
 
 		uint32_t bufferMemoryType() { return bufferMemoryTypeIndex; }
 		uint32_t uploadMemoryType() { return uploadMemoryTypeIndex; }

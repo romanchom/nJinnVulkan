@@ -28,14 +28,14 @@ namespace nJinn {
 			// no need for delete, it will self destruct after it is freed
 		} else {
 			// get nearest power of 2 larger than size
-			size_t pos;
+			uint64_t pos;
 #ifdef _WIN32
 			pos = __lzcnt64(size - 1);
 #else
 			pos = __builtin_clzll(~size);
 #endif
-			pos = 64 - pos;
-			size = 1 << pos;
+			pos = 64ull - pos;
+			size = 1ull << pos;
 
 			auto range = sBuckets.equal_range(size);
 

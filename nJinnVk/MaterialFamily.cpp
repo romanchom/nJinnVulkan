@@ -128,7 +128,7 @@ namespace nJinn {
 			.setDescriptorSetCount(1)
 			.setPSetLayouts(&mLayout);
 
-		int tryCount = mPools.size();
+		uint32_t  tryCount = (uint32_t) mPools.size();
 		while (tryCount > 0) {
 			auto it = mPools.begin();
 			allocInfo.setDescriptorPool(*it);

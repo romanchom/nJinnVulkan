@@ -100,10 +100,10 @@ namespace nJinn {
 		mAllocator->free(mSize);
 	}
 
-	void UniformBuffer::initialize(size_t size)
+	void UniformBuffer::initialize(uint32_t size)
 	{
 		mSize = size;
-		int tryCount = sAllocators.size();
+		int tryCount = (int) sAllocators.size();
 		while (tryCount > 0) {
 			auto it = sAllocators.begin();
 			if (it->allocate(size)) {

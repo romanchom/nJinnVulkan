@@ -29,7 +29,7 @@ namespace nJinn {
 		RendererSystem();
 		~RendererSystem();
 
-		void update(vk::Semaphore * wSems, size_t wSemC, vk::Semaphore * sSems, size_t sSemsCw);
+		void update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsCw);
 
 		vk::Sampler immutableSamplers[immutableSamplerCount];
 

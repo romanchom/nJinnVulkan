@@ -9,11 +9,12 @@
 
 
 namespace nJinn {
-	struct SystemStartup
+	class SystemStartup
 	{
+	public:
 		SystemStartup();
 		~SystemStartup();
-
+	private:
 		Debug mDebug;
 		PointerBind<Debug> mDebugBind;
 		

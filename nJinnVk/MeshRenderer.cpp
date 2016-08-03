@@ -52,8 +52,8 @@ namespace nJinn {
 		std::chrono::duration<double> a = std::chrono::high_resolution_clock::now().time_since_epoch();
 		double s = sin(a.count());
 		double c = cos(a.count());
-		uni->x = c * 0.5;
-		uni->y = s * 0.5;
+		uni->x = (float) (c * 0.5);
+		uni->y = (float) (s * 0.5);
 		uni->z = 0.2f;
 		uni->w = 0.2f;
 	}

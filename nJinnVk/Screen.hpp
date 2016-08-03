@@ -40,7 +40,6 @@ namespace nJinn
 		Frame * mCurrentFrame;
 		vk::Semaphore mCurrentAcquireFrameSemaphore;
 		vk::Fence * mFences;
-		size_t mCurrentFence;
 		size_t mTotalFrames;
 
 		bool shouldClose();

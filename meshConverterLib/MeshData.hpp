@@ -16,21 +16,21 @@ namespace meshLoader {
 		const char * data() const { return dataStart; }
 		const size_t totalDataSize() { return header->totalDataSize; }
 
-		size_t vertexStreamCount() const { return header->vetexStreamCount; }
+		uint32_t vertexStreamCount() const { return header->vetexStreamCount; }
 		const vbm::VertexStream & vertexStream(size_t index) const { return *vertexStreams[index]; }
 		
-		size_t attributeCount() const { return attributeCount_; }
+		uint32_t attributeCount() const { return attributeCount_; }
 		const vbm::VertexAttribute & vertexAttribute(size_t stream, size_t attr) const { return vertexAttributes[stream][attr]; }
 
-		size_t indexCount() const { return header->indiciesCount; }
-		size_t vertexCont() const { return header->vertexCount; }
-		size_t indexSize() const { return header->indexTypeSize; }
+		uint32_t indexCount() const { return header->indiciesCount; }
+		uint32_t vertexCont() const { return header->vertexCount; }
+		uint32_t indexSize() const { return header->indexTypeSize; }
 	private:
 		boost::iostreams::mapped_file_source file;
 		const vbm::Header * header;
 		const vbm::VertexStream ** vertexStreams;
 		const vbm::VertexAttribute ** vertexAttributes;
-		size_t attributeCount_;
+		uint32_t attributeCount_;
 		const char * dataStart;
 
 		MeshData(const MeshData &) = delete;

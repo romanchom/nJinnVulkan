@@ -21,6 +21,6 @@ namespace nJinn {
 		virtual vk::DeviceMemory memory() const override;
 
 		size_t bucketSize() { return mBucketSize; }
-		bool freeBuckets() { return (~mBucketOccupied); }
+		bool freeBuckets() { return 0 != (~mBucketOccupied); }
 	};
 }

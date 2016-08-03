@@ -36,7 +36,7 @@ namespace nJinn {
 		meshLoader::MeshData meshData(name);
 
 		size_t totalSize = meshData.totalDataSize();
-		bindingCount = meshData.vertexStreamCount();
+		bindingCount = (uint32_t) meshData.vertexStreamCount();
 		indexCount = meshData.indexCount();
 		indexType = (meshData.indexSize() == 2) ? vk::IndexType::eUint16 : vk::IndexType::eUint32;
 
@@ -53,9 +53,9 @@ namespace nJinn {
 		bufferMemory.allocate(memReq.size);
 
 		context->dev().bindBufferMemory(buffer, bufferMemory, 0);
-		size_t totalVertexAttributes = 0;
+		uint32_t totalVertexAttributes = 0;
 		
-		for (size_t s = 0; s < meshData.vertexStreamCount(); ++s) {
+		for (uint32_t s = 0; s < meshData.vertexStreamCount(); ++s) {
 			const vbm::VertexStream & stream = meshData.vertexStream(s);
 			veretxBindingDescription[s]
 				.setBinding(s)
@@ -63,7 +63,7 @@ namespace nJinn {
 				.setStride(stream.stride);
 			vertexBufferOffsets[0] = stream.offsetFromBufferBegin;
 			uint32_t attributeCount = stream.vertexAttributeCount;
-			for (int a = 0; a < attributeCount; ++a) {
+			for (uint32_t a = 0; a < attributeCount; ++a) {
 				vk::VertexInputAttributeDescription & dst = vertexAttributeDescriptions[totalVertexAttributes++];
 				const vbm::VertexAttribute & src = meshData.vertexAttribute(s, a);
 				dst

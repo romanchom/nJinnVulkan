@@ -20,17 +20,18 @@ namespace nJinn {
 		frameCount(config.getValue<uint32_t>("swapchain.backBufferCount")),
 		maxQueuedFrames(config.getValue<uint32_t>("swapchain.maxQueuedFrames")),
 		queueIndex(-1),
-		mSwapChain(nullptr),
-		mRenderPass(nullptr),
-		mSurface(nullptr),
 		mWidth(-1),
 		mHeight(-1),
+		mSwapChain(nullptr),
+		mColorFormat(vk::Format::eUndefined),
+		mRenderPass(nullptr),
+		mSurface(nullptr),
+		mColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear),
 		mFrames(nullptr),
 		mCurrentFrameIndex(0),
-		mCurrentFrame(mFrames),
+		mCurrentFrame(nullptr),
 		mCurrentAcquireFrameSemaphore(nullptr),
-		mFences(),
-		mCurrentFence(0),
+		mFences(nullptr),
 		mTotalFrames(0)
 	{
 		WNDCLASSEX windowClass = { 0 };
@@ -42,7 +43,7 @@ namespace nJinn {
 		windowClass.lpszClassName = L"WindowClass1";
 		RegisterClassEx(&windowClass);
 
-		RECT windowRect = { 0, 0, width, height };
+		RECT windowRect = { 0, 0, (LONG) width, (LONG) height };
 		AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 		// Create the Window and store a handle to it.
@@ -134,10 +135,10 @@ namespace nJinn {
 
 	Screen::~Screen()
 	{
-		for (int i = 0; i < frameCount; ++i) {
+		for (uint32_t i = 0; i < frameCount; ++i) {
 			mFrames[i].destroy();
 		}
-		for (int i = 0; i < maxQueuedFrames; ++i) {
+		for (uint32_t i = 0; i < maxQueuedFrames; ++i) {
 			context->dev().destroyFence(mFences[i]);
 		}
 		delete[] mFrames;
@@ -196,10 +197,10 @@ namespace nJinn {
 
 		if (oldSwapChain) {
 			context->dev().destroySwapchainKHR(oldSwapChain);
-			for (int i = 0; i < frameCount; ++i) {
+			for (uint32_t i = 0; i < frameCount; ++i) {
 				mFrames[i].destroy();
 			}
-			for (int i = 0; i < maxQueuedFrames; ++i) {
+			for (uint32_t i = 0; i < maxQueuedFrames; ++i) {
 				context->dev().destroyFence(mFences[i]);
 			}
 			delete[] mFrames;
@@ -286,7 +287,7 @@ namespace nJinn {
 
 		CommandBuffer buffer;
 		buffer.beginRecording();
-		for (int i = 0; i < frameCount; ++i) {
+		for (uint32_t i = 0; i < frameCount; ++i) {
 			defineImageBarrier.setImage(images[i]);
 			buffer->pipelineBarrier(
 				vk::PipelineStageFlagBits::eAllCommands,
@@ -319,7 +320,7 @@ namespace nJinn {
 	{
 		vk::Fence * pFence = mFences + (mTotalFrames % maxQueuedFrames);
 		// leave this loop as is
-		// vulkan tends to return from waitForFences, even if fences are not signalled
+		// vulkan tends to return from waitForFences, even if fences are not signaled
 		do{
 			context->dev().waitForFences(1, pFence, true, std::numeric_limits<uint64_t>::max());
 		}while (context->dev().getFenceStatus(*pFence) == vk::Result::eNotReady);
@@ -327,6 +328,17 @@ namespace nJinn {
 
 		mCurrentAcquireFrameSemaphore = mCurrentFrame->imageAquiredSemaphore;
 		acquireFrameIndex(mCurrentAcquireFrameSemaphore);
+	}
+
+	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore, vk::Fence signalFence)
+	{
+		uint32_t imageIndex = context->dev().acquireNextImageKHR(mSwapChain, -1, signalSemaphore, signalFence).value;
+		setCurrentFrame(imageIndex);
+	}
+
+	void Screen::setCurrentFrame(uint32_t index) {
+		mCurrentFrameIndex = index;
+		mCurrentFrame = &mFrames[mCurrentFrameIndex];
 	}
 
 	void Screen::transitionForDraw(vk::CommandBuffer cmdbuf)
@@ -351,17 +363,6 @@ namespace nJinn {
 			0, nullptr,
 			0, nullptr,
 			1, &drawToPresentBarrier);
-	}
-
-	void Screen::acquireFrameIndex(vk::Semaphore signalSemaphore, vk::Fence signalFence)
-	{
-		uint32_t imageIndex = context->dev().acquireNextImageKHR(mSwapChain, -1, signalSemaphore, signalFence).value;
-		setCurrentFrame(imageIndex);
-	}
-
-	void Screen::setCurrentFrame(uint32_t index) {
-		mCurrentFrameIndex = index;
-		mCurrentFrame = &mFrames[mCurrentFrameIndex];
 	}
 	
 	bool Screen::shouldClose()
