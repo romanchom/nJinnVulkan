@@ -43,11 +43,11 @@ namespace nJinn {
 			// update
 			ComponentBase::updateComponents();
 
-			ResourceUploader::execute();
+			resourceUploader->execute();
 
 			vk::Semaphore waitSemaphores[] = {
 				screen->waitingSemaphore(),
-				ResourceUploader::semaphore()
+				resourceUploader->semaphore()
 			};
 			vk::Semaphore signalSemaphores[] = {
 				screen->renderCompleteSemaphore()
@@ -82,8 +82,9 @@ namespace nJinn {
 	Application::~Application()
 	{
 		mGame->onExit();
-		Context::mainQueue().waitIdle();
+		context->mainQueue().waitIdle();
 		GameObject::clearScene();
+		delete screen;
 	}
 
 	void Application::quit()

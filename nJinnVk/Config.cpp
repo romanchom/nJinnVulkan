@@ -11,7 +11,10 @@ namespace nJinn {
 		optionsDescriptions.add_options()
 			("threads", value<uint32_t>()->default_value(1), "thread pool threads")
 			("shadowMapRes", value<uint32_t>()->default_value(256), "shadow map resolution")
-			("debugLevel", value<uint32_t>()->default_value(3), "additional runtime checks");
+			("debug", value<uint32_t>()->default_value(3), "logging verbosity (0 - 3)")
+			("debugVK", value<uint32_t>()->default_value(1), "Vulkan logging verbosity (0 - 5)")
+			("swapchain.backBufferCount", value<uint32_t>()->default_value(2), "number of backBuffers")
+			("swapchain.maxQueuedFrames", value<uint32_t>()->default_value(2), "maxiumum number of simultaneously queued frames");
 	}
 
 	boost::program_options::options_description_easy_init Config::addOptions()

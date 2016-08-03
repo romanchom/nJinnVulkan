@@ -4,14 +4,14 @@
 namespace nJinn {
 	Debug * debug = nullptr;
 
-	Debug::Debug(VerbosityLevel initialVerbosity) :
+	Debug::Debug(int initialVerbosity) :
 		logFileStream("nJinnLog"),
 		outputConsole(),
 		textOutput(logFileStream, std::cout),
 		maximumVerbosityLevel((int) initialVerbosity)
 	{}
 
-	void Debug::setVerbosity(VerbosityLevel level)
+	void Debug::setVerbosity(int level)
 	{
 		maximumVerbosityLevel = (int)level;
 	}

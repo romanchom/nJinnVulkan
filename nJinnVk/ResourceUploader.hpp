@@ -14,12 +14,9 @@ namespace nJinn {
 			vk::Buffer buffer;
 			vk::DeviceMemory memory;
 		};
-		ResourceUploader();
-		~ResourceUploader();
 
 		CommandBuffer uploadCmdBuffer;
 
-		static ResourceUploader * instance;
 		std::vector<uploadTask> uploadTasks[2];
 		size_t currentIndex;
 		Semaphore transfersCompleteSemaphore;
@@ -27,11 +24,13 @@ namespace nJinn {
 		void addTask(const uploadTask & task);
 		void doExecute();
 	public:
-		static void create();
-		static void destroy();
+		ResourceUploader();
+		~ResourceUploader();
 
-		static void upload(const void * data, size_t size, vk::Buffer dst);
-		static void execute() { instance->doExecute(); }
-		static vk::Semaphore semaphore() { return instance->transfersCompleteSemaphore; }
+		void upload(const void * data, size_t size, vk::Buffer dst);
+		void execute() { doExecute(); }
+		vk::Semaphore semaphore() { return transfersCompleteSemaphore; }
 	};
+
+	extern ResourceUploader * resourceUploader;
 }

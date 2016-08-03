@@ -40,7 +40,7 @@ namespace nJinn {
 			.setBindingCount(2)
 			.setPBindings(bindings);
 
-		mMaterialAllocator.mLayout = Context::dev().createDescriptorSetLayout(descInfo);
+		mMaterialAllocator.mLayout = context->dev().createDescriptorSetLayout(descInfo);
 
 		bindings[0]
 			.setBinding(0)
@@ -52,7 +52,7 @@ namespace nJinn {
 			.setBindingCount(1)
 			.setPBindings(bindings);
 
-		mObjectAllocator.mLayout = Context::dev().createDescriptorSetLayout(descInfo);
+		mObjectAllocator.mLayout = context->dev().createDescriptorSetLayout(descInfo);
 
 
 		vk::DescriptorSetLayout layouts[] = {
@@ -65,7 +65,7 @@ namespace nJinn {
 			.setPSetLayouts(layouts)
 			.setSetLayoutCount(2);
 
-		mLayout = Context::dev().createPipelineLayout(layoutInfo);
+		mLayout = context->dev().createPipelineLayout(layoutInfo);
 
 		mPoolSizes[0]
 			.setType(vk::DescriptorType::eSampledImage)
@@ -91,6 +91,11 @@ namespace nJinn {
 		if (fragmentShader) stages[mStageCount++] = *fragmentShader;
 	}
 
+	MaterialFamily::~MaterialFamily()
+	{
+		context->dev().destroyPipelineLayout(mLayout);
+	}
+
 	Material * MaterialFamily::instantiate()
 	{
 		Material * ret = new Material();
@@ -109,9 +114,9 @@ namespace nJinn {
 	}
 
 	MaterialFamily::DescriptorAllocator::~DescriptorAllocator() {
-		Context::dev().destroyDescriptorSetLayout(mLayout);
+		context->dev().destroyDescriptorSetLayout(mLayout);
 		for (auto it : mPools) {
-			Context::dev().destroyDescriptorPool(it);
+			context->dev().destroyDescriptorPool(it);
 		}
 	}
 
@@ -127,7 +132,7 @@ namespace nJinn {
 		while (tryCount > 0) {
 			auto it = mPools.begin();
 			allocInfo.setDescriptorPool(*it);
-			if (vk::Result::eSuccess == Context::dev().allocateDescriptorSets(&allocInfo, &ret)) {
+			if (vk::Result::eSuccess == context->dev().allocateDescriptorSets(&allocInfo, &ret)) {
 				return ret;
 			} else {
 				// move full pool to the back
@@ -135,10 +140,10 @@ namespace nJinn {
 				--tryCount;
 			}
 		}
-		vk::DescriptorPool pool = Context::dev().createDescriptorPool(mPoolCreateInfo);
+		vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
 		mPools.push_back(pool);
 		allocInfo.setDescriptorPool(pool);
-		Context::dev().allocateDescriptorSets(&allocInfo, &ret);
+		context->dev().allocateDescriptorSets(&allocInfo, &ret);
 		return ret;
 	}
 

@@ -7,12 +7,12 @@ namespace nJinn {
 	Semaphore::Semaphore()
 	{
 		vk::SemaphoreCreateInfo info;
-		semaphore = Context::dev().createSemaphore(info);
+		semaphore = context->dev().createSemaphore(info);
 	}
 
 	Semaphore::~Semaphore()
 	{
-		Context::dev().destroySemaphore(semaphore);
+		context->dev().destroySemaphore(semaphore);
 	}
 
 

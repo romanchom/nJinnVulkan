@@ -46,13 +46,13 @@ namespace nJinn {
 			.setSize(totalSize)
 			.setUsage(vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst);
 
-		buffer = Context::dev().createBuffer(bufferInfo);
+		buffer = context->dev().createBuffer(bufferInfo);
 
-		vk::MemoryRequirements memReq = Context::dev().getBufferMemoryRequirements(buffer);
+		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(buffer);
 
 		bufferMemory.allocate(memReq.size);
 
-		Context::dev().bindBufferMemory(buffer, bufferMemory, 0);
+		context->dev().bindBufferMemory(buffer, bufferMemory, 0);
 		size_t totalVertexAttributes = 0;
 		
 		for (size_t s = 0; s < meshData.vertexStreamCount(); ++s) {
@@ -85,11 +85,12 @@ namespace nJinn {
 
 		tessInfo.setPatchControlPoints(3);
 
-		ResourceUploader::upload(meshData.data(), meshData.totalDataSize(), buffer);
+		resourceUploader->upload(meshData.data(), meshData.totalDataSize(), buffer);
 	}
 
 	Mesh::~Mesh()
 	{
+		context->dev().destroyBuffer(buffer);
 	}
 
 	void Mesh::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)

@@ -10,9 +10,9 @@ namespace nJinn {
 		vk::CommandPoolCreateInfo poolInfo;
 		poolInfo
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer | vk::CommandPoolCreateFlagBits::eTransient)
-			.setQueueFamilyIndex(Context::mainQueueFamilyIndex());
+			.setQueueFamilyIndex(context->mainQueueFamilyIndex());
 			
-		pool = Context::dev().createCommandPool(poolInfo);
+		pool = context->dev().createCommandPool(poolInfo);
 
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo
@@ -20,13 +20,13 @@ namespace nJinn {
 			.setCommandPool(pool)
 			.setLevel(vk::CommandBufferLevel::ePrimary);
 
-		Context::dev().allocateCommandBuffers(&bufferInfo, buffer);
+		context->dev().allocateCommandBuffers(&bufferInfo, buffer);
 
 		beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 	}
 
 	CommandBuffer::~CommandBuffer()
 	{
-		Context::dev().destroyCommandPool(pool);
+		context->dev().destroyCommandPool(pool);
 	}
 }

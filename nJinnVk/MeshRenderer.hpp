@@ -18,5 +18,6 @@ namespace nJinn {
 	public:
 		Mesh::p mMesh;
 		virtual void draw(vk::CommandBuffer cmdbuf) override;
+		virtual ~MeshRenderer();
 	};
 }

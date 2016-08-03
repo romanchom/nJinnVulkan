@@ -4,7 +4,7 @@
 #include "Context.hpp"
 
 namespace nJinn {
-	ResourceUploader * ResourceUploader::instance(nullptr);
+	ResourceUploader * resourceUploader;
 
 	ResourceUploader::ResourceUploader() :
 		currentIndex(0),
@@ -17,8 +17,8 @@ namespace nJinn {
 	{
 		for (size_t i = 0; i < 2; ++i) {
 			for (auto & task : uploadTasks[i]) {
-				Context::dev().destroyBuffer(task.buffer);
-				Context::dev().freeMemory(task.memory);
+				context->dev().destroyBuffer(task.buffer);
+				context->dev().freeMemory(task.memory);
 			}
 			uploadTasks[i].clear();
 		}
@@ -30,16 +30,6 @@ namespace nJinn {
 		tasksAdded = true;
 	}
 
-	void ResourceUploader::create()
-	{
-		instance = new ResourceUploader();
-	}
-
-	void ResourceUploader::destroy()
-	{
-		delete instance;
-	}
-
 	void ResourceUploader::upload(const void * data, size_t size, vk::Buffer dst)
 	{
 		uploadTask task;
@@ -49,32 +39,32 @@ namespace nJinn {
 			.setSize(size)
 			.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
 
-		task.buffer = Context::dev().createBuffer(bufferInfo);
+		task.buffer = context->dev().createBuffer(bufferInfo);
 
-		vk::MemoryRequirements memReq = Context::dev().getBufferMemoryRequirements(task.buffer);
+		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(task.buffer);
 
 		vk::MemoryAllocateInfo allocInfo;
 		allocInfo
 			.setAllocationSize(memReq.size)
-			.setMemoryTypeIndex(Context::uploadMemoryType());
+			.setMemoryTypeIndex(context->uploadMemoryType());
 
-		task.memory = Context::dev().allocateMemory(allocInfo);
+		task.memory = context->dev().allocateMemory(allocInfo);
 
-		Context::dev().bindBufferMemory(task.buffer, task.memory, 0);
+		context->dev().bindBufferMemory(task.buffer, task.memory, 0);
 
-		void * pDest =Context::dev().mapMemory(task.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags());
+		void * pDest =context->dev().mapMemory(task.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags());
 
 		memcpy(pDest, data, size);
 
-		if (!Context::isUploadMemoryTypeCoherent()) {
-			Context::dev().flushMappedMemoryRanges(1, &vk::MappedMemoryRange(task.memory, 0, size));
+		if (!context->isUploadMemoryTypeCoherent()) {
+			context->dev().flushMappedMemoryRanges(1, &vk::MappedMemoryRange(task.memory, 0, size));
 		}
 		vk::MemoryBarrier barr;
 		vk::BufferMemoryBarrier preBarrier;
 
-		instance->uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &vk::BufferCopy(0, 0, size));
+		uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &vk::BufferCopy(0, 0, size));
 
-		instance->addTask(task);
+		addTask(task);
 	}
 
 	void ResourceUploader::doExecute()
@@ -96,8 +86,8 @@ namespace nJinn {
 			++currentIndex %= 2;
 
 			for (auto & task : uploadTasks[currentIndex]) {
-				Context::dev().destroyBuffer(task.buffer);
-				Context::dev().freeMemory(task.memory);
+				context->dev().destroyBuffer(task.buffer);
+				context->dev().freeMemory(task.memory);
 			}
 
 			uploadTasks[currentIndex].clear();
@@ -106,6 +96,6 @@ namespace nJinn {
 			uploadCmdBuffer.beginRecording();
 		}
 
-		Context::mainQueue().submit(1, &submit, nullptr);
+		context->mainQueue().submit(1, &submit, nullptr);
 	}
 }

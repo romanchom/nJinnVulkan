@@ -15,24 +15,24 @@ namespace nJinn {
 			.setSize(uniformSize * 2)
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer);
 		
-		mBuffer = Context::dev().createBuffer(bufferInfo);
-		vk::MemoryRequirements memReq = Context::dev().getBufferMemoryRequirements(mBuffer);
+		mBuffer = context->dev().createBuffer(bufferInfo);
+		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(mBuffer);
 
 		vk::MemoryAllocateInfo allocInfo;
 		allocInfo
 			.setAllocationSize(memReq.size)
-			.setMemoryTypeIndex(Context::uploadMemoryType());
+			.setMemoryTypeIndex(context->uploadMemoryType());
 
-		mMemory = Context::dev().allocateMemory(allocInfo);
-		Context::dev().bindBufferMemory(mBuffer, mMemory, 0);
-		mPointer = (char *) Context::dev().mapMemory(mMemory, 0, uniformSize * 2, vk::MemoryMapFlags());
+		mMemory = context->dev().allocateMemory(allocInfo);
+		context->dev().bindBufferMemory(mBuffer, mMemory, 0);
+		mPointer = (char *) context->dev().mapMemory(mMemory, 0, uniformSize * 2, vk::MemoryMapFlags());
 	}
 
 	UniformAllocator::~UniformAllocator()
 	{
-		Context::dev().destroyBuffer(mBuffer);
-		Context::dev().unmapMemory(mMemory);
-		Context::dev().freeMemory(mMemory);
+		context->dev().destroyBuffer(mBuffer);
+		context->dev().unmapMemory(mMemory);
+		context->dev().freeMemory(mMemory);
 	}
 
 	void UniformAllocator::update()
@@ -80,13 +80,13 @@ namespace nJinn {
 
 	void UniformBuffer::update()
 	{
-		if (!Context::isUploadMemoryTypeCoherent()) {
+		if (!context->isUploadMemoryTypeCoherent()) {
 			vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
 			int i = 0;
 			for (UniformAllocator & alloc : sAllocators) {
 				alloc.writtenRange(ranges[i++]);
 			}
-			Context::dev().flushMappedMemoryRanges(i, ranges);
+			context->dev().flushMappedMemoryRanges(i, ranges);
 		}
 		for (UniformAllocator & alloc : sAllocators) {
 			alloc.update();

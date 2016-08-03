@@ -9,12 +9,12 @@ namespace nJinn {
 	class Debug
 	{
 	public:
-		enum class VerbosityLevel : int {
-			none,
-			error,
-			warning,
-			info,
-			all = info,
+		enum VerbosityLevel{
+			eNone,
+			eError,
+			eWarning,
+			eInfo,
+			eAll = eInfo,
 		};
 	private:
 		std::ofstream logFileStream;
@@ -22,12 +22,12 @@ namespace nJinn {
 		TeeStream textOutput;
 		int maximumVerbosityLevel;
 	public:
-		Debug(VerbosityLevel initialVerbosity);
+		Debug(int initialVerbosity);
 		template<typename T>
-		void print(VerbosityLevel verbosity, T t);
+		void print(int verbosity, T t);
 
 		template<typename T, typename... Args>
-		void print(VerbosityLevel verbosity, T t, Args... args);
+		void print(int verbosity, T t, Args... args);
 		
 		template<typename... Args>
 		void log(Args... args);
@@ -38,19 +38,19 @@ namespace nJinn {
 		template<typename... Args>
 		void warning(Args... args);
 
-		void setVerbosity(VerbosityLevel level);
+		void setVerbosity(int level);
 	};
 
 	template<typename T>
-	inline void Debug::print(VerbosityLevel verbosity, T t)
+	inline void Debug::print(int verbosity, T t)
 	{
-		if (int(verbosity) <= maximumVerbosityLevel) {
+		if (verbosity <= maximumVerbosityLevel) {
 			textOutput << t;
 		}
 	}
 
 	template<typename T, typename... Args>
-	inline void Debug::print(VerbosityLevel verbosity, T t, Args ... args)
+	inline void Debug::print(int verbosity, T t, Args ... args)
 	{
 		print(verbosity, t);
 		print(verbosity, args...);
@@ -59,17 +59,17 @@ namespace nJinn {
 	template<typename... Args>
 	inline void Debug::log(Args ...args)
 	{
-		print(VerbosityLevel::info, args...);
+		print(VerbosityLevel::eInfo, args...);
 	}
 	template<typename ...Args>
 	inline void Debug::error(Args ...args)
 	{
-		print(VerbosityLevel::error, args...);
+		print(VerbosityLevel::eError, args...);
 	}
 	template<typename ...Args>
 	inline void Debug::warning(Args ...args)
 	{
-		print(VerbosityLevel::warning, args...);
+		print(VerbosityLevel::eWarning, args...);
 	}
 
 	extern Debug * debug;

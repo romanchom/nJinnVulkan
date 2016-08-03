@@ -22,7 +22,7 @@ namespace nJinn {
 			.minFilter(vk::Filter::eLinear)
 			.mipmapMode(vk::SamplerMipmapMode::eLinear);
 
-		dc(vk::createSampler(Context::dev(), &samplerInfo, nullptr, &immutableSamplers[0]));
+		dc(vk::createSampler(context->dev(), &samplerInfo, nullptr, &immutableSamplers[0]));
 
 		samplerInfo
 			.anisotropyEnable(0)
@@ -31,7 +31,7 @@ namespace nJinn {
 			.compareEnable(1)
 			.compareOp(vk::CompareOp::eLess); // TODO FIXME correct op for shadow mapping
 
-		dc(vk::createSampler(Context::dev(), &samplerInfo, nullptr, &immutableSamplers[1]));
+		dc(vk::createSampler(context->dev(), &samplerInfo, nullptr, &immutableSamplers[1]));
 
 		vk::DescriptorSetLayoutBinding bindings[worldDescriptorSetBindingCount];
 		bindings[0]
@@ -52,7 +52,7 @@ namespace nJinn {
 			.bindingCount(worldDescriptorSetBindingCount)
 			.pBindings(bindings);
 
-		dc(vk::createDescriptorSetLayout(Context::dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[worldDescriptorSetIndex]));
+		dc(vk::createDescriptorSetLayout(context->dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[worldDescriptorSetIndex]));
 	}
 
 	void RendererSystem::createObjectDescriptorSet()
@@ -89,7 +89,7 @@ namespace nJinn {
 			.bindingCount(objectDescriptorSetBindingCount)
 			.pBindings(bindings);
 
-		dc(vk::createDescriptorSetLayout(Context::dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[objectDescriptorSetIndex]));
+		dc(vk::createDescriptorSetLayout(context->dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[objectDescriptorSetIndex]));
 	}
 
 	void RendererSystem::createDrawDescriptorSet()
@@ -107,7 +107,7 @@ namespace nJinn {
 			.bindingCount(drawDescriptorSetBindingCount)
 			.pBindings(bindings);
 
-		dc(vk::createDescriptorSetLayout(Context::dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[drawDescriptorSetIndex]));
+		dc(vk::createDescriptorSetLayout(context->dev(), &worldDescInfo, nullptr, &descriptorSetLayouts[drawDescriptorSetIndex]));
 	}
 
 	void RendererSystem::createLayout()
@@ -121,7 +121,7 @@ namespace nJinn {
 			.setLayoutCount(descriptorSetCount)
 			.pSetLayouts(descriptorSetLayouts);
 
-		dc(vk::createPipelineLayout(Context::dev(), &layoutInfo, nullptr, &pipelineLayout));
+		dc(vk::createPipelineLayout(context->dev(), &layoutInfo, nullptr, &pipelineLayout));
 	}
 	void RendererSystem::destroyLayout()
 	{
@@ -143,7 +143,7 @@ namespace nJinn {
 			.poolSizeCount(2)
 			.pPoolSizes(poolSizes);
 
-		dc(vk::createDescriptorPool(Context::dev(), &poolInfo, nullptr, &descPool));
+		dc(vk::createDescriptorPool(context->dev(), &poolInfo, nullptr, &descPool));
 
 		vk::DescriptorSetAllocateInfo setInfo;
 		setInfo
@@ -151,27 +151,27 @@ namespace nJinn {
 			.descriptorSetCount(1)
 			.pSetLayouts(&descriptorSetLayouts[worldDescriptorSetIndex]);
 
-		dc(vk::allocateDescriptorSets(Context::dev(), &setInfo, &descSet));
+		dc(vk::allocateDescriptorSets(context->dev(), &setInfo, &descSet));
 
 		vk::BufferCreateInfo buffInfo;
 		buffInfo
 			.usage(vk::BufferUsageFlagBits::eUniformBuffer)
 			.size(100);
 
-		vk::createBuffer(Context::dev(), &buffInfo, nullptr, &buff);
+		vk::createBuffer(context->dev(), &buffInfo, nullptr, &buff);
 
 		vk::MemoryAllocateInfo allocInfo;
 		allocInfo
 			.allocationSize(1024)
-			.memoryTypeIndex(Context::uploadMemoryType());
+			.memoryTypeIndex(context->uploadMemoryType());
 
-		vk::allocateMemory(Context::dev(), &allocInfo, nullptr, &memory);
+		vk::allocateMemory(context->dev(), &allocInfo, nullptr, &memory);
 
-		vk::bindBufferMemory(Context::dev(), buff, memory, 0);
+		vk::bindBufferMemory(context->dev(), buff, memory, 0);
 
 		float * data;
 
-		vk::mapMemory(Context::dev(), memory, 0, 100, vk::MemoryMapFlags(), (void **) &data);
+		vk::mapMemory(context->dev(), memory, 0, 100, vk::MemoryMapFlags(), (void **) &data);
 
 		data[0] = 1;
 		data[1] = -0.5f;
@@ -191,17 +191,17 @@ namespace nJinn {
 			.descriptorType(vk::DescriptorType::eUniformBuffer)
 			.pBufferInfo(&descBuffInfo);
 
-		vk::updateDescriptorSets(Context::dev(), 1, &descWrite, 0, nullptr);*/
+		vk::updateDescriptorSets(context->dev(), 1, &descWrite, 0, nullptr);*/
 	}
 
 	RendererSystem::~RendererSystem()
 	{
-		/*vk::destroyPipelineLayout(Context::dev(), pipelineLayout, nullptr);
+		/*vk::destroyPipelineLayout(context->dev(), pipelineLayout, nullptr);
 		for (size_t i = 0; i < descriptorSetCount; ++i) {
-			vk::destroyDescriptorSetLayout(Context::dev(), descriptorSetLayouts[i], nullptr);
+			vk::destroyDescriptorSetLayout(context->dev(), descriptorSetLayouts[i], nullptr);
 		}
 		for (size_t i = 0; i < immutableSamplerCount; ++i) {
-			vk::destroySampler(Context::dev(), immutableSamplers[i], nullptr);
+			vk::destroySampler(context->dev(), immutableSamplers[i], nullptr);
 		}*/
 	}
 
@@ -273,6 +273,6 @@ namespace nJinn {
 			.setSignalSemaphoreCount(sSemsC)
 			.setPSignalSemaphores(sSems);
 
-		Context::mainQueue().submit(1, &submitInfo, nullptr);
+		context->mainQueue().submit(1, &submitInfo, nullptr);
 	}
 }

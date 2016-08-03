@@ -33,6 +33,7 @@ namespace nJinn {
 	public:
 		DescriptorAllocator mObjectAllocator;
 		MaterialFamily(const std::string & name);
+		~MaterialFamily();
 		class Material * instantiate();
 		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
 		vk::PipelineLayout layout() { return mLayout; }

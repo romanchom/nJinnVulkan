@@ -38,7 +38,8 @@ namespace nJinn {
 	Context * context = nullptr;
 
 	Context::Context() :
-		validation(config.getValue<uint32_t>("debugLevel"))
+		validation(config.getValue<uint32_t>("debugVK")),
+		debugReportCallback(nullptr)
 	{
 		std::vector<const char *> enabledLayers;
 		std::vector<const char *> enabledExtensions;
@@ -174,36 +175,21 @@ namespace nJinn {
 			vk::MemoryPropertyFlagBits::eHostCached);
 
 		isUploadMemoryCoherent = bool(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
-
-		context = this;
-		ResourceUploader::create();
-		context->pipelineFactory = new PipelineFactory();
 	}
 
 	Context::~Context()
 	{
-		device.waitIdle();
-		delete context->pipelineFactory;
 		MaterialFamily::collect();
 		Mesh::collect();
 		Shader::collect();
-		ResourceUploader::destroy();
 		UniformBuffer::collect();
 
-		if (validation) {
+		device.destroy();
+		if (debugReportCallback) {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 		}
-		device.destroy();
-		//exit(0); // TODO FIXME temporary workaround crash during instance destruction
 		instance.destroy();
 	}
-
-	// FIXME
-	static const int32_t ignoredCodes[] = {
-		50, // Attempt to reset command buffer which is in use
-		49, // Attempt to simultaneously execute command buffer without flag set
-		// reusing command buffers reports errors, even if they have finished executing long time ago
-	};
 
 	static const char * objectNames[] = {
 		"Unknown",
@@ -247,10 +233,6 @@ namespace nJinn {
 		const char* pMessage,
 		void* pUserData)
 	{
-		for (const int32_t code : ignoredCodes) {
-			if (code == messageCode) return 0;
-		}
-
 		const char * type = nullptr;
 		if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) type = "ERR";
 		else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) type = "WAR";
@@ -264,9 +246,11 @@ namespace nJinn {
 		debug->log(" : Code ", messageCode, "\n");
 		debug->log("\"", pMessage, "\"", "\n");
 
-#ifdef _DEBUG
-		DebugBreak();
-#endif
+//#ifdef _DEBUG
+		if (flags & (VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
+			DebugBreak();
+		}
+//#endif
 		return 0;
 	}
 }

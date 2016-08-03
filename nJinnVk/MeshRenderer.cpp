@@ -20,7 +20,7 @@ namespace nJinn {
 			.setStencilTestEnable(0)
 			.setMaxDepthBounds(1)
 			.setDepthCompareOp(vk::CompareOp::eAlways);
-		mPipeline = Context::pipeFact().createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
+		mPipeline = pipelineFactory->createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
 
 
 		mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();
@@ -39,7 +39,7 @@ namespace nJinn {
 			.setDstSet(mDescSet)
 			.setPBufferInfo(&bufferInfo);
 
-		Context::dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
+		context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
 
 	struct uniforms {
@@ -67,5 +67,9 @@ namespace nJinn {
 		// bind renderer descriptor sets
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);
+	}
+	MeshRenderer::~MeshRenderer()
+	{
+		context->dev().destroyPipeline(mPipeline);
 	}
 }

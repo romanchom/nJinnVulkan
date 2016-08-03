@@ -18,7 +18,7 @@ namespace nJinn {
 			.setCodeSize(file.size())
 			.setPCode(reinterpret_cast<const uint32_t *>(file.data()));
 
-		shaderModule = Context::dev().createShaderModule(moduleInfo);
+		shaderModule = context->dev().createShaderModule(moduleInfo);
 
 		shaderInfo
 			.setStage(name.second)
@@ -28,6 +28,6 @@ namespace nJinn {
 
 	Shader::~Shader()
 	{
-		Context::dev().destroyShaderModule(shaderModule);
+		context->dev().destroyShaderModule(shaderModule);
 	}
 }

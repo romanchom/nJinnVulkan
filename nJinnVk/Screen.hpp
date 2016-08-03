@@ -3,67 +3,49 @@
 #include <vulkan.hpp>
 
 #include "Semaphore.hpp"
+#include "Fence.hpp"
 
 namespace nJinn
 {
 	class Screen {
-		class Frame {
-		public:
-			Frame();
-			~Frame();
-			Frame(const Frame & that) = delete;
-			Frame & operator=(const Frame & that) = delete;
-			void create(const Screen & info, size_t index, vk::Image img);
-			void present();
-			void transitionForDraw(vk::CommandBuffer buffer);
-			void transitionForPresent(vk::CommandBuffer buffer);
-			vk::Semaphore waitingSemaphore() const { return imageAquiredSemaphore; }
-			vk::Semaphore signalingSemaphore() const { return renderingCompleteSemaphore; }
-			vk::Framebuffer framebuffer() const { return frameBuffer; }
-		private:
-			void transition(vk::CommandBuffer buffer, const vk::ImageMemoryBarrier & barrier);
+	private:
+		struct Frame {
 			void destroy();
 			vk::Image image;
 			vk::ImageView view;
 			vk::Framebuffer frameBuffer;
-			Semaphore imageAquiredSemaphore;
-			Semaphore renderingCompleteSemaphore;
-			vk::PresentInfoKHR presentInfo;
-			vk::ImageMemoryBarrier presentToDrawBarrier;
-			vk::ImageMemoryBarrier drawToPresentBarrier;
-			uint32_t imageIndex;
+			vk::Semaphore imageAquiredSemaphore;
+			vk::Semaphore renderingCompleteSemaphore;
 		};
-
-		enum {
-			frameCount = 2,
-			maxQueuedFrames = 2
-		};
-
-		bool shouldClose();
-		void acquireFrameIndex(vk::Semaphore signalSemaphore = nullptr, vk::Fence signalFence = nullptr);
-		void setCurrentFrame(uint32_t index);
 
 		void * mWindowHandle;
-
+		uint32_t frameCount;
+		uint32_t maxQueuedFrames;
 		size_t queueIndex;
+		uint32_t mWidth;
+		uint32_t mHeight;
 
 		vk::SwapchainKHR mSwapChain;
 		vk::Format mColorFormat;
 		vk::RenderPass mRenderPass;
 		vk::SurfaceKHR mSurface;
 		vk::ColorSpaceKHR mColorSpace;
-		uint32_t mWidth;
-		uint32_t mHeight;
+
+		vk::PresentInfoKHR presentInfo;
+		vk::ImageMemoryBarrier presentToDrawBarrier;
+		vk::ImageMemoryBarrier drawToPresentBarrier;
 		
-		Frame mFrames[frameCount];
-		size_t mCurrentFrameIndex;
+		Frame * mFrames;
+		uint32_t mCurrentFrameIndex;
 		Frame * mCurrentFrame;
 		vk::Semaphore mCurrentAcquireFrameSemaphore;
-		vk::Fence mFences[maxQueuedFrames];
+		vk::Fence * mFences;
 		size_t mCurrentFence;
 		size_t mTotalFrames;
 
-		friend class Application;
+		bool shouldClose();
+		void acquireFrameIndex(vk::Semaphore signalSemaphore = nullptr, vk::Fence signalFence = nullptr);
+		void setCurrentFrame(uint32_t index);
 	public:
 		Screen(uint32_t width, uint32_t height);
 		~Screen();
@@ -71,12 +53,14 @@ namespace nJinn
 		void present();
 		void acquireFrame();
 		vk::Semaphore waitingSemaphore() const { return mCurrentAcquireFrameSemaphore; }
-		vk::Semaphore renderCompleteSemaphore() const { return mCurrentFrame->signalingSemaphore(); }
+		vk::Semaphore renderCompleteSemaphore() const { return mCurrentFrame->renderingCompleteSemaphore; }
 		vk::RenderPass renderPass() const { return mRenderPass; }
-		vk::Framebuffer framebuffer() const { return mCurrentFrame->framebuffer(); }
-		void transitionForDraw(vk::CommandBuffer cmdbuf) { mCurrentFrame->transitionForDraw(cmdbuf); }
-		void transitionForPresent(vk::CommandBuffer cmdbuf) { mCurrentFrame->transitionForPresent(cmdbuf); }
+		vk::Framebuffer framebuffer() const { return mCurrentFrame->frameBuffer; }
+		void transitionForDraw(vk::CommandBuffer cmdbuf);
+		void transitionForPresent(vk::CommandBuffer cmdbuf);
 		uint32_t width() { return mWidth; };
 		uint32_t height() { return mHeight; };
+
+		friend class Application;
 	};
 }

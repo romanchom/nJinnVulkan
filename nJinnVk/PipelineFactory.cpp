@@ -9,6 +9,8 @@
 namespace bi = boost::iostreams;
 
 namespace nJinn {
+	PipelineFactory * pipelineFactory(nullptr);
+
 	char * cacheUuidToFileName(const uint8_t * uuid) {
 		static char filename[VK_UUID_SIZE * 2 + 5];
 		for (int i = 0; i < VK_UUID_SIZE; ++i) {
@@ -25,7 +27,7 @@ namespace nJinn {
 
 	PipelineFactory::PipelineFactory()
 	{
-		vk::PhysicalDeviceProperties props = Context::physDev().getProperties();
+		vk::PhysicalDeviceProperties props = context->physDev().getProperties();
 		vk::PipelineCacheCreateInfo cacheInfo;
 		try {
 			bi::mapped_file_source file(cacheUuidToFileName(props.pipelineCacheUUID)); // TODO handle problems
@@ -33,17 +35,17 @@ namespace nJinn {
 			cacheInfo
 				.setInitialDataSize(file.size())
 				.setPInitialData(file.data());
-			cache = Context::dev().createPipelineCache(cacheInfo);
+			cache = context->dev().createPipelineCache(cacheInfo);
 		} catch (...) {
-			cache = Context::dev().createPipelineCache(cacheInfo);
+			cache = context->dev().createPipelineCache(cacheInfo);
 		}
 	}
 
 	PipelineFactory::~PipelineFactory()
 	{
-		vk::PhysicalDeviceProperties props = Context::physDev().getProperties();
+		vk::PhysicalDeviceProperties props = context->physDev().getProperties();
 		size_t dataSize;
-		Context::dev().getPipelineCacheData(cache, &dataSize, nullptr);
+		context->dev().getPipelineCacheData(cache, &dataSize, nullptr);
 
 		bi::mapped_file_params params;
 		params.new_file_size = dataSize;
@@ -52,8 +54,8 @@ namespace nJinn {
 		params.path = cacheUuidToFileName(props.pipelineCacheUUID);
 
 		bi::mapped_file_sink file(params);
-		Context::dev().getPipelineCacheData(cache, &dataSize, file.data());
-		Context::dev().destroyPipelineCache(cache);
+		context->dev().getPipelineCacheData(cache, &dataSize, file.data());
+		context->dev().destroyPipelineCache(cache);
 	}
 
 	vk::Pipeline PipelineFactory::createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass,
@@ -87,7 +89,7 @@ namespace nJinn {
 			.setPMultisampleState(&multisampleState)
 			.setPDynamicState(&dynamicState);
 
-		vk::Pipeline ret = Context::dev().createGraphicsPipeline(cache, pipeInfo);
+		vk::Pipeline ret = context->dev().createGraphicsPipeline(cache, pipeInfo);
 
 		return ret;
 	}

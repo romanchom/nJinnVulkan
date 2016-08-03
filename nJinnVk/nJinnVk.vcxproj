@@ -87,6 +87,7 @@
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Debug.hpp" />
     <ClInclude Include="Exception.hpp" />
+    <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
@@ -95,6 +96,7 @@
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="PipelineFactory.hpp" />
+    <ClInclude Include="PointerBind.hpp" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="RendererSystem.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />

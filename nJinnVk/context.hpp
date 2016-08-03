@@ -25,38 +25,34 @@ namespace nJinn {
 		uint32_t bufferMemoryTypeIndex;
 		uint32_t uploadMemoryTypeIndex;
 		bool isUploadMemoryCoherent;
-
-		class PipelineFactory * pipelineFactory;
-
+		
 		// debug section
 		VkDebugReportCallbackEXT debugReportCallback;
 
 		PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
 		PFN_vkDestroyDebugReportCallbackEXT	DestroyDebugReportCallback;
-		const bool validation;
+		const int validation;
 		// end debug section
 	
 	public:
 		Context();
 		~Context();
 
-		static vk::Instance inst() { return context->instance; }
-		static vk::PhysicalDevice physDev() { return context->physicalDevice; }
-		static vk::Device dev() { return context->device; }
+		vk::Instance inst() { return instance; }
+		vk::PhysicalDevice physDev() { return physicalDevice; }
+		vk::Device dev() { return device; }
 
-		static vk::Queue mainQueue() { return context->queues[graphicsQueueIndex]; }
-		static vk::Queue transferQueue() { return context->queues[transferQueueIndex]; }
-		static vk::Queue computeQueue() { return context->queues[computeQueueIndex]; }
+		vk::Queue mainQueue() { return queues[graphicsQueueIndex]; }
+		vk::Queue transferQueue() { return queues[transferQueueIndex]; }
+		vk::Queue computeQueue() { return queues[computeQueueIndex]; }
 
-		static size_t mainQueueFamilyIndex() { return context->queueFamilyIndicies[graphicsQueueIndex]; }
-		static size_t transferQueueFamilyIndex() { return context->queueFamilyIndicies[transferQueueIndex]; }
-		static size_t computeQueueFamilyIndex() { return context->queueFamilyIndicies[computeQueueIndex]; }
+		size_t mainQueueFamilyIndex() { return queueFamilyIndicies[graphicsQueueIndex]; }
+		size_t transferQueueFamilyIndex() { return queueFamilyIndicies[transferQueueIndex]; }
+		size_t computeQueueFamilyIndex() { return queueFamilyIndicies[computeQueueIndex]; }
 
-		static uint32_t bufferMemoryType() { return context->bufferMemoryTypeIndex; }
-		static uint32_t uploadMemoryType() { return context->uploadMemoryTypeIndex; }
-		static bool isUploadMemoryTypeCoherent() { return context->isUploadMemoryCoherent; }
-
-		static class PipelineFactory & pipeFact() { return *context->pipelineFactory; }
+		uint32_t bufferMemoryType() { return bufferMemoryTypeIndex; }
+		uint32_t uploadMemoryType() { return uploadMemoryTypeIndex; }
+		bool isUploadMemoryTypeCoherent() { return isUploadMemoryCoherent; }
 	};
 
 }
