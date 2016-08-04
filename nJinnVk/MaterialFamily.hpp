@@ -9,7 +9,6 @@
 namespace nJinn {
 	class MaterialFamily : public Resource {
 		class DescriptorAllocator {
-		private:
 		public:
 			~DescriptorAllocator();
 			std::list<vk::DescriptorPool> mPools;
@@ -18,14 +17,16 @@ namespace nJinn {
 			vk::DescriptorSet allocateDescriptorSet();
 		};
 		
-		Shader::handle vertexShader;
-		Shader::handle fragmentShader;
+		enum shaderTypes {
+			shaderCount = 5, 
+		};
 
+		Shader::handle mShaders[shaderCount];
 		vk::PipelineLayout mLayout;
-		vk::PipelineColorBlendStateCreateInfo blendState;
-		vk::PipelineColorBlendAttachmentState state;
+		vk::PipelineColorBlendStateCreateInfo mBlendState;
+		vk::PipelineColorBlendAttachmentState mBlendAttachmentState;
 		uint32_t mStageCount;
-		vk::PipelineShaderStageCreateInfo stages[2];
+		vk::PipelineShaderStageCreateInfo mShaderStages[shaderCount];
 
 		vk::DescriptorPoolSize mPoolSizes[3];
 

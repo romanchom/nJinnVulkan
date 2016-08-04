@@ -1,0 +1,7 @@
+---
+shaders:
+    - shaders/triangle_vert.yml
+    - shaders/triangle_frag.yml
+#blend
+#descriptors itp
+...

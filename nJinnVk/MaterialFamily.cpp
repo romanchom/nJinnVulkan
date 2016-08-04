@@ -1,25 +1,37 @@
 #include "stdafx.hpp"
 #include "MaterialFamily.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 #include "Context.hpp"
 #include "Material.hpp"
 #include "PipelineFactory.hpp"
 #include "ResourceManager.hpp"
 
 namespace nJinn {
+	using namespace YAML;
+
 	void MaterialFamily::load(const std::string & name)
 	{
-		// TODO read shader names and descriptor sets from a file
-		vertexShader = resourceManager->get<Shader>("shaders/triangle_vert.yml", true);// , vk::ShaderStageFlagBits::eVertex
-		fragmentShader = resourceManager->get<Shader>("shaders/triangle_frag.yml", true);//, vk::ShaderStageFlagBits::eFragment });
+		Node root = LoadFile(name);
+		{
+			Node shaders = root["shaders"];
+			assert(shaders.IsSequence());
+			int i = 0;
+			for (auto & node : shaders) {
+				mShaders[i] = resourceManager->get<Shader>(shaders[i].as<std::string>(), true);
+				++i;
+			}
+		}
 		
-		state
+		// TODO descriptor sets from a file
+		mBlendAttachmentState
 			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
 			.setBlendEnable(false);
 
-		blendState
+		mBlendState
 			.setAttachmentCount(1)
-			.setPAttachments(&state);
+			.setPAttachments(&mBlendAttachmentState);
 
 		vk::DescriptorSetLayoutBinding bindings[2];
 		vk::DescriptorSetLayoutCreateInfo descInfo;
@@ -87,8 +99,11 @@ namespace nJinn {
 			.setPoolSizeCount(1)
 			.setPPoolSizes(mPoolSizes + 2);
 
-		if (vertexShader) stages[mStageCount++] = vertexShader->shaderInfo();
-		if (fragmentShader) stages[mStageCount++] = fragmentShader->shaderInfo();
+		for (int i = 0; i < shaderCount; ++i) {
+			if (mShaders[i]) {
+				mShaderStages[mStageCount++] = mShaders[i]->shaderInfo();
+			}
+		}
 	}
 
 	MaterialFamily::MaterialFamily() :
@@ -113,8 +128,8 @@ namespace nJinn {
 		info
 			.setLayout(mLayout)
 			.setStageCount(mStageCount)
-			.setPStages(stages)
-			.setPColorBlendState(&blendState);
+			.setPStages(mShaderStages)
+			.setPColorBlendState(&mBlendState);
 	}
 
 	MaterialFamily::DescriptorAllocator::~DescriptorAllocator() {

@@ -15,7 +15,7 @@ using namespace nJinn;
 class G : public GameBase {
 public:
 	virtual void onInitialize() override {
-		MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("ASD", true);
+		MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", true);
 
 		GameObject * go = GameObject::create();
 
