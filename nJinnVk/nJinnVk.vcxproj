@@ -89,6 +89,7 @@
     <ClInclude Include="Exception.hpp" />
     <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
+    <ClInclude Include="Hash.hpp" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="MemoryAllocation.hpp" />
@@ -99,16 +100,20 @@
     <ClInclude Include="PointerBind.hpp" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="RendererSystem.hpp" />
+    <ClInclude Include="Resource.hpp" />
+    <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
     <ClInclude Include="Semaphore.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="SystemStartup.hpp" />
+    <ClInclude Include="Task.hpp" />
     <ClInclude Include="TeeStream.hpp" />
-    <ClInclude Include="TrackedResource.hpp" />
+    <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="UniformBuffer.hpp" />
     <ClInclude Include="UniformBufferAllocator.hpp" />
+    <ClInclude Include="YamlUtility.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
@@ -130,6 +135,7 @@
     <ClCompile Include="PipelineFactory.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererSystem.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Semaphore.cpp" />
@@ -138,6 +144,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SystemStartup.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>

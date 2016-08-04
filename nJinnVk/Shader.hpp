@@ -1,17 +1,21 @@
 #pragma once
 
 #include <vulkan.hpp>
-#include "TrackedResource.hpp"
+#include <memory>
+#include "Resource.hpp"
 
 
 namespace nJinn {
-	class Shader : public TrackedResource<Shader, std::pair<std::string, vk::ShaderStageFlagBits>>{
+	class Shader : public Resource{
 	public:
-		Shader(const std::pair<std::string, vk::ShaderStageFlagBits> & name);
+		typedef std::shared_ptr<Shader> handle;
+		Shader();
 		~Shader();
-		operator const vk::PipelineShaderStageCreateInfo &() const { return shaderInfo; }
+		virtual void load(const std::string & fileName) override;
+		const vk::PipelineShaderStageCreateInfo & shaderInfo() const { return mShaderInfo; }
 	private:
-		vk::PipelineShaderStageCreateInfo shaderInfo;
-		vk::ShaderModule shaderModule;
+		std::string mEntryPoint;
+		vk::PipelineShaderStageCreateInfo mShaderInfo;
+		vk::ShaderModule mShaderModule;
 	};
 }

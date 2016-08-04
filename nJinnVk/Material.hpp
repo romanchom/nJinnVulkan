@@ -2,6 +2,8 @@
 
 #include <vulkan.hpp>
 
+#include "Resource.hpp"
+
 namespace nJinn {
 	class Material {
 	private:

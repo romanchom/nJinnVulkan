@@ -26,7 +26,9 @@ namespace nJinn {
 	template<typename T>
 	const T & Config::getValue(const std::string & key)
 	{
-		return variables[key].as<T>();
+		auto & var  = variables[key];
+		if (var.empty()) throw std::exception("Option not recognized");
+		return var.as<T>();
 	}
 
 	extern Config config;

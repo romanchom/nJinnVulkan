@@ -4,14 +4,14 @@
 #include "Context.hpp"
 #include "Material.hpp"
 #include "PipelineFactory.hpp"
+#include "ResourceManager.hpp"
 
 namespace nJinn {
-	MaterialFamily::MaterialFamily(const std::string & name) :
-		mStageCount(0)
+	void MaterialFamily::load(const std::string & name)
 	{
 		// TODO read shader names and descriptor sets from a file
-		vertexShader = Shader::load({ "shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex });
-		fragmentShader = Shader::load({ "shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment });
+		vertexShader = resourceManager->get<Shader>("shaders/triangle_vert.yml", true);// , vk::ShaderStageFlagBits::eVertex
+		fragmentShader = resourceManager->get<Shader>("shaders/triangle_frag.yml", true);//, vk::ShaderStageFlagBits::eFragment });
 		
 		state
 			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
@@ -87,9 +87,13 @@ namespace nJinn {
 			.setPoolSizeCount(1)
 			.setPPoolSizes(mPoolSizes + 2);
 
-		if (vertexShader) stages[mStageCount++] = *vertexShader;
-		if (fragmentShader) stages[mStageCount++] = *fragmentShader;
+		if (vertexShader) stages[mStageCount++] = vertexShader->shaderInfo();
+		if (fragmentShader) stages[mStageCount++] = fragmentShader->shaderInfo();
 	}
+
+	MaterialFamily::MaterialFamily() :
+		mStageCount(0)
+	{}
 
 	MaterialFamily::~MaterialFamily()
 	{

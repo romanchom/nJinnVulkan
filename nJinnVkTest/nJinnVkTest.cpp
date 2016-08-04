@@ -8,20 +8,20 @@
 #include <nJinnVk/Mesh.hpp>
 #include <nJinnVk/MeshRenderer.hpp>
 #include <nJinnVk/GameObject.hpp>
+#include <nJinnVk/ResourceManager.hpp>
 
 using namespace nJinn;
 
 class G : public GameBase {
 public:
 	virtual void onInitialize() override {
-		MaterialFamily::p matFam = MaterialFamily::load("ASD");
+		MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("ASD", true);
 
 		GameObject * go = GameObject::create();
 
 		MeshRenderer * mr = go->addComponent<MeshRenderer>();
-		mr->mMesh = Mesh::load("asteroid.vbm");
-		mr->mForwardMaterial = MaterialFamily::load("")->instantiate();
-
+		mr->mMesh = resourceManager->get<Mesh>("asteroid.vbm", true);
+		mr->mForwardMaterial = matFam->instantiate();
 	}
 	
 	virtual void onUpdate() override {

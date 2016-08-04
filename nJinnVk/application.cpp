@@ -75,7 +75,7 @@ namespace nJinn {
 		config.parseDefaultConfigFile();
 		systemStartup = std::make_unique<SystemStartup>();
 
-		screen = new Screen(1280, 720);
+		screen = new Screen(config.getValue<uint32_t>("rendering.width"), config.getValue<uint32_t>("rendering.height"));
 		rendererSystem->setScreen(screen);
 	}
 

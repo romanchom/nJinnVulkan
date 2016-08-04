@@ -13,8 +13,12 @@ namespace nJinn {
 			("shadowMapRes", value<uint32_t>()->default_value(256), "shadow map resolution")
 			("debug", value<uint32_t>()->default_value(3), "logging verbosity (0 - 3)")
 			("debugVK", value<uint32_t>()->default_value(1), "Vulkan logging verbosity (0 - 5)")
+			
 			("swapchain.backBufferCount", value<uint32_t>()->default_value(2), "number of backBuffers")
-			("swapchain.maxQueuedFrames", value<uint32_t>()->default_value(2), "maxiumum number of simultaneously queued frames");
+			("swapchain.maxQueuedFrames", value<uint32_t>()->default_value(2), "maxiumum number of simultaneously queued frames")
+			
+			("rendering.width", value<uint32_t>()->default_value(640), "screen width")
+			("rendering.height", value<uint32_t>()->default_value(480), "screen height");
 	}
 
 	boost::program_options::options_description_easy_init Config::addOptions()

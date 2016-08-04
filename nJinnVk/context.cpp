@@ -38,8 +38,13 @@ namespace nJinn {
 	Context * context = nullptr;
 
 	Context::Context() :
-		validation(config.getValue<uint32_t>("debugVK")),
-		debugReportCallback(nullptr)
+		bufferMemoryTypeIndex(-1),
+		uploadMemoryTypeIndex(-1),
+		isUploadMemoryCoherent(false),
+		debugReportCallback(nullptr),
+		CreateDebugReportCallback(nullptr),
+		DestroyDebugReportCallback(nullptr),
+		validation(config.getValue<uint32_t>("debugVK"))
 	{
 		std::vector<const char *> enabledLayers;
 		std::vector<const char *> enabledExtensions;
@@ -91,7 +96,7 @@ namespace nJinn {
 
 		for (int i = 0; i < 3; ++i) {
 			auto type = queueTypes[i];
-			for (size_t j = 0; j < queuesProperties.size(); ++j) {
+			for (uint32_t j = 0; j < queuesProperties.size(); ++j) {
 				if (queuesProperties[j].queueFlags & type) {
 					qLocations[i].familyIndex = j;
 					qLocations[i].indexInFamily = queueInstanceCounts[j]++;
@@ -179,9 +184,9 @@ namespace nJinn {
 
 	Context::~Context()
 	{
-		MaterialFamily::collect();
-		Mesh::collect();
-		Shader::collect();
+		//MaterialFamily::collect();
+		//Mesh::collect();
+		//Shader::collect();
 		UniformBuffer::collect();
 
 		device.destroy();

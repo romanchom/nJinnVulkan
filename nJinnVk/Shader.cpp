@@ -2,15 +2,32 @@
 #include "Shader.hpp"
 
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <yaml-cpp/yaml.h>
+#include "YamlUtility.hpp"
 #include "Context.hpp"
 
 namespace nJinn {
 	using namespace boost::iostreams;
+	using namespace YAML;
 
-	Shader::Shader(const std::pair<std::string, vk::ShaderStageFlagBits>& name)
+	Shader::Shader()
+	{}
+
+	Shader::~Shader()
 	{
-		mapped_file_source file(name.first);
-		if (!file.is_open()) throw std::runtime_error("Couldn't open shader file " + name.first);
+		context->dev().destroyShaderModule(mShaderModule);
+	}
+
+	void Shader::load(const std::string & fileName)
+	{
+		Node root = LoadFile(fileName);
+		std::string shaderSourceFileName = root["source"].as<std::string>();
+		vk::ShaderStageFlagBits shaderStage = root["type"].as<vk::ShaderStageFlagBits>();
+		mEntryPoint = root["entryPoint"].as<std::string>();
+
+		mapped_file_source file(shaderSourceFileName);
+
+		if (!file.is_open()) throw std::runtime_error("Couldn't open shader file " + fileName);
 		file.begin();
 
 		vk::ShaderModuleCreateInfo moduleInfo;
@@ -18,16 +35,11 @@ namespace nJinn {
 			.setCodeSize(file.size())
 			.setPCode(reinterpret_cast<const uint32_t *>(file.data()));
 
-		shaderModule = context->dev().createShaderModule(moduleInfo);
+		mShaderModule = context->dev().createShaderModule(moduleInfo);
 
-		shaderInfo
-			.setStage(name.second)
-			.setModule(shaderModule)
-			.setPName("main");
-	}
-
-	Shader::~Shader()
-	{
-		context->dev().destroyShaderModule(shaderModule);
+		mShaderInfo
+			.setStage(shaderStage)
+			.setModule(mShaderModule)
+			.setPName(mEntryPoint.c_str());
 	}
 }

@@ -31,7 +31,18 @@ namespace nJinn {
 		{f::eR64Sfloat,		f::eR64G64Sfloat,	f::eR64G64B64Sfloat,	f::eR64G64B64A64Sfloat	},	// 64 FLOAT
 	};
 
-	Mesh::Mesh(const std::string & name)
+
+	Mesh::Mesh() :
+		bindingCount(0),
+		indexCount(0)
+	{
+	}
+
+	Mesh::~Mesh() {
+		context->dev().destroyBuffer(buffer);
+	}
+
+	void Mesh::load(const std::string & name)
 	{
 		meshLoader::MeshData meshData(name);
 
@@ -86,11 +97,6 @@ namespace nJinn {
 		tessInfo.setPatchControlPoints(3);
 
 		resourceUploader->upload(meshData.data(), meshData.totalDataSize(), buffer);
-	}
-
-	Mesh::~Mesh()
-	{
-		context->dev().destroyBuffer(buffer);
 	}
 
 	void Mesh::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)

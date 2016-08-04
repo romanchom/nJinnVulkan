@@ -1,0 +1,5 @@
+---
+source: shaders/triangle.frag.spv
+type: fragment
+entryPoint: main
+...

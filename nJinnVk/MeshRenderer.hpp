@@ -16,7 +16,7 @@ namespace nJinn {
 		virtual void initialize() override;
 		virtual void update() override;
 	public:
-		Mesh::p mMesh;
+		Mesh::handle mMesh;
 		virtual void draw(vk::CommandBuffer cmdbuf) override;
 		virtual ~MeshRenderer();
 	};

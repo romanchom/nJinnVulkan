@@ -3,9 +3,11 @@
 #include "PointerBind.hpp"
 #include "Debug.hpp"
 #include "Context.hpp"
+#include "ThreadPool.hpp"
 #include "ResourceUploader.hpp"
-#include "RendererSystem.hpp"
 #include "PipelineFactory.hpp"
+#include "ResourceManager.hpp"
+#include "RendererSystem.hpp"
 
 
 namespace nJinn {
@@ -17,6 +19,9 @@ namespace nJinn {
 	private:
 		Debug mDebug;
 		PointerBind<Debug> mDebugBind;
+
+		ThreadPool mThreadPool;
+		PointerBind<ThreadPool> mThreadPoolBind;
 		
 		Context mContext;
 		PointerBind<Context> mContextBind;
@@ -26,8 +31,12 @@ namespace nJinn {
 		
 		PipelineFactory mPipelineFactory;
 		PointerBind<PipelineFactory> mPipelineFactoryBind;
+
+		ResourceManager mResourceManager;
+		PointerBind<ResourceManager> mResourceManagerBind;
 		
 		RendererSystem mRendererSystem;
 		PointerBind<RendererSystem> mRendererSystemBind;
+
 	};
 }

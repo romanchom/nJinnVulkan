@@ -3,12 +3,12 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <LibraryPath>$(VK_SDK_PATH)\Bin;$(BOOST)\stage\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VK_SDK_PATH)\Bin;$(BOOST)\stage\lib;$(YAML)\lib;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>Libraries</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(SolutionDir)include\;$(BOOST);$(EIGEN);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VK_SDK_PATH)\Include;$(SolutionDir)include\;$(BOOST);$(YAML);$(EIGEN);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

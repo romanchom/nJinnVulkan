@@ -3,11 +3,11 @@
 #include <list>
 #include <vulkan.hpp>
 
-#include "TrackedResource.hpp"
+#include "Resource.hpp"
 #include "Shader.hpp"
 
 namespace nJinn {
-	class MaterialFamily : public TrackedResource<MaterialFamily> {
+	class MaterialFamily : public Resource {
 		class DescriptorAllocator {
 		private:
 		public:
@@ -18,8 +18,8 @@ namespace nJinn {
 			vk::DescriptorSet allocateDescriptorSet();
 		};
 		
-		Shader::p vertexShader;
-		Shader::p fragmentShader;
+		Shader::handle vertexShader;
+		Shader::handle fragmentShader;
 
 		vk::PipelineLayout mLayout;
 		vk::PipelineColorBlendStateCreateInfo blendState;
@@ -31,9 +31,12 @@ namespace nJinn {
 
 		DescriptorAllocator mMaterialAllocator;
 	public:
+		typedef std::shared_ptr<MaterialFamily> handle;
 		DescriptorAllocator mObjectAllocator;
-		MaterialFamily(const std::string & name);
+		
+		MaterialFamily();
 		~MaterialFamily();
+		virtual void load(const std::string & name) override;
 		class Material * instantiate();
 		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
 		vk::PipelineLayout layout() { return mLayout; }

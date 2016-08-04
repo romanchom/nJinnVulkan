@@ -2,14 +2,16 @@
 
 #include <vulkan.hpp>
 
-#include "TrackedResource.hpp"
+#include "Resource.hpp"
 #include "MemoryAllocation.hpp"
 
 namespace nJinn {
-	class Mesh : public TrackedResource<Mesh> {
+	class Mesh : public Resource {
 	public:
-		Mesh(const std::string & name);
+		typedef std::shared_ptr<Mesh> handle;
+		Mesh();
 		~Mesh();
+		virtual void load(const std::string & name) override;
 		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
 		void bind(vk::CommandBuffer cmdbuf);
 		void draw(vk::CommandBuffer cmdbuf);
