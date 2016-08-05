@@ -1,50 +1,26 @@
 #include "stdafx.hpp"
 #include "MeshRenderer.hpp"
 
+#include <chrono>
 #include "Context.hpp"
 #include "PipelineFactory.hpp"
 #include "Application.hpp"
 #include "Material.hpp"
 #include "MaterialFamily.hpp"
 #include "Screen.hpp"
-#include <chrono>
+#include "ResourceManager.hpp"
+#include "RendererSystem.hpp"
 
 namespace nJinn {
-	void MeshRenderer::initialize()
-	{
-		vk::PipelineRasterizationStateCreateInfo rasterinfo;
-		rasterinfo.setLineWidth(1.0f);
-		vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
-		depthstencilInfo
-			.setDepthTestEnable(0)
-			.setStencilTestEnable(0)
-			.setMaxDepthBounds(1)
-			.setDepthCompareOp(vk::CompareOp::eAlways);
-		mPipeline = pipelineFactory->createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
-
-
-		mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();
-
-		mUniforms.initialize(16);
-
-		vk::DescriptorBufferInfo bufferInfo;
-		mUniforms.fillDescriptorInfo(bufferInfo);
-
-		vk::WriteDescriptorSet descWrite;
-		descWrite
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
-			.setDstArrayElement(0)
-			.setDstBinding(0)
-			.setDstSet(mDescSet)
-			.setPBufferInfo(&bufferInfo);
-
-		context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
-	}
-
 	struct uniforms {
 		float x, y, z, w;
 	};
+
+	void MeshRenderer::mesh(const Mesh::handle & mesh)
+	{
+		mMesh = mesh;
+		resourceManager->onResourceLoaded(mesh, [=]{ return validate(); });
+	}
 
 	void MeshRenderer::update()
 	{
@@ -68,8 +44,48 @@ namespace nJinn {
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);
 	}
+
 	MeshRenderer::~MeshRenderer()
 	{
 		context->dev().destroyPipeline(mPipeline);
+	}
+
+	bool nJinn::MeshRenderer::validate()
+	{
+		if (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid()) {
+			mForwardMaterial = static_cast<std::unique_ptr<Material>>(mMaterialFamily->instantiate());
+			vk::PipelineRasterizationStateCreateInfo rasterinfo;
+			rasterinfo.setLineWidth(1.0f);
+			vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
+			depthstencilInfo
+				.setDepthTestEnable(0)
+				.setStencilTestEnable(0)
+				.setMaxDepthBounds(1)
+				.setDepthCompareOp(vk::CompareOp::eAlways);
+			mPipeline = pipelineFactory->createPipeline(*mForwardMaterial->family(), *mMesh, Application::screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
+			mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();
+
+			mUniforms.initialize(16);
+
+			vk::DescriptorBufferInfo bufferInfo;
+			mUniforms.fillDescriptorInfo(bufferInfo);
+
+			vk::WriteDescriptorSet descWrite;
+			descWrite
+				.setDescriptorCount(1)
+				.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
+				.setDstArrayElement(0)
+				.setDstBinding(0)
+				.setDstSet(mDescSet)
+				.setPBufferInfo(&bufferInfo);
+
+			context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
+
+			rendererSystem->registerRenderer(this);
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }

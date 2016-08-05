@@ -27,7 +27,7 @@ namespace nJinn {
 		GameObject* mParent;
 		std::vector<GameObject *> mChildren;
 
-		std::vector<ComponentBase *> mComponents;
+		std::vector<Component *> mComponents;
 	public:
 		GameObject();
 		~GameObject();

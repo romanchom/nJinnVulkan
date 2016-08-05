@@ -97,6 +97,8 @@ namespace nJinn {
 		tessInfo.setPatchControlPoints(3);
 
 		resourceUploader->upload(meshData.data(), meshData.totalDataSize(), buffer);
+
+		finishedLoading();
 	}
 
 	void Mesh::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)
@@ -115,9 +117,9 @@ namespace nJinn {
 		cmdbuf.bindIndexBuffer(buffer, 0, indexType);
 		cmdbuf.bindVertexBuffers(0, bindingCount, b, vertexBufferOffsets);
 	}
-
 	void Mesh::draw(vk::CommandBuffer cmdbuf)
 	{
+		[](){}();
 		//vk::cmdDraw(cmdbuf, 300, 1, 0, 0);
 		cmdbuf.drawIndexed(indexCount, 1, 0, 0, 1);
 	}

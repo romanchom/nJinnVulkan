@@ -26,6 +26,9 @@ namespace nJinn {
 		mMemory = context->dev().allocateMemory(allocInfo);
 		context->dev().bindBufferMemory(mBuffer, mMemory, 0);
 		mPointer = (char *) context->dev().mapMemory(mMemory, 0, uniformSize * 2, vk::MemoryMapFlags());
+		//																	   ^
+		//																	   |
+		// TODO															or this "2"
 	}
 
 	UniformAllocator::~UniformAllocator()
@@ -37,6 +40,7 @@ namespace nJinn {
 
 	void UniformAllocator::update()
 	{
+		// TODO where is this "2" comming from??
 		++mCycle %= 2;
 		mCurrentOffset = mTotalSpace * mCycle;
 	}

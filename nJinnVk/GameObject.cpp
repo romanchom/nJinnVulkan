@@ -18,7 +18,7 @@ namespace nJinn {
 
 	GameObject::~GameObject()
 	{
-		for (ComponentBase * c : mComponents) delete c;
+		for (Component * c : mComponents) delete c;
 	}
 
 	GameObject * GameObject::create()

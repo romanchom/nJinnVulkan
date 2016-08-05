@@ -135,6 +135,7 @@
     <ClCompile Include="PipelineFactory.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererSystem.cpp" />
+    <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />

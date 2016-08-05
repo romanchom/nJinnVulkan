@@ -1,24 +1,29 @@
 #pragma once
-
-#include <unordered_set>
-#include <vulkan.hpp>
 #include "Component.hpp"
 
+#include <unordered_set>
+#include <memory>
+#include <vulkan.hpp>
+
+#include "MaterialFamily.hpp"
 #include "Material.hpp"
 
 namespace nJinn {
-	class Renderer : public Component<10000> {
-	public:
-		static std::unordered_set<Renderer *> sRenderers;
-
-		Material * mDepthMaterial;
-		Material * mDeferredMaterial;
-		Material * mForwardMaterial;
+	class Renderer : public Component {
+	protected:
+		MaterialFamily::handle mMaterialFamily;
+		std::unique_ptr<Material> mForwardMaterial;
 		vk::DescriptorSet mDescriptorSet; // object uniforms
-		
+
+		virtual void update() = 0;
 		virtual void draw(vk::CommandBuffer cmdbuf) = 0;
-		
+		virtual bool validate();
+		bool isValid() { return mMaterialFamily != nullptr && mMaterialFamily->isLoaded(); }
+	public:
 		Renderer();
 		virtual ~Renderer() override;
+		void materialFamily(const MaterialFamily::handle & material);
+
+		friend class RendererSystem;
 	};
 }

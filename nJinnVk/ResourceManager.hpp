@@ -4,6 +4,7 @@
 #include <boost/pool/pool_alloc.hpp>
 #include <string>
 #include <memory>
+#include <functional>
 
 
 #include "Resource.hpp"
@@ -22,6 +23,9 @@ namespace nJinn {
 		typedef std::pair<const key_t, Resource> elem_t;
 		typedef boost::pool_allocator<elem_t, boost::default_user_allocator_new_delete, boost::details::pool::default_mutex, 128> alloc_t;
 		typedef boost::unordered_map<key_t, val_t, hash_t, equal_t, alloc_t> map_t;
+
+		typedef std::function<bool()> callback_t;
+		typedef boost::unordered_multimap <Resource *, callback_t, std::hash<Resource *>, std::equal_to<Resource *>, boost::pool_allocator<std::pair<Resource *, callback_t>>> callbackMap_t;
 	private:
 		class ResourceLoadTask : public Task {
 		private:
@@ -38,9 +42,13 @@ namespace nJinn {
 			}
 		};
 		map_t mMap;
+		callbackMap_t mOnResourceLoadedCallbacks;
 	public:
 		template<typename T>
 		std::shared_ptr<T> get(cref_t key, bool loadImmediate = false);
+
+		void onResourceLoaded(const val_t & resource, callback_t callback);
+		void runCallbacks(Resource * resource);
 
 		void collect();
 	};

@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "YamlUtility.hpp"
 #include "Context.hpp"
+#include "ResourceManager.hpp"
 
 namespace nJinn {
 	using namespace boost::iostreams;
@@ -41,5 +42,7 @@ namespace nJinn {
 			.setStage(shaderStage)
 			.setModule(mShaderModule)
 			.setPName(mEntryPoint.c_str());
+
+		finishedLoading();
 	}
 }

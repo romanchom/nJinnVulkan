@@ -15,24 +15,19 @@ using namespace nJinn;
 class G : public GameBase {
 public:
 	virtual void onInitialize() override {
-		MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", true);
+		MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml");
 
 		GameObject * go = GameObject::create();
 
 		MeshRenderer * mr = go->addComponent<MeshRenderer>();
-		mr->mMesh = resourceManager->get<Mesh>("asteroid.vbm", true);
-		mr->mForwardMaterial = matFam->instantiate();
+		mr->mesh(resourceManager->get<Mesh>("asteroid.vbm"));
+		mr->materialFamily(matFam);
 	}
 	
-	virtual void onUpdate() override {
-	
-	}
-	
+	virtual void onUpdate() override {}
 	virtual void onPreRender() override {}
 	virtual void onRendered() override {}
-	virtual void onExit() override {
-	
-	}
+	virtual void onExit() override {}
 };
 
 #include <nJinnVk/Debug.hpp>

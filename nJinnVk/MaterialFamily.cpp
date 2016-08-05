@@ -104,6 +104,8 @@ namespace nJinn {
 				mShaderStages[mStageCount++] = mShaders[i]->shaderInfo();
 			}
 		}
+
+		finishedLoading();
 	}
 
 	MaterialFamily::MaterialFamily() :

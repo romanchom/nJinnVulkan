@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/unordered_set.hpp>
 #include <vulkan.hpp>
 
 #include "Mesh.hpp"
@@ -8,12 +9,9 @@
 
 namespace nJinn {
 	class RendererSystem {
+	public:
+		typedef boost::unordered_set<class Renderer *> set_t;
 	private:
-		/*void createWorldDescriptorSet();
-		void createObjectDescriptorSet();
-		void createDrawDescriptorSet();
-		void createLayout();
-		void destroyLayout();*/
 		enum {
 			worldDescriptorSetIndex = 0,
 			objectDescriptorSetIndex,
@@ -24,10 +22,16 @@ namespace nJinn {
 			objectDescriptorSetBindingCount = 4,
 			drawDescriptorSetBindingCount = 1
 		};
+
+		set_t mRenderersSet;
+
 		class Screen * screen;
 	public:
 		RendererSystem();
 		~RendererSystem();
+
+		void registerRenderer(class Renderer * renderer) { mRenderersSet.emplace(renderer); }
+		void unregisterRenderer(class Renderer * renderer) { mRenderersSet.erase(renderer); }
 
 		void update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsCw);
 

@@ -7,17 +7,17 @@
 
 namespace nJinn {
 	class MeshRenderer : public Renderer {
-	private:
+	protected:
 		vk::Pipeline mPipeline;
 		UniformBuffer mUniforms;
 		vk::DescriptorSet mDescSet;
 		vk::DescriptorPool mPool;
-	protected:
-		virtual void initialize() override;
-		virtual void update() override;
-	public:
 		Mesh::handle mMesh;
+	public:
+		void mesh(const Mesh::handle & mesh);
+		virtual void update() override;
 		virtual void draw(vk::CommandBuffer cmdbuf) override;
 		virtual ~MeshRenderer();
+		virtual bool validate() override;
 	};
 }

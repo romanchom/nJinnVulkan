@@ -40,8 +40,6 @@ namespace nJinn {
 			screen->acquireFrame();
 
 			UniformBuffer::update();
-			// update
-			ComponentBase::updateComponents();
 
 			resourceUploader->execute();
 
