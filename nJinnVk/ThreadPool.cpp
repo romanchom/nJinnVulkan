@@ -8,7 +8,7 @@ namespace nJinn {
 	void ThreadPool::workerFunction()
 	{
 		while (true) {
-			Task * t;
+			task_t task;
 			{
 				unique_lock<mutex> lock(mMutex);
 				while (mTaskQueue.empty() && mShouldRun) {
@@ -19,10 +19,10 @@ namespace nJinn {
 				}
 				if (!mShouldRun) break;
 
-				t = mTaskQueue.front();
+				task = mTaskQueue.front();
 				mTaskQueue.pop();
 			}
-			t->execute();
+			task();
 		}
 	}
 
@@ -32,7 +32,7 @@ namespace nJinn {
 		mShouldRun(true),
 		mIdleThreads(0)
 	{
-		for (int i = 0; i < workerCount; ++i) {
+		for (uint32_t i = 0; i < workerCount; ++i) {
 			mWorkers[i] = std::thread(&ThreadPool::workerFunction, this);
 		}
 	}
@@ -47,11 +47,10 @@ namespace nJinn {
 		delete[] mWorkers;
 	}
 
-	void ThreadPool::submitTask(Task * t)
+	void ThreadPool::submitTask(const task_t & task)
 	{
 		unique_lock<mutex> lock(mMutex);
-
-		mTaskQueue.push(t);
+		mTaskQueue.push(task);
 		mConditionVariable.notify_one();
 	}
 

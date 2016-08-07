@@ -6,10 +6,10 @@
 #include <memory>
 #include <functional>
 
-
 #include "Resource.hpp"
-#include "Task.hpp"
 #include "ThreadPool.hpp"
+#include "Debug.hpp"
+#include "Clock.hpp"
 
 namespace nJinn {
 	class ResourceManager
@@ -27,20 +27,6 @@ namespace nJinn {
 		typedef std::function<bool()> callback_t;
 		typedef boost::unordered_multimap <Resource *, callback_t, std::hash<Resource *>, std::equal_to<Resource *>, boost::pool_allocator<std::pair<Resource *, callback_t>>> callbackMap_t;
 	private:
-		class ResourceLoadTask : public Task {
-		private:
-			val_t mResource;
-			std::string mResourceName;
-		public:
-			ResourceLoadTask(val_t & resource, const std::string & resourceName) : 
-				mResource(resource),
-				mResourceName(resourceName) 
-			{}
-			virtual void execute() override { 
-				mResource->load(mResourceName); 
-				delete this;
-			}
-		};
 		map_t mMap;
 		callbackMap_t mOnResourceLoadedCallbacks;
 	public:
@@ -61,14 +47,17 @@ namespace nJinn {
 		auto it = mMap.find(key);
 		if (it == mMap.end()) {
 			// key not found, insert new object
-			std::shared_ptr<T> value = std::make_shared<T>();
-			mMap.insert(std::make_pair(key, value));
+			std::shared_ptr<T> resource = std::make_shared<T>();
+			mMap.insert(std::make_pair(key, resource));
 			if (loadImmediate) {
-				value->load(key);
+				resource->load(key);
 			}else{
-				threadPool->submitTask(new ResourceLoadTask(std::static_pointer_cast<Resource>(value), key));
+				threadPool->submitTask([=]() {
+					resource->load(key); 
+					debug->log("Resource loaded in frame ", clock->frame(), '\n');
+				});
 			}
-			return value;
+			return resource;
 		}
 		else {
 			// found an object with diven key

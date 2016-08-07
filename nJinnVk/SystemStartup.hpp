@@ -8,7 +8,7 @@
 #include "PipelineFactory.hpp"
 #include "ResourceManager.hpp"
 #include "RendererSystem.hpp"
-
+#include "Clock.hpp"
 
 namespace nJinn {
 	class SystemStartup
@@ -38,5 +38,7 @@ namespace nJinn {
 		RendererSystem mRendererSystem;
 		PointerBind<RendererSystem> mRendererSystemBind;
 
+		Clock mClock;
+		PointerBind<Clock> mClockBind;
 	};
 }

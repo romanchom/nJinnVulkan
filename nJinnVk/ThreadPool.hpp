@@ -4,15 +4,16 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
-#include "Task.hpp"
+#include <functional>
 
 namespace nJinn {
 	class ThreadPool
 	{
 	private:
+		typedef std::function<void()> task_t;
 		uint32_t mWorkerCount;
 		std::thread * mWorkers;
-		std::queue<Task *> mTaskQueue;
+		std::queue<task_t> mTaskQueue;
 		std::mutex mMutex;
 		std::condition_variable mConditionVariable;
 		std::condition_variable mConditionVariableIdle;
@@ -22,7 +23,7 @@ namespace nJinn {
 	public:
 		ThreadPool(uint32_t workerCount);
 		~ThreadPool();
-		void submitTask(Task * t);
+		void submitTask(const task_t & task);
 		void waitUntillCompleted();
 	};
 

@@ -18,7 +18,9 @@ namespace nJinn {
 		mResourceManager(),
 		mResourceManagerBind(&mResourceManager, &nJinn::resourceManager),
 		mRendererSystem(),
-		mRendererSystemBind(&mRendererSystem, &nJinn::rendererSystem)
+		mRendererSystemBind(&mRendererSystem, &nJinn::rendererSystem),
+		mClock(),
+		mClockBind(&mClock, &nJinn::clock)
 	{
 	}
 

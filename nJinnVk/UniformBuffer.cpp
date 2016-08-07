@@ -127,7 +127,7 @@ namespace nJinn {
 	void * UniformBuffer::acquirePointer()
 	{
 		auto v = mAllocator->acquire(mSize);
-		mCurrentOffset = v.second;
+		mCurrentOffset = (uint32_t) v.second;
 		return v.first;
 	}
 

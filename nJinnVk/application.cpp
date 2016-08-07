@@ -26,17 +26,15 @@ namespace nJinn {
 		int nCmdShow = 1;
 	}
 
-	typedef std::chrono::high_resolution_clock clock;
 
 	Screen * Application::screen = nullptr;
 
 	void Application::gameLoop()
 	{
-		auto begin = clock::now();
 		mGame->onInitialize();
-		size_t frame = 0;
 		while (true) {
 			if (screen->shouldClose()) break;
+			clock->update();
 			screen->acquireFrame();
 
 			UniformBuffer::update();
@@ -54,15 +52,6 @@ namespace nJinn {
 			rendererSystem->update(waitSemaphores, 2, signalSemaphores, 1);
 
 			screen->present();
-
-			++frame;
-			auto end = clock::now();
-			std::chrono::duration<double> diff = end - begin;
-			if (diff.count() > 0.2) {
-				debug->log("FPS: ", frame / diff.count(), "\n");
-				begin = clock::now();
-				frame = 0;
-			}
 		}
 	}
 

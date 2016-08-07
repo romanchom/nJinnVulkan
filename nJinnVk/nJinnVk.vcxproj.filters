@@ -45,6 +45,9 @@
     <Filter Include="Header Files\utility">
       <UniqueIdentifier>{8ea48770-f3f8-4613-84e1-9db99bea8917}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utility">
+      <UniqueIdentifier>{46b88e1b-0346-4c11-bd62-099d96a4eab3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
@@ -125,12 +128,6 @@
     <ClInclude Include="UniformBuffer.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="Exception.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Debug.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TeeStream.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>
@@ -139,9 +136,6 @@
     </ClInclude>
     <ClInclude Include="Resource.hpp">
       <Filter>Header Files\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="Task.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.hpp">
       <Filter>Header Files</Filter>
@@ -159,6 +153,12 @@
       <Filter>Header Files\utility</Filter>
     </ClInclude>
     <ClInclude Include="YamlUtility.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Clock.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>
   </ItemGroup>
@@ -229,15 +229,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
-    <ClCompile Include="UniformBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SystemStartup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -250,8 +241,21 @@
     <ClCompile Include="Resource.cpp">
       <Filter>Source Files\resources</Filter>
     </ClCompile>
+    <ClCompile Include="Clock.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemStartup.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="UniformBuffer.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />

@@ -80,13 +80,13 @@
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BlockAllocator.hpp" />
     <ClInclude Include="BucketAllocator.hpp" />
+    <ClInclude Include="Clock.hpp" />
     <ClInclude Include="CommandBuffer.hpp" />
     <ClInclude Include="Component.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Debug.hpp" />
-    <ClInclude Include="Exception.hpp" />
     <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
     <ClInclude Include="Hash.hpp" />
@@ -108,7 +108,6 @@
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="SystemStartup.hpp" />
-    <ClInclude Include="Task.hpp" />
     <ClInclude Include="TeeStream.hpp" />
     <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="UniformBuffer.hpp" />
@@ -119,6 +118,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BlockAllocator.cpp" />
     <ClCompile Include="BucketAllocator.cpp" />
+    <ClCompile Include="Clock.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Config.cpp" />
