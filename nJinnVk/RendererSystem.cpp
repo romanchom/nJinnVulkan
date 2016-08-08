@@ -10,13 +10,160 @@
 namespace nJinn {
 	RendererSystem * rendererSystem;
 
-	RendererSystem::RendererSystem()
+	static enum {
+
+		depthStencilAttachmentIndex = 0,
+		gBufferDiffuseColorAttachmentIndex,
+		gBufferNormalSpecularAttachmentIndex,
+		hdrColorAttachmentIndex,
+		renderPassAttachmentsCount,
+
+		
+		geometrySubpassColorAttachmentsCount = 3,
+		
+		geometrySubpassIndex = 0,
+		lightingSubpassIndex,
+		subpassCount,
+		// DO NOT USE
+		forwardSubpassIndex,
+		postprocessIndex,
+
+		subpassCount = 2,
+
+	};
+
+	void RendererSystem::createRenderPass()
 	{
+		// --------------------------
+		// GEOMETRY PASS attachments BEGIN  
+		// diffuse color
+		// normal
+		// specular etc.
+		
+		// depth stencil
+		vk::AttachmentDescription renderPassAttachments[renderPassAttachmentsCount];
+		renderPassAttachments[depthStencilAttachmentIndex]
+			.setFormat(vk::Format::eD32SfloatS8Uint)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eClear)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eStore)
+			.setInitialLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+		// diffuse color
+		renderPassAttachments[gBufferDiffuseColorAttachmentIndex]
+			.setFormat(vk::Format::eA2R10G10B10SnormPack32)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+		// normal in compressed RG format + 10 bit specular in B
+		renderPassAttachments[gBufferNormalSpecularAttachmentIndex]
+			.setFormat(vk::Format::eA2R10G10B10SnormPack32)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+		// hdr output color buffer
+		renderPassAttachments[hdrColorAttachmentIndex]
+			.setFormat(vk::Format::eR16G16B16A16Sfloat)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+		vk::AttachmentReference geometrySubpassAttachments[] = 
+		{ 
+			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
+			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
+			{ depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+		};
+
+		vk::SubpassDescription subpasses[subpassCount];
+		subpasses[geometrySubpassIndex]
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setColorAttachmentCount(geometrySubpassColorAttachmentsCount)
+			.setPColorAttachments(geometrySubpassAttachments)
+			.setPDepthStencilAttachment(geometrySubpassAttachments + geometrySubpassColorAttachmentsCount);
+		
+		vk::AttachmentReference hdrColorAttachment(hdrColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal);
+		vk::AttachmentReference lightingDepthStencilAttachment(depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+
+		vk::AttachmentReference lightingInputAttachments[] =
+		{
+			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eShaderReadOnlyOptimal },
+			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eShaderReadOnlyOptimal },
+		};
+
+		subpasses[lightingSubpassIndex]
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setInputAttachmentCount(2)
+			.setPInputAttachments(lightingInputAttachments)
+			.setColorAttachmentCount(1) // only one output
+			.setPColorAttachments(&hdrColorAttachment)
+			.setPDepthStencilAttachment(&lightingDepthStencilAttachment);
+
+		vk::SubpassDependency dependencies[2];
+		dependencies[0]
+			.setSrcSubpass(geometrySubpassIndex)
+			.setDstSubpass(lightingSubpassIndex)
+			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite
+				| vk::AccessFlagBits::eDepthStencilAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+			.setDstAccessMask(vk::AccessFlagBits::eInputAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstStageMask(vk::PipelineStageFlagBits::eEarlyFragmentTests
+				| vk::PipelineStageFlagBits::eFragmentShader
+				| vk::PipelineStageFlagBits::eLateFragmentTests);
+
+		dependencies[1]
+			.setSrcSubpass(lightingSubpassIndex)
+			.setDstSubpass(VK_SUBPASS_EXTERNAL)
+			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite
+				| vk::AccessFlagBits::eDepthStencilAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+			.setDstAccessMask(vk::AccessFlagBits::eInputAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentRead
+				| vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstStageMask(vk::PipelineStageFlagBits::eEarlyFragmentTests
+				| vk::PipelineStageFlagBits::eFragmentShader
+				| vk::PipelineStageFlagBits::eLateFragmentTests);
+
+
+		vk::RenderPassCreateInfo renderPassInfo;
+		renderPassInfo
+			.setAttachmentCount(renderPassAttachmentsCount)
+			.setPAttachments(renderPassAttachments)
+			.setSubpassCount(subpassCount)
+			.setPSubpasses(subpasses)
+			.setDependencyCount(2)
+			.setPDependencies(dependencies);
+		
+
 	}
 
+	RendererSystem::RendererSystem()
+	{}
+
 	RendererSystem::~RendererSystem()
-	{
-	}
+	{}
 
 	void RendererSystem::update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsC)
 	{

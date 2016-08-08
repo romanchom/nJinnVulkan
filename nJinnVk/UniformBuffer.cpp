@@ -62,7 +62,7 @@ namespace nJinn {
 			.setSize(mCurrentOffset);
 	}
 
-	bool UniformAllocator::occupied()
+	bool UniformAllocator::occupied() const
 	{
 		return mFreeSpace != mTotalSpace;
 	}
@@ -72,13 +72,9 @@ namespace nJinn {
 		return mFreeSpace > that.mFreeSpace;
 	}
 
-	bool isFree(UniformAllocator & alloc) {
-		return !alloc.occupied();
-	}
-
 	void UniformBuffer::collect()
 	{
-		sAllocators.remove_if(isFree);
+		sAllocators.remove_if([](const UniformAllocator & alloc) { return !alloc.occupied(); });
 		sAllocators.sort();
 	}
 

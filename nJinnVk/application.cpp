@@ -36,7 +36,7 @@ namespace nJinn {
 			if (screen->shouldClose()) break;
 			clock->update();
 			screen->acquireFrame();
-
+			mGame->onUpdate();
 			UniformBuffer::update();
 
 			resourceUploader->execute();

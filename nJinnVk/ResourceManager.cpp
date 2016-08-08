@@ -4,7 +4,7 @@
 namespace nJinn {
 	ResourceManager * resourceManager;
 
-	void ResourceManager::onResourceLoaded(const val_t & resource, callback_t callback)
+	void ResourceManager::onResourceLoaded(const val_t & resource, const callback_t & callback)
 	{
 		if (resource->isLoaded()) {
 			callback();

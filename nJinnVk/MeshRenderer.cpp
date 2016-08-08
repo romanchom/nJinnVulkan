@@ -1,7 +1,6 @@
 #include "stdafx.hpp"
 #include "MeshRenderer.hpp"
 
-#include <chrono>
 #include "Context.hpp"
 #include "PipelineFactory.hpp"
 #include "Application.hpp"
@@ -10,6 +9,7 @@
 #include "Screen.hpp"
 #include "ResourceManager.hpp"
 #include "RendererSystem.hpp"
+#include "Clock.hpp"
 
 namespace nJinn {
 	struct uniforms {
@@ -25,9 +25,9 @@ namespace nJinn {
 	void MeshRenderer::update()
 	{
 		uniforms * uni = mUniforms.acquire<uniforms>();
-		std::chrono::duration<double> a = std::chrono::high_resolution_clock::now().time_since_epoch();
-		double s = sin(a.count());
-		double c = cos(a.count());
+		double a = clock->time();
+		double s = sin(a);
+		double c = cos(a);
 		uni->x = (float) (c * 0.5);
 		uni->y = (float) (s * 0.5);
 		uni->z = 0.2f;

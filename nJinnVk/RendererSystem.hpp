@@ -26,6 +26,8 @@ namespace nJinn {
 		set_t mRenderersSet;
 
 		class Screen * screen;
+
+		void createRenderPass();
 	public:
 		RendererSystem();
 		~RendererSystem();

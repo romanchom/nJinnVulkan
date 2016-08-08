@@ -28,7 +28,7 @@ namespace nJinn {
 		void update();
 		std::pair<void *, size_t> acquire(size_t size);
 		void writtenRange(vk::MappedMemoryRange & range);
-		bool occupied();
+		bool occupied() const;
 		bool operator<(const UniformAllocator & that);
 		vk::Buffer buffer() { return mBuffer; }
 	};

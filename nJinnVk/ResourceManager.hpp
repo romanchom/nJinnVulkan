@@ -33,7 +33,7 @@ namespace nJinn {
 		template<typename T>
 		std::shared_ptr<T> get(cref_t key, bool loadImmediate = false);
 
-		void onResourceLoaded(const val_t & resource, callback_t callback);
+		void onResourceLoaded(const val_t & resource, const callback_t & callback);
 		void runCallbacks(Resource * resource);
 
 		void collect();
