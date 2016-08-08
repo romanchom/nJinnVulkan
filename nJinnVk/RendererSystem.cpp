@@ -190,15 +190,26 @@ namespace nJinn {
 		}
 		mGBufferMemory.allocate(totalSizeRequired);
 		
+		vk::ImageSubresourceRange range(
+			vk::ImageAspectFlagBits::eDepth
+			| vk::ImageAspectFlagBits::eStencil,
+			0, 1, 0, 1);
 
 		vk::ImageViewCreateInfo imageViewInfo;
 		imageViewInfo
 			.setViewType(vk::ImageViewType::e2D)
-			.setSubresourceRange(
-				vk::ImageSubresourceRange(
-					vk::ImageAspectFlagBits::eDepth
-					| vk::ImageAspectFlagBits::eStencil,
-					0, 1, 0, 1));
+			.setSubresourceRange(range);
+
+		vk::ImageMemoryBarrier defineLayoutBarrier;
+		defineLayoutBarrier
+			.setSubresourceRange(range)
+			.setOldLayout(vk::ImageLayout::eUndefined)
+			.setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+
+		CommandBuffer cmdBuf;
+		cmdBuf.beginRecording();
 
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			context->dev().bindImageMemory(mGBufferImages[i],
@@ -210,13 +221,32 @@ namespace nJinn {
 				.setFormat(formats[i]);
 			
 			mImageViews[i] = context->dev().createImageView(imageViewInfo);
+			
+			defineLayoutBarrier.setImage(mGBufferImages[i]);
+			cmdBuf->pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+				vk::PipelineStageFlagBits::eTopOfPipe,
+				vk::DependencyFlags(),
+				0, nullptr,
+				0, nullptr,
+				1, &defineLayoutBarrier);
 
-
-			imageViewInfo.setSubresourceRange(
-				vk::ImageSubresourceRange(
-					vk::ImageAspectFlagBits::eColor,
-					0, 1, 0, 1));
+			range.setAspectMask(vk::ImageAspectFlagBits::eColor);
+			imageViewInfo.setSubresourceRange(range);
+			defineLayoutBarrier
+				.setSubresourceRange(range)
+				.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal);
 		}
+
+		cmdBuf.endRecording();
+
+		vk::SubmitInfo submitInfo;
+		submitInfo
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(cmdBuf.get());
+
+		context->mainQueue().submit(1, &submitInfo, nullptr);
+		context->mainQueue().waitIdle();
+
 	}
 
 	void RendererSystem::createFramebuffer()
@@ -255,13 +285,13 @@ namespace nJinn {
 		screen->transitionForDraw(cmdbuf);
 		
 
-		uint32_t asd[] = { 0, 0, screen->width(), screen->height() };
 		vk::Rect2D rendArea;
-		memcpy(&rendArea, asd, 16);
+		rendArea.extent.setWidth(screen->width()).setHeight(screen->height());
 
-		float vals[] = { 0.1f, 0.1f, 0.0f, 1.0f };
-		vk::ClearValue val;
-		memcpy(&val, vals, 16);
+		vk::ClearValue vals[renderPassAttachmentsCount];
+
+		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.0f).setStencil(0);
+		vals[hdrColorAttachmentIndex].color.setFloat32({0.1f, 0.1f, 0.1f, 0.1f});
 
 		vk::Viewport view;
 		view
@@ -274,11 +304,13 @@ namespace nJinn {
 
 		vk::RenderPassBeginInfo info;
 		info
+			//.setRenderPass(mDeferredRenderPass)
+			//.setFramebuffer(mFramebuffer)
 			.setRenderPass(screen->renderPass())
 			.setFramebuffer(screen->framebuffer())
 			.setRenderArea(rendArea)
-			.setClearValueCount(1)
-			.setPClearValues(&val);
+			.setClearValueCount(4)
+			.setPClearValues(vals);
 
 		cmdbuf->beginRenderPass(info, vk::SubpassContents::eInline);
 		cmdbuf->setViewport(0, 1, &view);

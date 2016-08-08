@@ -19,7 +19,7 @@ public:
 	}
 	
 	virtual void onUpdate() override {
-		if (nJinn::clock->frame() == 10000) {
+		if (nJinn::clock->frame() == 100) {
 			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml");
 
 			GameObject * go = GameObject::create();
