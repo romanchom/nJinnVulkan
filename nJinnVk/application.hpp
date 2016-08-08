@@ -34,7 +34,6 @@ namespace nJinn {
 		std::unique_ptr<class SystemStartup> systemStartup;
 		void gameLoop();
 	public:
-		static class Screen * screen;
 		Application(APPLICATION_PARAMS);
 		~Application();
 		template<typename T>

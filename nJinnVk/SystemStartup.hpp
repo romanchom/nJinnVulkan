@@ -2,8 +2,9 @@
 
 #include "PointerBind.hpp"
 #include "Debug.hpp"
-#include "Context.hpp"
 #include "ThreadPool.hpp"
+#include "Context.hpp"
+#include "Screen.hpp"
 #include "ResourceUploader.hpp"
 #include "PipelineFactory.hpp"
 #include "ResourceManager.hpp"
@@ -25,6 +26,9 @@ namespace nJinn {
 		
 		Context mContext;
 		PointerBind<Context> mContextBind;
+
+		Screen mScreen;
+		PointerBind<Screen> mScreenBind;
 
 		ResourceUploader mResourceUploader;
 		PointerBind<ResourceUploader> mResourceUploaderBind;

@@ -6,30 +6,17 @@
 #include "Application.hpp"
 #include "Screen.hpp"
 #include "Renderer.hpp"
+#include "Debug.hpp"
 
 namespace nJinn {
 	RendererSystem * rendererSystem;
 
-	static enum {
-
-		depthStencilAttachmentIndex = 0,
-		gBufferDiffuseColorAttachmentIndex,
-		gBufferNormalSpecularAttachmentIndex,
-		hdrColorAttachmentIndex,
-		renderPassAttachmentsCount,
-
-		
-		geometrySubpassColorAttachmentsCount = 3,
-		
-		geometrySubpassIndex = 0,
-		lightingSubpassIndex,
-		subpassCount,
-		// DO NOT USE
-		forwardSubpassIndex,
-		postprocessIndex,
-
-		subpassCount = 2,
-
+	static const vk::Format formats[RendererSystem::renderPassAttachmentsCount] =
+	{
+		vk::Format::eD32SfloatS8Uint,
+		vk::Format::eA2B10G10R10UnormPack32,
+		vk::Format::eA2B10G10R10UnormPack32,
+		vk::Format::eR16G16B16A16Sfloat,
 	};
 
 	void RendererSystem::createRenderPass()
@@ -43,7 +30,7 @@ namespace nJinn {
 		// depth stencil
 		vk::AttachmentDescription renderPassAttachments[renderPassAttachmentsCount];
 		renderPassAttachments[depthStencilAttachmentIndex]
-			.setFormat(vk::Format::eD32SfloatS8Uint)
+			.setFormat(formats[depthStencilAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -54,7 +41,7 @@ namespace nJinn {
 
 		// diffuse color
 		renderPassAttachments[gBufferDiffuseColorAttachmentIndex]
-			.setFormat(vk::Format::eA2R10G10B10SnormPack32)
+			.setFormat(formats[gBufferDiffuseColorAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -65,7 +52,7 @@ namespace nJinn {
 
 		// normal in compressed RG format + 10 bit specular in B
 		renderPassAttachments[gBufferNormalSpecularAttachmentIndex]
-			.setFormat(vk::Format::eA2R10G10B10SnormPack32)
+			.setFormat(formats[gBufferNormalSpecularAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -76,7 +63,7 @@ namespace nJinn {
 
 		// hdr output color buffer
 		renderPassAttachments[hdrColorAttachmentIndex]
-			.setFormat(vk::Format::eR16G16B16A16Sfloat)
+			.setFormat(formats[hdrColorAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -156,14 +143,111 @@ namespace nJinn {
 			.setDependencyCount(2)
 			.setPDependencies(dependencies);
 		
+		mDeferredRenderPass = context->dev().createRenderPass(renderPassInfo);
+	}
 
+	void RendererSystem::createGBuffer()
+	{
+		vk::ImageCreateInfo imageInfo;
+
+		// depth stencil buffer
+		imageInfo
+			.setImageType(vk::ImageType::e2D)
+			.setFormat(formats[depthStencilAttachmentIndex])
+			.setExtent(vk::Extent3D(screen->width(), screen->height(), 1))
+			.setMipLevels(1)
+			.setArrayLayers(1)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setTiling(vk::ImageTiling::eOptimal)
+			.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment
+				| vk::ImageUsageFlagBits::eInputAttachment)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setInitialLayout(vk::ImageLayout::eUndefined);
+
+		mGBufferImages[depthStencilAttachmentIndex] = context->dev().createImage(imageInfo);
+
+		imageInfo
+			.setFormat(formats[gBufferDiffuseColorAttachmentIndex])
+			.setUsage(vk::ImageUsageFlagBits::eColorAttachment
+				| vk::ImageUsageFlagBits::eInputAttachment);
+		mGBufferImages[gBufferDiffuseColorAttachmentIndex] = context->dev().createImage(imageInfo);
+		
+		imageInfo.setFormat(formats[gBufferNormalSpecularAttachmentIndex]);
+		mGBufferImages[gBufferNormalSpecularAttachmentIndex] = context->dev().createImage(imageInfo);
+		
+		imageInfo.setFormat(formats[hdrColorAttachmentIndex]);
+		mGBufferImages[hdrColorAttachmentIndex] = context->dev().createImage(imageInfo);
+		
+		uint32_t totalSizeRequired = 0;
+		uint32_t offsets[renderPassAttachmentsCount];
+		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
+			vk::MemoryRequirements memReq = context->dev().getImageMemoryRequirements(mGBufferImages[i]);
+			totalSizeRequired += memReq.alignment - 1;
+			totalSizeRequired /= memReq.alignment;
+			totalSizeRequired *= memReq.alignment;
+			offsets[i] = totalSizeRequired;
+			totalSizeRequired += memReq.size;
+		}
+		mGBufferMemory.allocate(totalSizeRequired);
+		
+
+		vk::ImageViewCreateInfo imageViewInfo;
+		imageViewInfo
+			.setViewType(vk::ImageViewType::e2D)
+			.setSubresourceRange(
+				vk::ImageSubresourceRange(
+					vk::ImageAspectFlagBits::eDepth
+					| vk::ImageAspectFlagBits::eStencil,
+					0, 1, 0, 1));
+
+		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
+			context->dev().bindImageMemory(mGBufferImages[i],
+				mGBufferMemory.deviceMemory(),
+				mGBufferMemory.offset() + offsets[i]);
+
+			imageViewInfo
+				.setImage(mGBufferImages[i])
+				.setFormat(formats[i]);
+			
+			mImageViews[i] = context->dev().createImageView(imageViewInfo);
+
+
+			imageViewInfo.setSubresourceRange(
+				vk::ImageSubresourceRange(
+					vk::ImageAspectFlagBits::eColor,
+					0, 1, 0, 1));
+		}
+	}
+
+	void RendererSystem::createFramebuffer()
+	{
+		vk::FramebufferCreateInfo framebufferInfo;
+		framebufferInfo
+			.setRenderPass(mDeferredRenderPass)
+			.setAttachmentCount(renderPassAttachmentsCount)
+			.setPAttachments(mImageViews)
+			.setWidth(screen->width())
+			.setHeight(screen->height());
+
+		mFramebuffer = context->dev().createFramebuffer(framebufferInfo);
 	}
 
 	RendererSystem::RendererSystem()
-	{}
+	{
+		createRenderPass();
+		createGBuffer();
+		createFramebuffer();
+	}
 
 	RendererSystem::~RendererSystem()
-	{}
+	{
+		context->dev().destroyFramebuffer(mFramebuffer);
+		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
+			context->dev().destroyImage(mGBufferImages[i]);
+			context->dev().destroyImageView(mImageViews[i]);
+		}
+		context->dev().destroyRenderPass(mDeferredRenderPass);
+	}
 
 	void RendererSystem::update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsC)
 	{

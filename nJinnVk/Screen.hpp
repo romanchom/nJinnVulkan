@@ -62,4 +62,6 @@ namespace nJinn
 
 		friend class Application;
 	};
+
+	extern Screen * screen;
 }

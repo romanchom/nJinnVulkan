@@ -26,9 +26,6 @@ namespace nJinn {
 		int nCmdShow = 1;
 	}
 
-
-	Screen * Application::screen = nullptr;
-
 	void Application::gameLoop()
 	{
 		mGame->onInitialize();
@@ -61,9 +58,6 @@ namespace nJinn {
 		config.parseCommandLine(args);
 		config.parseDefaultConfigFile();
 		systemStartup = std::make_unique<SystemStartup>();
-
-		screen = new Screen(config.getValue<uint32_t>("rendering.width"), config.getValue<uint32_t>("rendering.height"));
-		rendererSystem->setScreen(screen);
 	}
 
 	Application::~Application()
@@ -71,7 +65,6 @@ namespace nJinn {
 		mGame->onExit();
 		context->mainQueue().waitIdle();
 		GameObject::clearScene();
-		delete screen;
 	}
 
 	void Application::quit()

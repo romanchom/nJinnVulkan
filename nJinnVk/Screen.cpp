@@ -15,6 +15,8 @@
 namespace nJinn {
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+	Screen * screen;
+
 	Screen::Screen(uint32_t width, uint32_t height) :
 		mWindowHandle(nullptr),
 		frameCount(config.getValue<uint32_t>("swapchain.backBufferCount")),

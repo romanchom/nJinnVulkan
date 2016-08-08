@@ -6,12 +6,12 @@
 #include "Mesh.hpp"
 #include "MaterialFamily.hpp"
 #include "CommandBuffer.hpp"
+#include "MemoryAllocation.hpp"
 
 namespace nJinn {
 	class RendererSystem {
 	public:
 		typedef boost::unordered_set<class Renderer *> set_t;
-	private:
 		enum {
 			worldDescriptorSetIndex = 0,
 			objectDescriptorSetIndex,
@@ -20,14 +20,35 @@ namespace nJinn {
 			immutableSamplerCount = 2,
 			worldDescriptorSetBindingCount = 2,
 			objectDescriptorSetBindingCount = 4,
-			drawDescriptorSetBindingCount = 1
+			drawDescriptorSetBindingCount = 1,
+
+			depthStencilAttachmentIndex = 0,
+			gBufferDiffuseColorAttachmentIndex,
+			gBufferNormalSpecularAttachmentIndex,
+			hdrColorAttachmentIndex,
+			renderPassAttachmentsCount,
+
+
+			geometrySubpassColorAttachmentsCount = gBufferNormalSpecularAttachmentIndex,
+
+			geometrySubpassIndex = 0,
+			lightingSubpassIndex,
+			subpassCount,
 		};
+	private:
 
 		set_t mRenderersSet;
+		vk::RenderPass mDeferredRenderPass;
 
-		class Screen * screen;
+		vk::Image mGBufferImages[renderPassAttachmentsCount];
+		vk::ImageView mImageViews[renderPassAttachmentsCount];
+		MemoryAllocation mGBufferMemory;
+
+		vk::Framebuffer mFramebuffer;
 
 		void createRenderPass();
+		void createGBuffer();
+		void createFramebuffer();
 	public:
 		RendererSystem();
 		~RendererSystem();
@@ -40,8 +61,6 @@ namespace nJinn {
 		vk::Sampler immutableSamplers[immutableSamplerCount];
 
 		CommandBuffer cmdbuf;
-
-		void setScreen(class Screen * scr) { screen = scr; }
 	};
 
 	extern RendererSystem * rendererSystem;
