@@ -126,6 +126,7 @@
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Hash.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialFamily.cpp" />
     <ClCompile Include="MemoryAllocation.cpp" />

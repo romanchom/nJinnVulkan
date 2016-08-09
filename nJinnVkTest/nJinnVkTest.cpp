@@ -20,12 +20,12 @@ public:
 	
 	virtual void onUpdate() override {
 		if (nJinn::clock->frame() == 100) {
-			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml");
+			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", true);
 
 			GameObject * go = GameObject::create();
 
 			MeshRenderer * mr = go->addComponent<MeshRenderer>();
-			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm"));
+			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm", true));
 			mr->materialFamily(matFam);
 		}
 	

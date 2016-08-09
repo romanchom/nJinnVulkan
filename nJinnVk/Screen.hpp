@@ -59,6 +59,8 @@ namespace nJinn
 		void transitionForPresent(vk::CommandBuffer cmdbuf);
 		uint32_t width() { return mWidth; };
 		uint32_t height() { return mHeight; };
+		uint32_t currentFrameIndex() const { return mCurrentFrameIndex; }
+		vk::ImageView getImageView(uint32_t index) { return mFrames[index].view; }
 
 		friend class Application;
 	};

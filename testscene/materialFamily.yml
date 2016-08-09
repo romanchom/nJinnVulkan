@@ -2,6 +2,15 @@
 shaders:
     - shaders/triangle_vert.yml
     - shaders/triangle_frag.yml
+materialParams:
+    -   type: texture
+        count: 1
+        
+objectParams:
+    -   type: uniforms
+        count: 1
+        
+outputCount: 2
 #blend
 #descriptors itp
 ...

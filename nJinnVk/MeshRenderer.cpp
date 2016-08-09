@@ -52,7 +52,7 @@ namespace nJinn {
 	bool nJinn::MeshRenderer::validate()
 	{
 		if (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid()) {
-			mPipeline = pipelineFactory->createPipeline(*mMaterialFamily, *mMesh, screen->renderPass(), 0);
+			mPipeline = pipelineFactory->createPipeline(*mMaterialFamily, *mMesh, rendererSystem->renderPass(), rendererSystem->geometrySubpassIndex);
 			mDescSet = mMaterialFamily->mObjectAllocator.allocateDescriptorSet();
 
 			mUniforms.initialize(16);

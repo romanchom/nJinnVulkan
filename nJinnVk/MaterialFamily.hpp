@@ -2,6 +2,7 @@
 
 #include <list>
 #include <vulkan.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include "Resource.hpp"
 #include "Shader.hpp"
@@ -12,23 +13,26 @@ namespace nJinn {
 		public:
 			~DescriptorAllocator();
 			std::list<vk::DescriptorPool> mPools;
+			std::unique_ptr<vk::DescriptorPoolSize[]> poolSizes;
+
 			vk::DescriptorPoolCreateInfo mPoolCreateInfo;
 			vk::DescriptorSetLayout mLayout;
 			vk::DescriptorSet allocateDescriptorSet();
+			void parseYAML(YAML::Node node);
 		};
 		
 		enum shaderTypes {
 			shaderCount = 5, 
+			descriptorPoolSize = 10,
 		};
 
 		Shader::handle mShaders[shaderCount];
 		vk::PipelineLayout mLayout;
 		vk::PipelineColorBlendStateCreateInfo mBlendState;
-		vk::PipelineColorBlendAttachmentState mBlendAttachmentState;
+		vk::PipelineColorBlendAttachmentState mBlendAttachmentState[2];
 		uint32_t mStageCount;
 		vk::PipelineShaderStageCreateInfo mShaderStages[shaderCount];
 
-		vk::DescriptorPoolSize mPoolSizes[3];
 
 		DescriptorAllocator mMaterialAllocator;
 	public:

@@ -44,15 +44,15 @@ namespace nJinn {
 		vk::RenderPass mDeferredRenderPass;
 
 		vk::Image mGBufferImages[renderPassAttachmentsCount];
-		vk::ImageView mImageViews[renderPassAttachmentsCount];
+		vk::ImageView mImageViews[renderPassAttachmentsCount + 1];
+		vk::ImageView mDepthOnlyImageView;
 		MemoryAllocation mGBufferMemory;
 
-		vk::Framebuffer mFramebuffer;
+		vk::Framebuffer mFramebuffers[3];
 
 		MaterialFamily::handle mat;
 		Mesh::handle mesh;
 		vk::Pipeline pipe;
-		UniformBuffer uniforms;
 		vk::DescriptorSet mDescSet;
 
 		void createRenderPass();
@@ -66,6 +66,9 @@ namespace nJinn {
 		void unregisterRenderer(class Renderer * renderer) { mRenderersSet.erase(renderer); }
 
 		void update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsCw);
+
+		vk::RenderPass renderPass() const { return mDeferredRenderPass; }
+		
 
 		vk::Sampler immutableSamplers[immutableSamplerCount];
 

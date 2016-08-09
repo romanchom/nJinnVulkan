@@ -1,7 +1,15 @@
 ---
 shaders:
-    - shaders/quad.vert.yml
-    - shaders/quad.frag.yml
+    -   shaders/quad.vert.yml
+    -   shaders/quad.frag.yml
+materialParams:
+    -   type: texture
+        count: 1
+        
+objectParams:
+    -   type: attachment
+        count: 2
+        
+outputCount: 1
 #blend
-#descriptors itp
 ...

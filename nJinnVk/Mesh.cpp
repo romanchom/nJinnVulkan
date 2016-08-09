@@ -119,8 +119,6 @@ namespace nJinn {
 	}
 	void Mesh::draw(vk::CommandBuffer cmdbuf)
 	{
-		[](){}();
-		//vk::cmdDraw(cmdbuf, 300, 1, 0, 0);
 		cmdbuf.drawIndexed(indexCount, 1, 0, 0, 1);
 	}
 }

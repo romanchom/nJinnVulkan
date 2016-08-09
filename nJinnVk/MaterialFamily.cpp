@@ -1,15 +1,67 @@
 #include "stdafx.hpp"
 #include "MaterialFamily.hpp"
 
-#include <yaml-cpp/yaml.h>
 
 #include "Context.hpp"
 #include "Material.hpp"
 #include "PipelineFactory.hpp"
 #include "ResourceManager.hpp"
+#include "Hash.hpp"
 
 namespace nJinn {
 	using namespace YAML;
+	using namespace literals;
+
+	void MaterialFamily::DescriptorAllocator::parseYAML(Node node)
+	{
+		vk::DescriptorSetLayoutCreateInfo descInfo;
+
+		assert(node.IsSequence());
+		uint32_t size = (uint32_t) node.size();
+
+		std::unique_ptr<vk::DescriptorSetLayoutBinding[]> bindings(new vk::DescriptorSetLayoutBinding[size]);
+		poolSizes = static_cast<std::unique_ptr<vk::DescriptorPoolSize[]>>(new vk::DescriptorPoolSize[size]);
+		
+		for(int i = 0; i < size; ++i){
+			Node param = node[i];
+
+			uint64_t typeId = hash(param["type"].as<std::string>());
+			vk::DescriptorType type;
+
+			switch (typeId) {
+			case "texture"_hash: type = vk::DescriptorType::eSampledImage; break;
+			case "uniforms"_hash: type = vk::DescriptorType::eUniformBufferDynamic; break;
+			case "attachment"_hash: type = vk::DescriptorType::eInputAttachment; break;
+			default: throw std::runtime_error("Unrecognized shader parameter type");
+			}
+
+			uint32_t count = param["count"].as<uint32_t>();
+
+			bindings[i]
+				.setBinding(i)
+				.setStageFlags(vk::ShaderStageFlagBits::eAllGraphics)
+				.setDescriptorType(type)
+				.setDescriptorCount(count);
+			poolSizes[i]
+				.setType(type)
+				.setDescriptorCount(descriptorPoolSize * count);
+		}
+		
+		descInfo
+			.setBindingCount(size)
+			.setPBindings(bindings.get());
+
+		mLayout = context->dev().createDescriptorSetLayout(descInfo);
+
+		vk::DescriptorPoolCreateInfo mPoolCreateInfo;
+		mPoolCreateInfo
+			.setMaxSets(10)
+			.setPoolSizeCount(size)
+			.setPPoolSizes(poolSizes.get());
+
+		vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
+		mPools.push_front(pool);
+	}
 
 	void MaterialFamily::load(const std::string & name)
 	{
@@ -24,80 +76,33 @@ namespace nJinn {
 			}
 		}
 		
-		// TODO descriptor sets from a file
-		mBlendAttachmentState
-			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
-			.setBlendEnable(false);
+		uint32_t attachmentCount = root["outputCount"].as<uint32_t>();
+
+		for (int i = 0; i < attachmentCount; ++i) {
+			mBlendAttachmentState[i]
+				.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
+				.setBlendEnable(false);
+		}
 
 		mBlendState
-			.setAttachmentCount(1)
-			.setPAttachments(&mBlendAttachmentState);
+			.setAttachmentCount(attachmentCount)
+			.setPAttachments(mBlendAttachmentState);
 
-		vk::DescriptorSetLayoutBinding bindings[2];
-		vk::DescriptorSetLayoutCreateInfo descInfo;
-		// TODO include global per frame uniforms
-		bindings[0]
-			.setBinding(0)
-			.setDescriptorCount(3)
-			.setDescriptorType(vk::DescriptorType::eSampledImage)
-			.setStageFlags(vk::ShaderStageFlagBits::eAllGraphics);
-
-		bindings[1]
-			.setBinding(1)
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eSampler)
-			.setStageFlags(vk::ShaderStageFlagBits::eAllGraphics);
-
-		descInfo
-			.setBindingCount(2)
-			.setPBindings(bindings);
-
-		mMaterialAllocator.mLayout = context->dev().createDescriptorSetLayout(descInfo);
-
-		bindings[0]
-			.setBinding(0)
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
-			.setStageFlags(vk::ShaderStageFlagBits::eAllGraphics);
-
-		descInfo
-			.setBindingCount(1)
-			.setPBindings(bindings);
-
-		mObjectAllocator.mLayout = context->dev().createDescriptorSetLayout(descInfo);
-
+		mMaterialAllocator.parseYAML(root["materialParams"]);
+		mObjectAllocator.parseYAML(root["objectParams"]);
 
 		vk::DescriptorSetLayout layouts[] = {
 			mMaterialAllocator.mLayout,
 			mObjectAllocator.mLayout
 		};
 
+		// TODO include global layouts
 		vk::PipelineLayoutCreateInfo layoutInfo;
 		layoutInfo
 			.setPSetLayouts(layouts)
 			.setSetLayoutCount(2);
 
 		mLayout = context->dev().createPipelineLayout(layoutInfo);
-
-		mPoolSizes[0]
-			.setType(vk::DescriptorType::eSampledImage)
-			.setDescriptorCount(30);
-		mPoolSizes[1]
-			.setType(vk::DescriptorType::eSampler)
-			.setDescriptorCount(10);
-		mPoolSizes[2]
-			.setType(vk::DescriptorType::eUniformBufferDynamic)
-			.setDescriptorCount(10);
-
-		mMaterialAllocator.mPoolCreateInfo
-			.setMaxSets(10)
-			.setPoolSizeCount(2)
-			.setPPoolSizes(mPoolSizes);
-
-		mObjectAllocator.mPoolCreateInfo
-			.setMaxSets(10)
-			.setPoolSizeCount(1)
-			.setPPoolSizes(mPoolSizes + 2);
 
 		for (int i = 0; i < shaderCount; ++i) {
 			if (mShaders[i]) {
@@ -147,6 +152,8 @@ namespace nJinn {
 
 	vk::DescriptorSet MaterialFamily::DescriptorAllocator::allocateDescriptorSet()
 	{
+		// TODO add support for freeing descriptor sets
+		// TODO add synchronization
 		vk::DescriptorSet ret = nullptr;
 		vk::DescriptorSetAllocateInfo allocInfo;
 		allocInfo
@@ -166,11 +173,12 @@ namespace nJinn {
 			}
 		}
 		vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
-		mPools.push_back(pool);
+		mPools.push_front(pool);
 		allocInfo.setDescriptorPool(pool);
 		context->dev().allocateDescriptorSets(&allocInfo, &ret);
 		return ret;
 	}
+
 
 	
 }
