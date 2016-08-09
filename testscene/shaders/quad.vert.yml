@@ -1,0 +1,5 @@
+---
+source: shaders/quad.vert.spv
+type: vertex
+entryPoint: main
+...

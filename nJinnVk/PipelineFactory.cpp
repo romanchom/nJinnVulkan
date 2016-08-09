@@ -58,8 +58,7 @@ namespace nJinn {
 		context->dev().destroyPipelineCache(cache);
 	}
 
-	vk::Pipeline PipelineFactory::createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass,
-		vk::PipelineRasterizationStateCreateInfo * rasterInfo, vk::PipelineDepthStencilStateCreateInfo * depthStencilInfo)
+	vk::Pipeline PipelineFactory::createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass)
 	{
 		vk::PipelineViewportStateCreateInfo viewportState;
 		viewportState
@@ -83,8 +82,6 @@ namespace nJinn {
 		pipeInfo
 			.setRenderPass(pass)
 			.setSubpass(subpass)
-			.setPRasterizationState(rasterInfo)
-			.setPDepthStencilState(depthStencilInfo)
 			.setPViewportState(&viewportState)
 			.setPMultisampleState(&multisampleState)
 			.setPDynamicState(&dynamicState);

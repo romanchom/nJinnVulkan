@@ -13,8 +13,7 @@ namespace nJinn {
 		PipelineFactory();
 		~PipelineFactory();
 
-		vk::Pipeline createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass,
-			vk::PipelineRasterizationStateCreateInfo * rasterInfo, vk::PipelineDepthStencilStateCreateInfo * depthStencilInfo);
+		vk::Pipeline createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass);
 	};
 
 	extern PipelineFactory * pipelineFactory;

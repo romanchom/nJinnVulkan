@@ -10,8 +10,6 @@ namespace nJinn {
 	protected:
 		vk::Pipeline mPipeline;
 		UniformBuffer mUniforms;
-		vk::DescriptorSet mDescSet;
-		vk::DescriptorPool mPool;
 		Mesh::handle mMesh;
 	public:
 		void mesh(const Mesh::handle & mesh);

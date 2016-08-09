@@ -1,0 +1,7 @@
+---
+shaders:
+    - shaders/quad.vert.yml
+    - shaders/quad.frag.yml
+#blend
+#descriptors itp
+...

@@ -37,9 +37,8 @@ namespace nJinn {
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
 	{
 		cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
-		mForwardMaterial->bind(cmdbuf);
 		uint32_t offset = mUniforms.offset();
-		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mForwardMaterial->family()->layout(), 1, 1, &mDescSet, 1, &offset);
+		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mMaterialFamily->layout(), 1, 1, &mDescSet, 1, &offset);
 		// bind renderer descriptor sets
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);
@@ -53,17 +52,8 @@ namespace nJinn {
 	bool nJinn::MeshRenderer::validate()
 	{
 		if (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid()) {
-			mForwardMaterial = static_cast<std::unique_ptr<Material>>(mMaterialFamily->instantiate());
-			vk::PipelineRasterizationStateCreateInfo rasterinfo;
-			rasterinfo.setLineWidth(1.0f);
-			vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
-			depthstencilInfo
-				.setDepthTestEnable(0)
-				.setStencilTestEnable(0)
-				.setMaxDepthBounds(1)
-				.setDepthCompareOp(vk::CompareOp::eAlways);
-			mPipeline = pipelineFactory->createPipeline(*mForwardMaterial->family(), *mMesh, screen->renderPass(), 0, &rasterinfo, &depthstencilInfo);
-			mDescSet = mForwardMaterial->family()->mObjectAllocator.allocateDescriptorSet();
+			mPipeline = pipelineFactory->createPipeline(*mMaterialFamily, *mMesh, screen->renderPass(), 0);
+			mDescSet = mMaterialFamily->mObjectAllocator.allocateDescriptorSet();
 
 			mUniforms.initialize(16);
 

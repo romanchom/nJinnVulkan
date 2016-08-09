@@ -7,6 +7,9 @@
 #include "MaterialFamily.hpp"
 #include "CommandBuffer.hpp"
 #include "MemoryAllocation.hpp"
+#include "MaterialFamily.hpp"
+#include "Mesh.hpp"
+#include "UniformBuffer.hpp"
 
 namespace nJinn {
 	class RendererSystem {
@@ -45,6 +48,12 @@ namespace nJinn {
 		MemoryAllocation mGBufferMemory;
 
 		vk::Framebuffer mFramebuffer;
+
+		MaterialFamily::handle mat;
+		Mesh::handle mesh;
+		vk::Pipeline pipe;
+		UniformBuffer uniforms;
+		vk::DescriptorSet mDescSet;
 
 		void createRenderPass();
 		void createGBuffer();

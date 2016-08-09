@@ -21,7 +21,7 @@ namespace nJinn {
 	bool Renderer::validate()
 	{	
 		if (isValid()) {
-			mForwardMaterial = static_cast<std::unique_ptr<Material>>(mMaterialFamily->instantiate());
+			//mForwardMaterial = static_cast<std::unique_ptr<Material>>(mMaterialFamily->instantiate());
 			rendererSystem->registerRenderer(this);
 			return true;
 		} else {

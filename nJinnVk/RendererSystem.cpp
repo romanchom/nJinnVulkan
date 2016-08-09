@@ -7,6 +7,7 @@
 #include "Screen.hpp"
 #include "Renderer.hpp"
 #include "Debug.hpp"
+#include "ResourceManager.hpp"
 
 namespace nJinn {
 	RendererSystem * rendererSystem;
@@ -267,11 +268,34 @@ namespace nJinn {
 		createRenderPass();
 		createGBuffer();
 		createFramebuffer();
+
+		mat = resourceManager->get<MaterialFamily>("quad.yml", true);
+		mesh = resourceManager->get<Mesh>("quad.vbm", true);
+
+		pipe = pipelineFactory->createPipeline(*mat, *mesh, screen->renderPass(), 0);
+		mDescSet = mat->mObjectAllocator.allocateDescriptorSet();
+
+		uniforms.initialize(16);
+
+		vk::DescriptorBufferInfo bufferInfo;
+		uniforms.fillDescriptorInfo(bufferInfo);
+
+		vk::WriteDescriptorSet descWrite;
+		descWrite
+			.setDescriptorCount(1)
+			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
+			.setDstArrayElement(0)
+			.setDstBinding(0)
+			.setDstSet(mDescSet)
+			.setPBufferInfo(&bufferInfo);
+
+		context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
 
 	RendererSystem::~RendererSystem()
 	{
 		context->dev().destroyFramebuffer(mFramebuffer);
+		context->dev().destroyPipeline(pipe);
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			context->dev().destroyImage(mGBufferImages[i]);
 			context->dev().destroyImageView(mImageViews[i]);
@@ -283,7 +307,6 @@ namespace nJinn {
 	{
 		cmdbuf.beginRecording();
 		screen->transitionForDraw(cmdbuf);
-		
 
 		vk::Rect2D rendArea;
 		rendArea.extent.setWidth(screen->width()).setHeight(screen->height());
@@ -320,6 +343,13 @@ namespace nJinn {
 		for (auto rend : mRenderersSet) {
 			rend->update();
 		}
+
+		cmdbuf->bindPipeline(vk::PipelineBindPoint::eGraphics, pipe);
+		//uint32_t offset = mUniforms.offset();
+		//cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mMaterialFamily->layout(), 1, 1, &mDescSet, 1, &offset);
+		// bind renderer descriptor sets
+		mesh->bind(cmdbuf);
+		mesh->draw(cmdbuf);
 
 		for (auto rend : mRenderersSet) {
 			rend->draw(cmdbuf);

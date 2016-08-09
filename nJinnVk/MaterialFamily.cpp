@@ -117,21 +117,25 @@ namespace nJinn {
 		context->dev().destroyPipelineLayout(mLayout);
 	}
 
-	Material * MaterialFamily::instantiate()
-	{
-		Material * ret = new Material();
-		ret->mMaterialFamily = this;
-		ret->mDescriptorSet = mMaterialAllocator.allocateDescriptorSet();
-		return ret;
-	}
-
 	void MaterialFamily::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)
 	{
+		// TODO read this from file
+		static vk::PipelineRasterizationStateCreateInfo rasterinfo;
+		rasterinfo.setLineWidth(1.0f);
+		static vk::PipelineDepthStencilStateCreateInfo depthstencilInfo;
+		depthstencilInfo
+			.setDepthTestEnable(0)
+			.setStencilTestEnable(0)
+			.setMaxDepthBounds(1)
+			.setDepthCompareOp(vk::CompareOp::eAlways);
+
 		info
 			.setLayout(mLayout)
 			.setStageCount(mStageCount)
 			.setPStages(mShaderStages)
-			.setPColorBlendState(&mBlendState);
+			.setPColorBlendState(&mBlendState)
+			.setPRasterizationState(&rasterinfo)
+			.setPDepthStencilState(&depthstencilInfo);
 	}
 
 	MaterialFamily::DescriptorAllocator::~DescriptorAllocator() {

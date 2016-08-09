@@ -1,0 +1,5 @@
+---
+source: shaders/quad.frag.spv
+type: fragment
+entryPoint: main
+...

@@ -12,8 +12,8 @@ namespace nJinn {
 	class Renderer : public Component {
 	protected:
 		MaterialFamily::handle mMaterialFamily;
-		std::unique_ptr<Material> mForwardMaterial;
-		vk::DescriptorSet mDescriptorSet; // object uniforms
+		//std::unique_ptr<Material> mForwardMaterial;
+		vk::DescriptorSet mDescSet; // object uniforms
 
 		virtual void update() = 0;
 		virtual void draw(vk::CommandBuffer cmdbuf) = 0;

@@ -38,7 +38,6 @@ namespace nJinn {
 		MaterialFamily();
 		~MaterialFamily();
 		virtual void load(const std::string & name) override;
-		class Material * instantiate();
 		void fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info);
 		vk::PipelineLayout layout() { return mLayout; }
 	};
