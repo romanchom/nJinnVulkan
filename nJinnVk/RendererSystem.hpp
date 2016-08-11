@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/unordered_set.hpp>
+#include <Eigen/Dense>
 #include <vulkan.hpp>
 
 #include "Mesh.hpp"
@@ -39,7 +40,9 @@ namespace nJinn {
 			subpassCount,
 		};
 	private:
-
+		struct GlobalUniformsStruct {
+			Eigen::Matrix4f modelViewProjection;
+		};
 		set_t mRenderersSet;
 		vk::RenderPass mDeferredRenderPass;
 
@@ -53,7 +56,8 @@ namespace nJinn {
 		MaterialFamily::handle mat;
 		Mesh::handle mesh;
 		vk::Pipeline pipe;
-		vk::DescriptorSet mDescSet;
+		DescriptorSet mDescSet;
+		UniformBuffer mGlobalUniforms;
 
 		void createRenderPass();
 		void createGBuffer();

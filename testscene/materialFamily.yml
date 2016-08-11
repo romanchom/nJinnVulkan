@@ -10,6 +10,11 @@ objectParams:
     -   type: uniforms
         count: 1
         
+        
+depth:
+    write: 
+    compare: greater
+        
 outputCount: 2
 #blend
 #descriptors itp

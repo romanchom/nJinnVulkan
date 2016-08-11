@@ -34,7 +34,7 @@ namespace nJinn {
 		renderPassAttachments[depthStencilAttachmentIndex]
 			.setFormat(formats[depthStencilAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
 			.setStencilLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStencilStoreOp(vk::AttachmentStoreOp::eStore)
@@ -73,10 +73,10 @@ namespace nJinn {
 			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
-			//.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
 
 		// SUBPASSES ----------------------------------
+		vk::SubpassDescription subpasses[subpassCount];
 		// geometry subpass
 		vk::AttachmentReference geometrySubpassAttachments[] = 
 		{ 
@@ -85,33 +85,30 @@ namespace nJinn {
 			{ depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal },
 		};
 
-		vk::SubpassDescription subpasses[subpassCount];
-
 		subpasses[geometrySubpassIndex]
 			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
 			.setColorAttachmentCount(geometrySubpassColorAttachmentsCount)
 			.setPColorAttachments(geometrySubpassAttachments)
 			.setPDepthStencilAttachment(geometrySubpassAttachments + geometrySubpassColorAttachmentsCount);
 		
-
 		// lighting subpass
 		vk::AttachmentReference hdrColorAttachment(hdrColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal);
-		vk::AttachmentReference lightingDepthStencilAttachment(depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+		vk::AttachmentReference lightingDepthStencilAttachment(depthStencilAttachmentIndex, vk::ImageLayout::eGeneral);
 
 		vk::AttachmentReference lightingInputAttachments[] =
 		{
-			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eGeneral },
-			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eGeneral },
+			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eShaderReadOnlyOptimal },
+			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eShaderReadOnlyOptimal },
+			{ depthStencilAttachmentIndex, vk::ImageLayout::eGeneral },
 		};
 
 		subpasses[lightingSubpassIndex]
 			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-			.setInputAttachmentCount(2)
+			.setInputAttachmentCount(3)
 			.setPInputAttachments(lightingInputAttachments)
 			.setColorAttachmentCount(1) // only one output
 			.setPColorAttachments(&hdrColorAttachment)
 			.setPDepthStencilAttachment(&lightingDepthStencilAttachment);
-
 
 		// SUBPASS DEPENDENCIES -----------------
 		vk::SubpassDependency dependencies[2];
@@ -154,7 +151,6 @@ namespace nJinn {
 			.setPAttachments(renderPassAttachments)
 			.setSubpassCount(subpassCount)
 			.setPSubpasses(subpasses)
-			//.setDependencyCount(1) // temporary proof of concept
 			.setDependencyCount(2) 
 			.setPDependencies(dependencies);
 		
@@ -300,10 +296,10 @@ namespace nJinn {
 		mat = resourceManager->get<MaterialFamily>("quad.yml", true);
 		mesh = resourceManager->get<Mesh>("quad.vbm", true);
 
+		mat->mObjectAllocator.allocateDescriptorSet(mDescSet);
 		pipe = pipelineFactory->createPipeline(*mat, *mesh, mDeferredRenderPass, lightingSubpassIndex);
-		mDescSet = mat->mObjectAllocator.allocateDescriptorSet();
 
-		//uniforms.initialize(16);
+		mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
 
 		vk::DescriptorImageInfo imageInfos[renderPassAttachmentsCount];
 		imageInfos[0]
@@ -315,16 +311,9 @@ namespace nJinn {
 				.setImageLayout(vk::ImageLayout::eColorAttachmentOptimal);
 		}
 
-		vk::WriteDescriptorSet descWrite;
-		descWrite
-			.setDescriptorCount(2)
-			.setDescriptorType(vk::DescriptorType::eInputAttachment)
-			.setDstArrayElement(0)
-			.setDstBinding(0)
-			.setDstSet(mDescSet)
-			.setPImageInfo(imageInfos);
-
-		context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
+		mDescSet.write()
+			.attachment(imageInfos, 0, renderPassAttachmentsCount - 1)
+			.uniformBuffer(&mGlobalUniforms, 1);
 	}
 
 	RendererSystem::~RendererSystem()
@@ -342,6 +331,9 @@ namespace nJinn {
 
 	void RendererSystem::update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsC)
 	{
+		mGlobalUniforms.update();
+		GlobalUniformsStruct * unis = mGlobalUniforms.acquire<GlobalUniformsStruct>();
+
 
 		vk::Rect2D rendArea;
 		rendArea.extent.setWidth(screen->width()).setHeight(screen->height());
@@ -351,7 +343,7 @@ namespace nJinn {
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			vals[i].color.setFloat32({0.1f, 0.1f, 0.1f, 0.1f});
 		}
-		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.0f).setStencil(0);
+		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.1f).setStencil(0);
 
 		vk::Viewport view;
 		view
@@ -378,6 +370,22 @@ namespace nJinn {
 		cmdbuf.beginRecording();
 		screen->transitionForDraw(cmdbuf);
 		cmdbuf->beginRenderPass(info, vk::SubpassContents::eInline);
+		
+		vk::ClearAttachment clearAtt;
+		clearAtt
+			.setAspectMask(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)
+			.setClearValue(vals[depthStencilAttachmentIndex])
+			.setColorAttachment(VK_ATTACHMENT_UNUSED);
+		vk::ClearRect rect;
+		rect
+			.setBaseArrayLayer(0)
+			.setLayerCount(1)
+			.rect.extent
+			.setWidth(screen->width())
+			.setHeight(screen->height());
+
+
+		cmdbuf->clearAttachments(1, &clearAtt, 1, &rect);
 		// geometry pass
 
 		cmdbuf->setViewport(0, 1, &view);
@@ -388,9 +396,10 @@ namespace nJinn {
 
 		cmdbuf->nextSubpass(vk::SubpassContents::eInline);
 		// lighting pass
+		uint32_t offset = mGlobalUniforms.offset();
 
 		cmdbuf->bindPipeline(vk::PipelineBindPoint::eGraphics, pipe);
-		cmdbuf->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mat->layout(), 1, 1, &mDescSet, 0, nullptr);
+		cmdbuf->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mat->layout(), 1, 1, mDescSet.get(), 1, &offset);
 		mesh->bind(cmdbuf);
 		mesh->draw(cmdbuf);
 

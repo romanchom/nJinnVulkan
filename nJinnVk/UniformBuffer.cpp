@@ -2,6 +2,7 @@
 #include "UniformBuffer.hpp"
 
 #include "Context.hpp"
+#include "Math.hpp"
 
 namespace nJinn {
 	UniformAllocator::UniformAllocator(size_t uniformSize) :
@@ -50,7 +51,9 @@ namespace nJinn {
 		std::pair<void *, size_t> ret;
 		ret.first = mPointer + mCurrentOffset;
 		ret.second = mCurrentOffset;
-		mCurrentOffset += size;
+		// TODO cache this value somewhere
+		// TODO make separate class for uniform buffer management and integrate it with startup system
+		mCurrentOffset += nextMultipleOf(size, context->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 		return ret;
 	}
 
@@ -127,7 +130,7 @@ namespace nJinn {
 		return v.first;
 	}
 
-	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info)
+	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info) const
 	{
 		info
 			.setBuffer(mAllocator->buffer())

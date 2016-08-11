@@ -8,8 +8,12 @@ materialParams:
         
 objectParams:
     -   type: attachment
-        count: 2
+        count: 3
+    -   type: uniforms
+        count: 1
         
+ 
+ 
 outputCount: 1
 #blend
 ...

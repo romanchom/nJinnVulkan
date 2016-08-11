@@ -53,6 +53,8 @@ namespace nJinn {
 		uint32_t bufferMemoryType() { return bufferMemoryTypeIndex; }
 		uint32_t uploadMemoryType() { return uploadMemoryTypeIndex; }
 		bool isUploadMemoryTypeCoherent() { return isUploadMemoryCoherent; }
+
+		vk::PhysicalDeviceProperties physicalDeviceProperties;
 	};
 
 }

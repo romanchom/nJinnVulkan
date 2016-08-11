@@ -30,15 +30,15 @@ namespace nJinn {
 		double c = cos(a);
 		uni->x = (float) (c * 0.5);
 		uni->y = (float) (s * 0.5);
-		uni->z = 0.2f;
-		uni->w = 0.2f;
+		uni->z = 1.0f;
+		uni->w = 1.0f;
 	}
 
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
 	{
 		cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
 		uint32_t offset = mUniforms.offset();
-		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mMaterialFamily->layout(), 1, 1, &mDescSet, 1, &offset);
+		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mMaterialFamily->layout(), 1, 1, mDescSet.get(), 1, &offset);
 		// bind renderer descriptor sets
 		mMesh->bind(cmdbuf);
 		mMesh->draw(cmdbuf);
@@ -53,23 +53,12 @@ namespace nJinn {
 	{
 		if (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid()) {
 			mPipeline = pipelineFactory->createPipeline(*mMaterialFamily, *mMesh, rendererSystem->renderPass(), rendererSystem->geometrySubpassIndex);
-			mDescSet = mMaterialFamily->mObjectAllocator.allocateDescriptorSet();
+			mMaterialFamily->mObjectAllocator.allocateDescriptorSet(mDescSet);
 
 			mUniforms.initialize(16);
 
-			vk::DescriptorBufferInfo bufferInfo;
-			mUniforms.fillDescriptorInfo(bufferInfo);
-
-			vk::WriteDescriptorSet descWrite;
-			descWrite
-				.setDescriptorCount(1)
-				.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
-				.setDstArrayElement(0)
-				.setDstBinding(0)
-				.setDstSet(mDescSet)
-				.setPBufferInfo(&bufferInfo);
-
-			context->dev().updateDescriptorSets(1, &descWrite, 0, nullptr);
+			mDescSet.write()
+				.uniformBuffer(&mUniforms, 0);
 
 			rendererSystem->registerRenderer(this);
 			return true;

@@ -6,33 +6,21 @@
 
 #include "Resource.hpp"
 #include "Shader.hpp"
+#include "DescriptorAllocator.hpp"
 
 namespace nJinn {
 	class MaterialFamily : public Resource {
-		class DescriptorAllocator {
-		public:
-			~DescriptorAllocator();
-			std::list<vk::DescriptorPool> mPools;
-			std::unique_ptr<vk::DescriptorPoolSize[]> poolSizes;
-
-			vk::DescriptorPoolCreateInfo mPoolCreateInfo;
-			vk::DescriptorSetLayout mLayout;
-			vk::DescriptorSet allocateDescriptorSet();
-			void parseYAML(YAML::Node node);
-		};
-		
 		enum shaderTypes {
 			shaderCount = 5, 
-			descriptorPoolSize = 10,
 		};
 
 		Shader::handle mShaders[shaderCount];
 		vk::PipelineLayout mLayout;
 		vk::PipelineColorBlendStateCreateInfo mBlendState;
 		vk::PipelineColorBlendAttachmentState mBlendAttachmentState[2];
+		vk::PipelineDepthStencilStateCreateInfo mDepthStencilInfo;
 		uint32_t mStageCount;
 		vk::PipelineShaderStageCreateInfo mShaderStages[shaderCount];
-
 
 		DescriptorAllocator mMaterialAllocator;
 	public:

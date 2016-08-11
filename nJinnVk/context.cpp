@@ -180,6 +180,8 @@ namespace nJinn {
 			vk::MemoryPropertyFlagBits::eHostCached);
 
 		isUploadMemoryCoherent = bool(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
+
+		physicalDevice.getProperties(&physicalDeviceProperties);
 	}
 
 	Context::~Context()

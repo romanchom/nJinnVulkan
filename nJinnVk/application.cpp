@@ -29,9 +29,20 @@ namespace nJinn {
 	void Application::gameLoop()
 	{
 		mGame->onInitialize();
+		double time = 0;
+		uint64_t frames = 0;
+
+
 		while (true) {
 			if (screen->shouldClose()) break;
 			clock->update();
+			time += clock->delta();
+			if (time > 1.0) {
+				debug->log((clock->frame() - frames) / time, " FPS\n");
+				frames = clock->frame();
+				time = 0;
+			}
+
 			screen->acquireFrame();
 			mGame->onUpdate();
 			UniformBuffer::update();

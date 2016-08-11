@@ -3,6 +3,8 @@
 #include <list>
 #include <vulkan.hpp>
 #include "MemoryAllocation.hpp"
+#include "Math.hpp"
+#include "Context.hpp"
 
 namespace nJinn {
 	class UniformAllocator {
@@ -18,6 +20,7 @@ namespace nJinn {
 		UniformAllocator(size_t uniformSize);
 		~UniformAllocator();
 		bool allocate(size_t size) {
+			size = nextMultipleOf(size, context->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 			if (mFreeSpace < size) return false;
 			mFreeSpace -= size;
 			return true;
@@ -49,7 +52,7 @@ namespace nJinn {
 		T * acquire();
 
 		uint32_t offset() { return mCurrentOffset; }
-		void fillDescriptorInfo(vk::DescriptorBufferInfo & info);
+		void fillDescriptorInfo(vk::DescriptorBufferInfo & info) const;
 
 		static void collect();
 		static void update();

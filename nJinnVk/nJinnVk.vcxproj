@@ -87,11 +87,14 @@
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Context.hpp" />
     <ClInclude Include="Debug.hpp" />
+    <ClInclude Include="DescriptorAllocator.hpp" />
+    <ClInclude Include="DescriptorSet.hpp" />
     <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
     <ClInclude Include="Hash.hpp" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
+    <ClInclude Include="Math.hpp" />
     <ClInclude Include="MemoryAllocation.hpp" />
     <ClInclude Include="MemoryManager.hpp" />
     <ClInclude Include="Mesh.hpp" />
@@ -125,6 +128,8 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="DescriptorAllocator.cpp" />
+    <ClCompile Include="DescriptorSet.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Hash.cpp" />
     <ClCompile Include="Material.cpp" />
