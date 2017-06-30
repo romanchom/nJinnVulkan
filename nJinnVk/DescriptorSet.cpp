@@ -27,8 +27,8 @@ namespace nJinn {
 			mWriteInfos[mDescriptorCount + i].image = imageInfos[i];
 		}
 		mWrites[mWriteCount]
-			.setSType(vk::StructureType::eWriteDescriptorSet)
-			.setPNext(nullptr)
+			//.setSType(vk::StructureType::eWriteDescriptorSet)
+			//.setPNext(nullptr)
 			.setDescriptorCount(count)
 			.setDescriptorType(vk::DescriptorType::eInputAttachment)
 			.setDstArrayElement(baseIndex)
@@ -46,8 +46,8 @@ namespace nJinn {
 			uniformBuffer[i].fillDescriptorInfo(mWriteInfos[mDescriptorCount + i].buffer);
 		}
 		mWrites[mWriteCount]
-			.setSType(vk::StructureType::eWriteDescriptorSet)
-			.setPNext(nullptr)
+			//.setSType(vk::StructureType::eWriteDescriptorSet)
+			//.setPNext(nullptr)
 			.setDescriptorCount(count)
 			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
 			.setDstArrayElement(baseIndex)

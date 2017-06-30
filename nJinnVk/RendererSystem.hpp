@@ -21,7 +21,9 @@ namespace nJinn {
 			objectDescriptorSetIndex,
 			drawDescriptorSetIndex,
 			descriptorSetCount,
+
 			immutableSamplerCount = 2,
+			
 			worldDescriptorSetBindingCount = 2,
 			objectDescriptorSetBindingCount = 4,
 			drawDescriptorSetBindingCount = 1,
@@ -31,7 +33,6 @@ namespace nJinn {
 			gBufferNormalSpecularAttachmentIndex,
 			hdrColorAttachmentIndex,
 			renderPassAttachmentsCount,
-
 
 			geometrySubpassColorAttachmentsCount = gBufferNormalSpecularAttachmentIndex,
 

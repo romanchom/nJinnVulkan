@@ -21,6 +21,7 @@ namespace nJinn {
 		vk::PipelineDepthStencilStateCreateInfo mDepthStencilInfo;
 		uint32_t mStageCount;
 		vk::PipelineShaderStageCreateInfo mShaderStages[shaderCount];
+		vk::PipelineRasterizationStateCreateInfo mRasterisationInfo;
 
 		DescriptorAllocator mMaterialAllocator;
 	public:

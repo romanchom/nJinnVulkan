@@ -47,8 +47,6 @@ namespace nJinn {
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
@@ -58,8 +56,6 @@ namespace nJinn {
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
@@ -69,8 +65,6 @@ namespace nJinn {
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
@@ -82,7 +76,7 @@ namespace nJinn {
 		{ 
 			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
 			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
-			{ depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+			{ depthStencilAttachmentIndex, vk::ImageLayout::eGeneral },
 		};
 
 		subpasses[geometrySubpassIndex]
@@ -93,7 +87,7 @@ namespace nJinn {
 		
 		// lighting subpass
 		vk::AttachmentReference hdrColorAttachment(hdrColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal);
-		vk::AttachmentReference lightingDepthStencilAttachment(depthStencilAttachmentIndex, vk::ImageLayout::eGeneral);
+		//vk::AttachmentReference lightingDepthStencilAttachment(depthStencilAttachmentIndex, vk::ImageLayout::eGeneral);
 
 		vk::AttachmentReference lightingInputAttachments[] =
 		{
@@ -108,7 +102,7 @@ namespace nJinn {
 			.setPInputAttachments(lightingInputAttachments)
 			.setColorAttachmentCount(1) // only one output
 			.setPColorAttachments(&hdrColorAttachment)
-			.setPDepthStencilAttachment(&lightingDepthStencilAttachment);
+			.setPDepthStencilAttachment(lightingInputAttachments + 2);
 
 		// SUBPASS DEPENDENCIES -----------------
 		vk::SubpassDependency dependencies[2];
@@ -303,12 +297,12 @@ namespace nJinn {
 
 		vk::DescriptorImageInfo imageInfos[renderPassAttachmentsCount];
 		imageInfos[0]
-			.setImageLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+			.setImageLayout(vk::ImageLayout::eGeneral)
 			.setImageView(mDepthOnlyImageView);
 		for (int i = 1; i < renderPassAttachmentsCount; ++i) {
 			imageInfos[i]
 				.setImageView(mImageViews[i])
-				.setImageLayout(vk::ImageLayout::eColorAttachmentOptimal);
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 
 		mDescSet.write()

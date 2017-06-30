@@ -255,6 +255,8 @@ namespace nJinn {
 
 //#ifdef _DEBUG
 		if (flags & (VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
+			// TOTO fix the errors that cause this to be invoked
+			std::terminate();
 			DebugBreak();
 		}
 //#endif

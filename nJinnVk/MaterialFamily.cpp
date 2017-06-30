@@ -84,7 +84,9 @@ namespace nJinn {
 
 	MaterialFamily::MaterialFamily() :
 		mStageCount(0)
-	{}
+	{
+		mRasterisationInfo.setLineWidth(1.0f);
+	}
 
 	MaterialFamily::~MaterialFamily()
 	{
@@ -93,16 +95,12 @@ namespace nJinn {
 
 	void MaterialFamily::fillPipelineInfo(vk::GraphicsPipelineCreateInfo & info)
 	{
-		// TODO read this from file
-		static vk::PipelineRasterizationStateCreateInfo rasterinfo;
-		rasterinfo.setLineWidth(1.0f);
-
 		info
 			.setLayout(mLayout)
 			.setStageCount(mStageCount)
 			.setPStages(mShaderStages)
 			.setPColorBlendState(&mBlendState)
-			.setPRasterizationState(&rasterinfo)
+			.setPRasterizationState(&mRasterisationInfo)
 			.setPDepthStencilState(&mDepthStencilInfo);
 	}
 

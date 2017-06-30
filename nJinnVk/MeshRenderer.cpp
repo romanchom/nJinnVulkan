@@ -10,11 +10,14 @@
 #include "ResourceManager.hpp"
 #include "RendererSystem.hpp"
 #include "Clock.hpp"
+#include "GameObject.hpp"
 
 namespace nJinn {
-	struct uniforms {
-		float x, y, z, w;
-	};
+	namespace detail {
+		struct ObjectUniforms {
+			Eigen::Matrix4f model;
+		};
+	}
 
 	void MeshRenderer::mesh(const Mesh::handle & mesh)
 	{
@@ -24,14 +27,8 @@ namespace nJinn {
 
 	void MeshRenderer::update()
 	{
-		uniforms * uni = mUniforms.acquire<uniforms>();
-		double a = clock->time();
-		double s = sin(a);
-		double c = cos(a);
-		uni->x = (float) (c * 0.5);
-		uni->y = (float) (s * 0.5);
-		uni->z = 1.0f;
-		uni->w = 1.0f;
+		auto uniforms = mUniforms.acquire<detail::ObjectUniforms>();
+		uniforms->model = owner()->transform().cast<float>();
 	}
 
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
@@ -51,20 +48,18 @@ namespace nJinn {
 
 	bool nJinn::MeshRenderer::validate()
 	{
-		if (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid()) {
+		bool allOk = (mMesh != nullptr && mMesh->isLoaded() && Renderer::isValid());
+		if(allOk){
 			mPipeline = pipelineFactory->createPipeline(*mMaterialFamily, *mMesh, rendererSystem->renderPass(), rendererSystem->geometrySubpassIndex);
 			mMaterialFamily->mObjectAllocator.allocateDescriptorSet(mDescSet);
 
-			mUniforms.initialize(16);
+			mUniforms.initialize<detail::ObjectUniforms>();
 
 			mDescSet.write()
 				.uniformBuffer(&mUniforms, 0);
 
 			rendererSystem->registerRenderer(this);
-			return true;
 		}
-		else {
-			return false;
-		}
+		return allOk;
 	}
 }

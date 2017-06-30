@@ -8,18 +8,14 @@ layout (location = 1) in vec2 inUv;
 layout (location = 2) in vec3 inNormal;
 layout (location = 3) in vec3 inTangent;
 
-layout (location = 0) out vec3 diffuse;
-layout (location = 1) out vec3 normal;
+layout (location = 0) out vec3 color;
 
-layout (set = 1, binding = 0) uniform asd{
-	vec4 someUniform;
+layout (set = 1, binding = 0) uniform objectUniforms{
+	mat4 model;
 };
 
 void main() 
 {
-	gl_Position = vec4(inPos * 0.1 + someUniform.xyz, 1.0);
-
-	diffuse = vec3(inUv, 0);
-	normal = inNormal;
+	color = inNormal * 0.5 + 0.5;
+	gl_Position = model * vec4(inPos, 1.0);
 }
-

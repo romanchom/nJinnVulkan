@@ -103,7 +103,7 @@ namespace nJinn {
 
 		// TODO solve why creating descriptor pool here makes whole vulkan go nuts
 		/*vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
-		mPools.push_front(pool);*/
+		mPools.push_front(pool);//*/
 	}
 
 }

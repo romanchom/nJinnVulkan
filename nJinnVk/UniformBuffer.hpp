@@ -46,6 +46,10 @@ namespace nJinn {
 	public:
 		~UniformBuffer();
 		void initialize(uint32_t size);
+		template<typename T>
+		inline void initialize() {
+			initialize(sizeof(T));
+		}
 
 		void * acquirePointer();
 		template<typename T>

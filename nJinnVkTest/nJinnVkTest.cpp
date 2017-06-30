@@ -13,22 +13,29 @@
 using namespace nJinn;
 
 class G : public GameBase {
+private:
+	GameObject * go;
 public:
 	virtual void onInitialize() override {
-
+		go = nullptr;
 	}
 	
 	virtual void onUpdate() override {
 		if (nJinn::clock->frame() == 100) {
 			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", true);
 
-			GameObject * go = GameObject::create();
+			go = GameObject::create();
+			go->position(0.5, 0.1, 0.1);
+			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitY())));
+			go->scale(0.1, 0.1, 0.1);
 
 			MeshRenderer * mr = go->addComponent<MeshRenderer>();
 			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm", true));
 			mr->materialFamily(matFam);
 		}
-	
+		if (nullptr != go) {
+			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(nJinn::clock->time(), Eigen::Vector3d::UnitY())));
+		}
 	}
 	virtual void onPreRender() override {}
 	virtual void onRendered() override {}

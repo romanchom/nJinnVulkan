@@ -8,13 +8,14 @@ vec2 encodeNormal(vec3 normal) {
 }
 
 layout (location = 0) in vec3 inDiffuse;
-layout (location = 1) in vec3 inNormal;
+//layout (location = 1) in vec3 inNormal;
 
 layout (location = 0) out vec4 diffuse;
 layout (location = 1) out vec4 normal;
 
 void main() 
 {
-	normal.xy = encodeNormal(inNormal);
+	normal = vec4(1);
+	//normal.xy = encodeNormal(inNormal);
 	diffuse = vec4(inDiffuse, 1);
 }

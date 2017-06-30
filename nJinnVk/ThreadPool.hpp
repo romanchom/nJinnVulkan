@@ -12,7 +12,7 @@ namespace nJinn {
 	private:
 		typedef std::function<void()> task_t;
 		uint32_t mWorkerCount;
-		std::thread * mWorkers;
+		std::vector<std::thread> mWorkers;
 		std::queue<task_t> mTaskQueue;
 		std::mutex mMutex;
 		std::condition_variable mConditionVariable;
@@ -21,7 +21,7 @@ namespace nJinn {
 		volatile uint32_t mIdleThreads;
 		void workerFunction();
 	public:
-		ThreadPool(uint32_t workerCount);
+		ThreadPool(uint32_t workerCount = 0);
 		~ThreadPool();
 		void submitTask(const task_t & task);
 		void waitUntillCompleted();
