@@ -25,6 +25,9 @@ namespace nJinn {
 		uint32_t bufferMemoryTypeIndex;
 		uint32_t uploadMemoryTypeIndex;
 		bool isUploadMemoryCoherent;
+
+		vk::DeviceSize mUniformAlignmentAdd;
+		vk::DeviceSize mUniformAlignmentMask;
 		
 		// debug section
 		VkDebugReportCallbackEXT debugReportCallback;
@@ -35,6 +38,9 @@ namespace nJinn {
 		// end debug section
 	
 	public:
+		enum {
+			maxBufferedFrames = 4,
+		};
 		Context();
 		~Context();
 
@@ -55,6 +61,11 @@ namespace nJinn {
 		bool isUploadMemoryTypeCoherent() { return isUploadMemoryCoherent; }
 
 		vk::PhysicalDeviceProperties physicalDeviceProperties;
+		inline vk::DeviceSize alignUniform(vk::DeviceSize size);
 	};
 
+	inline vk::DeviceSize Context::alignUniform(vk::DeviceSize size)
+	{
+		return (size + mUniformAlignmentAdd) & mUniformAlignmentMask;
+	}
 }

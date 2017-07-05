@@ -20,7 +20,7 @@ namespace nJinn
 
 		void * mWindowHandle;
 		uint32_t frameCount;
-		uint32_t maxQueuedFrames;
+		uint32_t mMaxQueuedFrames;
 		size_t queueIndex;
 		uint32_t mWidth;
 		uint32_t mHeight;
@@ -61,6 +61,8 @@ namespace nJinn
 		uint32_t height() { return mHeight; };
 		uint32_t currentFrameIndex() const { return mCurrentFrameIndex; }
 		vk::ImageView getImageView(uint32_t index) { return mFrames[index].view; }
+		uint32_t maxQueuedFrames() const noexcept { return mMaxQueuedFrames; }
+
 
 		friend class Application;
 	};

@@ -20,7 +20,7 @@ namespace nJinn {
 	Screen::Screen(uint32_t width, uint32_t height) :
 		mWindowHandle(nullptr),
 		frameCount(config.getValue<uint32_t>("swapchain.backBufferCount")),
-		maxQueuedFrames(config.getValue<uint32_t>("swapchain.maxQueuedFrames")),
+		mMaxQueuedFrames(config.getValue<uint32_t>("swapchain.maxQueuedFrames")),
 		queueIndex(-1),
 		mWidth(-1),
 		mHeight(-1),
@@ -140,7 +140,7 @@ namespace nJinn {
 		for (uint32_t i = 0; i < frameCount; ++i) {
 			mFrames[i].destroy();
 		}
-		for (uint32_t i = 0; i < maxQueuedFrames; ++i) {
+		for (uint32_t i = 0; i < mMaxQueuedFrames; ++i) {
 			context->dev().destroyFence(mFences[i]);
 		}
 		delete[] mFrames;
@@ -202,7 +202,7 @@ namespace nJinn {
 			for (uint32_t i = 0; i < frameCount; ++i) {
 				mFrames[i].destroy();
 			}
-			for (uint32_t i = 0; i < maxQueuedFrames; ++i) {
+			for (uint32_t i = 0; i < mMaxQueuedFrames; ++i) {
 				context->dev().destroyFence(mFences[i]);
 			}
 			delete[] mFrames;
@@ -269,10 +269,10 @@ namespace nJinn {
 			frame.image = images[i];
 		}
 
-		mFences = new vk::Fence[maxQueuedFrames];
+		mFences = new vk::Fence[mMaxQueuedFrames];
 		vk::FenceCreateInfo info;
 		info.flags = vk::FenceCreateFlagBits::eSignaled;
-		for (size_t i = 0; i < maxQueuedFrames; ++i) {
+		for (size_t i = 0; i < mMaxQueuedFrames; ++i) {
 			mFences[i] = context->dev().createFence(info);
 			//info.flags = vk::FenceCreateFlags();
 		}
@@ -312,7 +312,7 @@ namespace nJinn {
 
 	void Screen::present()
 	{
-		context->mainQueue().submit(0, nullptr, mFences[mTotalFrames % maxQueuedFrames]);
+		context->mainQueue().submit(0, nullptr, mFences[mTotalFrames % mMaxQueuedFrames]);
 		presentInfo.setPWaitSemaphores(&mCurrentFrame->renderingCompleteSemaphore);
 		context->mainQueue().presentKHR(presentInfo);
 		++mTotalFrames;
@@ -320,7 +320,7 @@ namespace nJinn {
 
 	void Screen::acquireFrame()
 	{
-		vk::Fence * pFence = mFences + (mTotalFrames % maxQueuedFrames);
+		vk::Fence * pFence = mFences + (mTotalFrames % mMaxQueuedFrames);
 		// leave this loop as is
 		// vulkan tends to return from waitForFences, even if fences are not signaled
 		do{

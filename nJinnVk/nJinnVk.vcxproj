@@ -87,6 +87,7 @@
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BlockAllocator.hpp" />
     <ClInclude Include="BucketAllocator.hpp" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Clock.hpp" />
     <ClInclude Include="CommandBuffer.hpp" />
     <ClInclude Include="Component.hpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
     <ClInclude Include="Hash.hpp" />
+    <ClInclude Include="LightSource.h" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="Math.hpp" />
@@ -120,6 +122,7 @@
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="SystemStartup.hpp" />
     <ClInclude Include="TeeStream.hpp" />
+    <ClInclude Include="TransientUniformAllocator.h" />
     <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="UniformBuffer.hpp" />
     <ClInclude Include="UniformBufferAllocator.hpp" />
@@ -129,6 +132,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BlockAllocator.cpp" />
     <ClCompile Include="BucketAllocator.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -140,6 +144,7 @@
     <ClCompile Include="DescriptorSet.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Hash.cpp" />
+    <ClCompile Include="LightSource.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialFamily.cpp" />
     <ClCompile Include="MemoryAllocation.cpp" />
@@ -159,6 +164,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SystemStartup.cpp" />
+    <ClCompile Include="TransientUniformAllocator.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
   </ItemGroup>

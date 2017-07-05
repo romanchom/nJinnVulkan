@@ -26,7 +26,7 @@ namespace nJinn {
 
 		mMemory = context->dev().allocateMemory(allocInfo);
 		context->dev().bindBufferMemory(mBuffer, mMemory, 0);
-		mPointer = (char *) context->dev().mapMemory(mMemory, 0, uniformSize * 2, vk::MemoryMapFlags());
+		mPointer = (char *)context->dev().mapMemory(mMemory, 0, uniformSize * 2, {});
 		//																	   ^
 		//																	   |
 		// TODO															or this "2"
@@ -51,9 +51,8 @@ namespace nJinn {
 		std::pair<void *, size_t> ret;
 		ret.first = mPointer + mCurrentOffset;
 		ret.second = mCurrentOffset;
-		// TODO cache this value somewhere
 		// TODO make separate class for uniform buffer management and integrate it with startup system
-		mCurrentOffset += nextMultipleOf(size, context->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
+		mCurrentOffset += context->alignUniform(size);
 		return ret;
 	}
 
@@ -84,6 +83,7 @@ namespace nJinn {
 	void UniformBuffer::update()
 	{
 		if (!context->isUploadMemoryTypeCoherent()) {
+			// TODO fix this allocation and this fucking memory leak
 			vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
 			int i = 0;
 			for (UniformAllocator & alloc : sAllocators) {

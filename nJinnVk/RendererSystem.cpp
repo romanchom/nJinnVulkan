@@ -34,7 +34,7 @@ namespace nJinn {
 		renderPassAttachments[depthStencilAttachmentIndex]
 			.setFormat(formats[depthStencilAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
 			.setStencilLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStencilStoreOp(vk::AttachmentStoreOp::eStore)
@@ -45,7 +45,7 @@ namespace nJinn {
 		renderPassAttachments[gBufferDiffuseColorAttachmentIndex]
 			.setFormat(formats[gBufferDiffuseColorAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
@@ -54,7 +54,7 @@ namespace nJinn {
 		renderPassAttachments[gBufferNormalSpecularAttachmentIndex]
 			.setFormat(formats[gBufferNormalSpecularAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
@@ -63,7 +63,7 @@ namespace nJinn {
 		renderPassAttachments[hdrColorAttachmentIndex]
 			.setFormat(formats[hdrColorAttachmentIndex])
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
 			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
@@ -180,14 +180,14 @@ namespace nJinn {
 		imageInfo.setFormat(formats[gBufferNormalSpecularAttachmentIndex]);
 		mGBufferImages[gBufferNormalSpecularAttachmentIndex] = context->dev().createImage(imageInfo);
 		
-		//imageInfo.setFormat(formats[hdrColorAttachmentIndex]);
-		//mGBufferImages[hdrColorAttachmentIndex] = context->dev().createImage(imageInfo);
+		imageInfo.setFormat(formats[hdrColorAttachmentIndex]);
+		mGBufferImages[hdrColorAttachmentIndex] = context->dev().createImage(imageInfo);
 		
 		uint32_t totalSizeRequired = 0;
 		uint32_t offsets[renderPassAttachmentsCount];
 
 		// temporary proof of concept
-		for (int i = 0; i < renderPassAttachmentsCount - 1; ++i) {
+		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			vk::MemoryRequirements memReq = context->dev().getImageMemoryRequirements(mGBufferImages[i]);
 			totalSizeRequired += memReq.alignment - 1;
 			totalSizeRequired /= memReq.alignment;
@@ -219,7 +219,7 @@ namespace nJinn {
 		cmdBuf.beginRecording();
 
 		// temporary proof of concept
-		for (int i = 0; i < renderPassAttachmentsCount - 1/* <- fix this -1*/; ++i) {
+		for (int i = 0; i < renderPassAttachmentsCount/* <- fix this -1*/; ++i) {
 			context->dev().bindImageMemory(mGBufferImages[i],
 				mGBufferMemory.deviceMemory(),
 				mGBufferMemory.offset() + offsets[i]);
@@ -276,6 +276,7 @@ namespace nJinn {
 			.setLayers(1);
 		
 		for (int i = 0; i < 2; ++i) {
+			// temporary
 			mImageViews[hdrColorAttachmentIndex] = screen->getImageView(i);
 			mFramebuffers[i] = context->dev().createFramebuffer(framebufferInfo);
 		}
@@ -315,10 +316,10 @@ namespace nJinn {
 		for (int i = 0; i < 2; ++i) {
 			context->dev().destroyFramebuffer(mFramebuffers[i]);
 		}
-		context->dev().destroyPipeline(pipe);
-		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
-			context->dev().destroyImage(mGBufferImages[i]);
+		context->dev().destroyPipeline(pipe);// temporary -1
+		for (int i = 0; i < renderPassAttachmentsCount - 1; ++i) {
 			context->dev().destroyImageView(mImageViews[i]);
+			context->dev().destroyImage(mGBufferImages[i]);
 		}
 		context->dev().destroyRenderPass(mDeferredRenderPass);
 	}
@@ -337,7 +338,7 @@ namespace nJinn {
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			vals[i].color.setFloat32({0.1f, 0.1f, 0.1f, 0.1f});
 		}
-		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.1f).setStencil(0);
+		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.0f).setStencil(0);
 
 		vk::Viewport view;
 		view
@@ -365,21 +366,6 @@ namespace nJinn {
 		screen->transitionForDraw(cmdbuf);
 		cmdbuf->beginRenderPass(info, vk::SubpassContents::eInline);
 		
-		vk::ClearAttachment clearAtt;
-		clearAtt
-			.setAspectMask(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)
-			.setClearValue(vals[depthStencilAttachmentIndex])
-			.setColorAttachment(VK_ATTACHMENT_UNUSED);
-		vk::ClearRect rect;
-		rect
-			.setBaseArrayLayer(0)
-			.setLayerCount(1)
-			.rect.extent
-			.setWidth(screen->width())
-			.setHeight(screen->height());
-
-
-		cmdbuf->clearAttachments(1, &clearAtt, 1, &rect);
 		// geometry pass
 
 		cmdbuf->setViewport(0, 1, &view);
@@ -393,7 +379,8 @@ namespace nJinn {
 		uint32_t offset = mGlobalUniforms.offset();
 
 		cmdbuf->bindPipeline(vk::PipelineBindPoint::eGraphics, pipe);
-		cmdbuf->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mat->layout(), 1, 1, mDescSet.get(), 1, &offset);
+		auto descSet = mDescSet.get();
+		cmdbuf->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mat->layout(), 1, 1, &descSet, 1, &offset);
 		mesh->bind(cmdbuf);
 		mesh->draw(cmdbuf);
 

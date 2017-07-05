@@ -173,6 +173,15 @@
     <ClInclude Include="PointOfView.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="TransientUniformAllocator.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSource.h">
+      <Filter>Header Files\game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -274,8 +283,20 @@
     <ClCompile Include="DescriptorAllocator.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="TransientUniformAllocator.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="LightSource.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />

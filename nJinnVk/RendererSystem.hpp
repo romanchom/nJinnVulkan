@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 #include <Eigen/Dense>
 #include <vulkan.hpp>
 
@@ -15,7 +15,7 @@
 namespace nJinn {
 	class RendererSystem {
 	public:
-		typedef boost::unordered_set<class Renderer *> set_t;
+		typedef std::unordered_set<class Renderer *> set_t;
 		enum {
 			worldDescriptorSetIndex = 0,
 			objectDescriptorSetIndex,

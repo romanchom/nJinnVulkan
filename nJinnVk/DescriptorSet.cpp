@@ -27,8 +27,6 @@ namespace nJinn {
 			mWriteInfos[mDescriptorCount + i].image = imageInfos[i];
 		}
 		mWrites[mWriteCount]
-			//.setSType(vk::StructureType::eWriteDescriptorSet)
-			//.setPNext(nullptr)
 			.setDescriptorCount(count)
 			.setDescriptorType(vk::DescriptorType::eInputAttachment)
 			.setDstArrayElement(baseIndex)
@@ -46,8 +44,26 @@ namespace nJinn {
 			uniformBuffer[i].fillDescriptorInfo(mWriteInfos[mDescriptorCount + i].buffer);
 		}
 		mWrites[mWriteCount]
-			//.setSType(vk::StructureType::eWriteDescriptorSet)
-			//.setPNext(nullptr)
+			.setDescriptorCount(count)
+			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
+			.setDstArrayElement(baseIndex)
+			.setDstSet(mDescriptorSet)
+			.setDstBinding(binding)
+			.setPBufferInfo(&mWriteInfos[mDescriptorCount].buffer);
+		mDescriptorCount += count;
+		++mWriteCount;
+		return *this;
+	}
+
+	DescriptorSet::DescriptorWriter & DescriptorSet::DescriptorWriter::uniformBuffer(vk::Buffer buffer, vk::DeviceSize offset, vk::DeviceSize size, uint32_t binding, uint32_t count, uint32_t baseIndex)
+	{
+		for (uint32_t i = 0; i < count; ++i) {
+			mWriteInfos[mDescriptorCount + i].buffer
+				.setBuffer(buffer)
+				.setOffset(offset)
+				.setRange(size);
+		}
+		mWrites[mWriteCount]
 			.setDescriptorCount(count)
 			.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic)
 			.setDstArrayElement(baseIndex)

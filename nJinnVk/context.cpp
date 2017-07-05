@@ -172,16 +172,18 @@ namespace nJinn {
 
 		bufferMemoryTypeIndex = getOptimalMemoryType(memoryProperties.memoryTypes, memoryProperties.memoryTypeCount,
 			vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::MemoryPropertyFlags());
+			{});
 
 		uploadMemoryTypeIndex = getOptimalMemoryType(memoryProperties.memoryTypes, memoryProperties.memoryTypeCount,
 			vk::MemoryPropertyFlagBits::eHostVisible,
-			vk::MemoryPropertyFlagBits::eHostCoherent | 
-			vk::MemoryPropertyFlagBits::eHostCached);
+			vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-		isUploadMemoryCoherent = bool(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
+		isUploadMemoryCoherent = static_cast<bool>(memoryProperties.memoryTypes[uploadMemoryTypeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
 
 		physicalDevice.getProperties(&physicalDeviceProperties);
+
+		mUniformAlignmentAdd = physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1;
+		mUniformAlignmentMask = ~mUniformAlignmentAdd;
 	}
 
 	Context::~Context()
@@ -256,7 +258,7 @@ namespace nJinn {
 //#ifdef _DEBUG
 		if (flags & (VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
 			// TOTO fix the errors that cause this to be invoked
-			std::terminate();
+			//std::terminate();
 			DebugBreak();
 		}
 //#endif

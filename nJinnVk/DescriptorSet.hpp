@@ -25,6 +25,7 @@ namespace nJinn {
 			// TODO add some wrapper around images
 			DescriptorWriter & attachment(vk::DescriptorImageInfo * imageInfos, uint32_t binding, uint32_t count = 1, uint32_t baseIndex = 0);
 			DescriptorWriter & uniformBuffer(class UniformBuffer * uniformBuffer, uint32_t binding, uint32_t count = 1, uint32_t baseIndex = 0);
+			DescriptorWriter & uniformBuffer(vk::Buffer buffer, vk::DeviceSize offset, vk::DeviceSize size, uint32_t binding, uint32_t count = 1, uint32_t baseIndex = 0);
 		};
 
 		vk::DescriptorSet mDescriptorSet;
@@ -38,7 +39,7 @@ namespace nJinn {
 		DescriptorSet & operator=(const DescriptorSet &) = delete;
 
 		DescriptorWriter write() { return DescriptorWriter(*this); }
-		vk::DescriptorSet * get() { return &mDescriptorSet; }
+		vk::DescriptorSet get() { return mDescriptorSet; }
 
 		friend class DescriptorAllocator;
 	};

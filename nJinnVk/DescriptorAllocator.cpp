@@ -7,9 +7,10 @@
 namespace nJinn {
 	using namespace YAML;
 
-	DescriptorAllocator::DescriptorAllocator() :
+	DescriptorAllocator::DescriptorAllocator(uint32_t poolSize) :
 		mBindingCount(0),
-		mDescriptorCount(0)
+		mDescriptorCount(0),
+		mPoolSize(poolSize)
 	{}
 
 	DescriptorAllocator::~DescriptorAllocator() {
@@ -37,6 +38,7 @@ namespace nJinn {
 			if (vk::Result::eSuccess == context->dev().allocateDescriptorSets(&allocInfo, &descriptorSet)) {
 				set.mDescriptorSet = descriptorSet;
 				set.mParentPool = *it;
+				return;
 			}
 			else {
 				// move full pool to the back
@@ -54,16 +56,13 @@ namespace nJinn {
 
 	void DescriptorAllocator::parseYAML(Node node)
 	{
-		vk::DescriptorSetLayoutCreateInfo descInfo;
 
 		assert(node.IsSequence());
-		mBindingCount = (uint32_t)node.size();
+		auto bindingCount = static_cast<uint32_t>(node.size());
 
-		std::unique_ptr<vk::DescriptorSetLayoutBinding[]> bindings(new vk::DescriptorSetLayoutBinding[mBindingCount]);
-		poolSizes = static_cast<std::unique_ptr<vk::DescriptorPoolSize[]>>(new vk::DescriptorPoolSize[mBindingCount]);
+		auto bindings = std::make_unique<vk::DescriptorSetLayoutBinding[]>(bindingCount);
 		
-
-		for (int i = 0; i < mBindingCount; ++i) {
+		for (int i = 0; i < bindingCount; ++i) {
 			Node param = node[i];
 
 			uint64_t typeId = hash(param["type"].as<std::string>());
@@ -84,26 +83,37 @@ namespace nJinn {
 				.setStageFlags(vk::ShaderStageFlagBits::eAllGraphics)
 				.setDescriptorType(type)
 				.setDescriptorCount(count);
-			poolSizes[i]
-				.setType(type)
-				.setDescriptorCount(descriptorPoolSize * count);
 		}
 
+		initialize(bindings.get(), bindingCount);
+	}
+
+	void DescriptorAllocator::initialize(vk::DescriptorSetLayoutBinding * bindings, uint32_t count)
+	{
+		mBindingCount = count;
+
+		vk::DescriptorSetLayoutCreateInfo descInfo;
 		descInfo
 			.setBindingCount(mBindingCount)
-			.setPBindings(bindings.get());
+			.setPBindings(bindings);
 
 		mLayout = context->dev().createDescriptorSetLayout(descInfo);
 
+		mPoolSizes = std::make_unique<vk::DescriptorPoolSize[]>(count);
+		for (uint32_t i = 0; i < count; ++i) {
+			mPoolSizes[i]
+				.setType(bindings[i].descriptorType)
+				.setDescriptorCount(bindings[i].descriptorCount * mPoolSize);
+		}
+
 		mPoolCreateInfo
-			.setMaxSets(descriptorPoolSize)
+			.setMaxSets(mPoolSize)
 			.setPoolSizeCount(mBindingCount)
-			.setPPoolSizes(poolSizes.get());
+			.setPPoolSizes(mPoolSizes.get())
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
 
-
-		// TODO solve why creating descriptor pool here makes whole vulkan go nuts
-		/*vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
-		mPools.push_front(pool);//*/
+		vk::DescriptorPool pool = context->dev().createDescriptorPool(mPoolCreateInfo);
+		mPools.push_front(pool);
 	}
 
 }
