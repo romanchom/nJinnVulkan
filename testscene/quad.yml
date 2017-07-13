@@ -1,7 +1,10 @@
 ---
+materialType: lighting
+
 shaders:
     -   shaders/quad.vert.yml
     -   shaders/quad.frag.yml
+    
 materialParams:
     -   type: texture
         count: 1

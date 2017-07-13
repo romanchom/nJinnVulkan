@@ -156,6 +156,28 @@ namespace nJinn {
 	{
 		createRenderPass();
 		mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
+
+		vk::DescriptorSetLayoutBinding geometryBindings[] = {
+			{0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eAllGraphics }
+		};
+		mGeometryDescriptorAllocator.initialize(geometryBindings, 1);
+		vk::DescriptorSetLayout descSetLayouts[] = {
+			mGeometryDescriptorAllocator.layout()
+		};
+
+		vk::DescriptorSetLayoutBinding lightingBindings[] = {
+			{ 0, vk::DescriptorType::eInputAttachment, 4,  vk::ShaderStageFlagBits::eFragment }
+		};
+		mLightingDescriptorAllocator.initialize(lightingBindings, 1);
+
+		vk::PipelineLayoutCreateInfo info;
+		info
+			.setPSetLayouts(descSetLayouts)
+			.setSetLayoutCount(1);
+		mGeometryPipelineLayout = context->dev().createPipelineLayout(info);
+
+		descSetLayouts[0] = mLightingDescriptorAllocator.layout();
+		mLightingPipelineLayout = context->dev().createPipelineLayout(info);
 	}
 
 	RendererSystem::~RendererSystem()

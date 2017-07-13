@@ -7,6 +7,7 @@
 #include "Material.hpp"
 #include "PipelineFactory.hpp"
 #include "ResourceManager.hpp"
+#include "RendererSystem.hpp"
 
 namespace nJinn {
 	using namespace YAML;
@@ -60,7 +61,17 @@ namespace nJinn {
 			}
 		}
 
+		vk::DescriptorSetLayout globalLayout;
+
+		auto materialType = root["materialType"].as<std::string>();
+		if ("geometry" == materialType) {
+			globalLayout = rendererSystem->mGeometryDescriptorAllocator.layout();
+		}else if("lighting" == materialType) {
+			globalLayout = rendererSystem->mLightingDescriptorAllocator.layout();
+		}
+
 		vk::DescriptorSetLayout layouts[] = {
+			globalLayout,
 			mMaterialAllocator.layout(),
 			mObjectAllocator.layout()
 		};
@@ -69,7 +80,7 @@ namespace nJinn {
 		vk::PipelineLayoutCreateInfo layoutInfo;
 		layoutInfo
 			.setPSetLayouts(layouts)
-			.setSetLayoutCount(2);
+			.setSetLayoutCount(3);
 
 		mLayout = context->dev().createPipelineLayout(layoutInfo);
 

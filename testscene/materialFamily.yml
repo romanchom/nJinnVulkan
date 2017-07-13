@@ -1,7 +1,10 @@
 ---
+materialType: geometry
+
 shaders:
     - shaders/triangle_vert.yml
     - shaders/triangle_frag.yml
+    
 materialParams:
     -   type: texture
         count: 1

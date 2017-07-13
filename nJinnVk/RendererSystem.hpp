@@ -40,6 +40,8 @@ namespace nJinn {
 			geometrySubpassIndex = 0,
 			lightingSubpassIndex,
 			subpassCount,
+
+
 		};
 	//private:
 		struct GlobalUniformsStruct {
@@ -48,6 +50,12 @@ namespace nJinn {
 		set_t<class Renderer> mDeferredObjects;
 		set_t<class LightSource> mLightSources;
 		set_t<class Camera> mCameras;
+
+
+		DescriptorAllocator mGeometryDescriptorAllocator;
+		DescriptorAllocator mLightingDescriptorAllocator;
+		vk::PipelineLayout mGeometryPipelineLayout;
+		vk::PipelineLayout mLightingPipelineLayout;
 
 		vk::RenderPass mDeferredRenderPass;
 		

@@ -10,12 +10,12 @@ layout (location = 3) in vec3 inTangent;
 
 layout (location = 0) out vec3 color;
 
-layout (set = 1, binding = 0) uniform objectUniforms{
+layout (set = 2, binding = 0) uniform objectUniforms{
 	mat4 model;
 };
 
 void main() 
 {
 	color = inNormal * 0.5 + 0.5;
-	gl_Position = model * vec4(inPos, 1.0);
+	gl_Position = /**model * */vec4(inPos, 1.0);
 }

@@ -5,6 +5,7 @@
 #include "Screen.hpp"
 #include "CommandBuffer.hpp"
 #include "RendererSystem.hpp"
+#include "DescriptorSet.hpp"
 
 namespace nJinn {
 	static const vk::Format formats[] =
@@ -149,7 +150,10 @@ namespace nJinn {
 			images[hdrColorAttachmentIndex] = screen->getImageView(i);
 			mFramebuffers[i] = context->dev().createFramebuffer(framebufferInfo);
 		}
+	}
 
+	void GBuffer::writeDescriptorSet(DescriptorSet & descriptorSet)
+	{
 		vk::DescriptorImageInfo imageInfos[renderPassAttachmentsCount];
 		imageInfos[0]
 			.setImageLayout(vk::ImageLayout::eGeneral)
@@ -160,17 +164,7 @@ namespace nJinn {
 				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 
-		vk::DescriptorSetLayoutBinding binding;
-		binding
-			.setBinding(0)
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eInputAttachment);
-
-		mDescriptorAllocator.initialize(&binding, 1);
-		mDescriptorAllocator.allocateDescriptorSet(mDescSet);
-
-		DescriptorWriter(mDescSet)
-			.attachment(imageInfos, 0, 1);
+		DescriptorWriter(descriptorSet).attachment(imageInfos, 0, 4);
 	}
 
 	vk::Framebuffer GBuffer::framebuffer() {

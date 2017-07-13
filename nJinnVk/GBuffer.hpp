@@ -2,8 +2,6 @@
 
 #include <vulkan.hpp>
 #include "MemoryAllocation.hpp"
-#include "DescriptorAllocator.hpp"
-#include "DescriptorSet.hpp"
 
 namespace nJinn {
 	class GBuffer {
@@ -22,11 +20,10 @@ namespace nJinn {
 		vk::ImageView mDepthOnlyImageView;
 		MemoryAllocation mGBufferMemory;
 		vk::Framebuffer mFramebuffers[3];
-		DescriptorAllocator mDescriptorAllocator;
-		DescriptorSet mDescSet;
 	public:
 		GBuffer();
 		void initialize(uint32_t width, uint32_t height);
+		void writeDescriptorSet(class DescriptorSet & descriptorSet);
 		vk::Image colorBuffer() { return mGBufferImages[hdrColorAttachmentIndex]; }
 		vk::Framebuffer framebuffer();
 		~GBuffer();
