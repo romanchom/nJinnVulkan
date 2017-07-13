@@ -17,5 +17,5 @@ layout (set = 2, binding = 0) uniform objectUniforms{
 void main() 
 {
 	color = inNormal * 0.5 + 0.5;
-	gl_Position = /**model * */vec4(inPos, 1.0);
+	gl_Position = model * vec4(inPos, 1.0);
 }

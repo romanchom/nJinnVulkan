@@ -196,6 +196,10 @@ namespace nJinn {
 			vk::PipelineStageFlagBits::eAllCommands,
 		};
 
+		for (auto && obj : mDeferredObjects) {
+			obj->update();
+		}
+
 		vk::CommandBuffer cmdBuffs[10];
 		int i = 0;
 		for (auto && camera : mCameras) {

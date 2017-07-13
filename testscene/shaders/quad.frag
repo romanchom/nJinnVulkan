@@ -11,6 +11,6 @@ layout (location = 0) out vec4 color;
 
 void main() 
 {
-	color = subpassLoad(gBuffer[0]);
+	color = subpassLoad(gBuffer[0]).rrrr;
 	//color = vec4(inColor.xyz, 1);
 }
