@@ -76,7 +76,6 @@ namespace nJinn {
 			}
 
 			uint32_t count = param["count"].as<uint32_t>();
-			mDescriptorCount += count;
 
 			bindings[i]
 				.setBinding(i)
@@ -104,6 +103,8 @@ namespace nJinn {
 			mPoolSizes[i]
 				.setType(bindings[i].descriptorType)
 				.setDescriptorCount(bindings[i].descriptorCount * mPoolSize);
+
+			mDescriptorCount += bindings[i].descriptorCount;
 		}
 
 		mPoolCreateInfo

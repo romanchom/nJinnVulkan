@@ -14,7 +14,7 @@ namespace nJinn {
 		
 		operator vk::CommandBuffer() { return buffer[currentIndex]; }
 
-		vk::CommandBuffer * get() { return &buffer[currentIndex]; }
+		vk::CommandBuffer get() { return buffer[currentIndex]; }
 		vk::CommandBuffer * operator->() {
 			return buffer + currentIndex;
 		}
@@ -28,12 +28,12 @@ namespace nJinn {
 
 	inline void CommandBuffer::beginRecording() {
 		++currentIndex %= bufferCount; // TODO possibly centralize this
-		get()->reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-		get()->begin(beginInfo);
+		get().reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+		get().begin(beginInfo);
 	}
 	
 	inline void CommandBuffer::endRecording()
 	{
-		get()->end();
+		get().end();
 	}
 }

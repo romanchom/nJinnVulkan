@@ -5,6 +5,7 @@
 #include "Component.hpp"
 #include "TransientUniformAllocator.h"
 #include "CommandBuffer.hpp"
+#include "GBuffer.hpp"
 
 namespace nJinn {
 	class Camera : public Component
@@ -20,9 +21,11 @@ namespace nJinn {
 
 		Eigen::Matrix4d mProjection;
 		bool mProjectionDirty;
+		GBuffer mGBuffer;
+
 
 		void draw(const std::unordered_set<class Renderer * > deferredObjects, const std::unordered_set<class LightSource *> lights);
-		void setRenderTarget();
+		//void setRenderTarget();
 	public:
 		Camera();
 		virtual ~Camera();
@@ -42,46 +45,46 @@ namespace nJinn {
 		friend class RendererSystem;
 	};
 
-	inline Camera & nJinn::Camera::verticalFieldOfView(double value) noexcept {
+	inline Camera & Camera::verticalFieldOfView(double value) noexcept {
 		mVerticalFieldOfView = value;
 		mProjectionDirty = true;
 		return *this;
 	}
 
-	inline double nJinn::Camera::verticalFieldOfView() const noexcept {
+	inline double Camera::verticalFieldOfView() const noexcept {
 		return mVerticalFieldOfView;
 	}
 
 
-	inline Camera & nJinn::Camera::horizontalFieldOfView(double value) noexcept {
+	inline Camera & Camera::horizontalFieldOfView(double value) noexcept {
 		mHorizontalFieldOfView = value;
 		mProjectionDirty = true;
 		return *this;
 	}
 
-	inline double nJinn::Camera::horizontalFieldOfView() const noexcept	{
+	inline double Camera::horizontalFieldOfView() const noexcept	{
 		return mHorizontalFieldOfView;
 	}
 
 
-	inline Camera & nJinn::Camera::nearClippingPlane(double value) noexcept	{
+	inline Camera & Camera::nearClippingPlane(double value) noexcept	{
 		mNearClippingPlane = value;
 		mProjectionDirty = true;
 		return *this;
 	}
 
-	inline double nJinn::Camera::nearClippingPlane() const noexcept	{
+	inline double Camera::nearClippingPlane() const noexcept	{
 		return mNearClippingPlane;
 	}
 
 
-	inline Camera & nJinn::Camera::farClippingPlane(double value) noexcept	{
+	inline Camera & Camera::farClippingPlane(double value) noexcept	{
 		mFarClippingPlane = value;
 		mProjectionDirty = true;
 		return *this;
 	}
 
-	inline double nJinn::Camera::farClippingPlane() const noexcept	{
+	inline double Camera::farClippingPlane() const noexcept	{
 		return mFarClippingPlane;
 	}
 }

@@ -108,7 +108,8 @@ namespace nJinn {
 		mChunks.emplace_back(size);
 		mCurrentChunk = &mChunks.back();
 		mDescriptorAllocator.allocateDescriptorSet(mCurrentChunk->mDescriptorSet);
-		mCurrentChunk->mDescriptorSet.write().uniformBuffer(mCurrentChunk->mBuffer, 0, size, 0);
+		DescriptorWriter(mCurrentChunk->mDescriptorSet)
+			.uniformBuffer(mCurrentChunk->mBuffer, 0, size, 0);
 	}
 
 	TransientUniformAllocator::TransientUniformAllocator() :

@@ -8,7 +8,7 @@ namespace nJinn {
 	public:
 		Resource();
 		virtual ~Resource() {};
-		bool isLoaded() const { return mIsLoaded; }
+		bool isLoaded() const noexcept { return mIsLoaded; }
 		virtual void load(const std::string & resourceName) {};
 	protected:
 		void finishedLoading();

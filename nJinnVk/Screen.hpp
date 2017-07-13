@@ -13,7 +13,6 @@ namespace nJinn
 			void destroy();
 			vk::Image image;
 			vk::ImageView view;
-			vk::Framebuffer frameBuffer;
 			vk::Semaphore imageAquiredSemaphore;
 			vk::Semaphore renderingCompleteSemaphore;
 		};
@@ -27,7 +26,6 @@ namespace nJinn
 
 		vk::SwapchainKHR mSwapChain;
 		vk::Format mColorFormat;
-		vk::RenderPass mRenderPass;
 		vk::SurfaceKHR mSurface;
 		vk::ColorSpaceKHR mColorSpace;
 
@@ -53,14 +51,13 @@ namespace nJinn
 		void acquireFrame();
 		vk::Semaphore waitingSemaphore() const { return mCurrentAcquireFrameSemaphore; }
 		vk::Semaphore renderCompleteSemaphore() const { return mCurrentFrame->renderingCompleteSemaphore; }
-		vk::RenderPass renderPass() const { return mRenderPass; }
-		vk::Framebuffer framebuffer() const { return mCurrentFrame->frameBuffer; }
 		void transitionForDraw(vk::CommandBuffer cmdbuf);
 		void transitionForPresent(vk::CommandBuffer cmdbuf);
 		uint32_t width() { return mWidth; };
 		uint32_t height() { return mHeight; };
 		uint32_t currentFrameIndex() const { return mCurrentFrameIndex; }
 		vk::ImageView getImageView(uint32_t index) { return mFrames[index].view; }
+		vk::Image getImage(uint32_t index) { return mFrames[index].image; }
 		uint32_t maxQueuedFrames() const noexcept { return mMaxQueuedFrames; }
 
 

@@ -87,7 +87,7 @@
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BlockAllocator.hpp" />
     <ClInclude Include="BucketAllocator.hpp" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Clock.hpp" />
     <ClInclude Include="CommandBuffer.hpp" />
     <ClInclude Include="Component.hpp" />
@@ -99,8 +99,11 @@
     <ClInclude Include="DescriptorSet.hpp" />
     <ClInclude Include="Fence.hpp" />
     <ClInclude Include="GameObject.hpp" />
+    <ClInclude Include="GBuffer.hpp" />
     <ClInclude Include="Hash.hpp" />
-    <ClInclude Include="LightSource.h" />
+    <ClInclude Include="Image.hpp" />
+    <ClInclude Include="LightSource.hpp" />
+    <ClInclude Include="LightSourceDirectional.hpp" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="Math.hpp" />
@@ -143,8 +146,11 @@
     <ClCompile Include="DescriptorAllocator.cpp" />
     <ClCompile Include="DescriptorSet.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="Hash.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="LightSource.cpp" />
+    <ClCompile Include="LightSourceDirectional.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialFamily.cpp" />
     <ClCompile Include="MemoryAllocation.cpp" />

@@ -11,7 +11,8 @@
 
 namespace nJinn {
 	class Renderer : public Component {
-	protected:
+	public:
+		//protected:
 		MaterialFamily::handle mMaterialFamily;
 		//std::unique_ptr<Material> mForwardMaterial;
 		DescriptorSet mDescSet; // object uniforms

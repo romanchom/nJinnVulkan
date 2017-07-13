@@ -15,7 +15,8 @@
 namespace nJinn {
 	class RendererSystem {
 	public:
-		typedef std::unordered_set<class Renderer *> set_t;
+		template<typename T>
+		using set_t = std::unordered_set<T *>;
 		enum {
 			worldDescriptorSetIndex = 0,
 			objectDescriptorSetIndex,
@@ -40,44 +41,37 @@ namespace nJinn {
 			lightingSubpassIndex,
 			subpassCount,
 		};
-	private:
+	//private:
 		struct GlobalUniformsStruct {
 			Eigen::Matrix4f modelViewProjection;
 		};
-		set_t mRenderersSet;
+		set_t<class Renderer> mDeferredObjects;
+		set_t<class LightSource> mLightSources;
+		set_t<class Camera> mCameras;
+
 		vk::RenderPass mDeferredRenderPass;
-
-		vk::Image mGBufferImages[renderPassAttachmentsCount];
-		vk::ImageView mImageViews[renderPassAttachmentsCount + 1];
-		vk::ImageView mDepthOnlyImageView;
-		MemoryAllocation mGBufferMemory;
-
-		vk::Framebuffer mFramebuffers[3];
-
-		MaterialFamily::handle mat;
-		Mesh::handle mesh;
-		vk::Pipeline pipe;
-		DescriptorSet mDescSet;
+		
 		UniformBuffer mGlobalUniforms;
 
 		void createRenderPass();
-		void createGBuffer();
-		void createFramebuffer();
 	public:
 		RendererSystem();
 		~RendererSystem();
 
-		void registerRenderer(class Renderer * renderer) { mRenderersSet.emplace(renderer); }
-		void unregisterRenderer(class Renderer * renderer) { mRenderersSet.erase(renderer); }
+		void registerRenderer(class Renderer * renderer) { mDeferredObjects.emplace(renderer); }
+		void unregisterRenderer(class Renderer * renderer) { mDeferredObjects.erase(renderer); }
+
+		void registerLightSource(class LightSource * light) { mLightSources.emplace(light); }
+		void unregisterLightSource(class LightSource * light) { mLightSources.erase(light); }
+
+		void registerCamera(class Camera * camera) { mCameras.emplace(camera); }
+		void unregisterCamera(class Camera * camera) { mCameras.erase(camera); }
 
 		void update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsCw);
 
 		vk::RenderPass renderPass() const { return mDeferredRenderPass; }
 		
-
 		vk::Sampler immutableSamplers[immutableSamplerCount];
-
-		CommandBuffer cmdbuf;
 	};
 
 	extern RendererSystem * rendererSystem;

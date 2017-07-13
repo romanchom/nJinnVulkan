@@ -18,7 +18,7 @@ namespace nJinn {
 			assert(shaders.IsSequence());
 			int i = 0;
 			for (auto & node : shaders) {
-				mShaders[i] = resourceManager->get<Shader>(shaders[i].as<std::string>(), true);
+				mShaders[i] = resourceManager->get<Shader>(shaders[i].as<std::string>(), ResourceLoadPolicy::Immediate);
 				++i;
 			}
 		}

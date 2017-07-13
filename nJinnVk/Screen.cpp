@@ -26,7 +26,6 @@ namespace nJinn {
 		mHeight(-1),
 		mSwapChain(nullptr),
 		mColorFormat(vk::Format::eUndefined),
-		mRenderPass(nullptr),
 		mSurface(nullptr),
 		mColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear),
 		mFrames(nullptr),
@@ -145,7 +144,6 @@ namespace nJinn {
 		}
 		delete[] mFrames;
 		delete[] mFences;
-		context->dev().destroyRenderPass(mRenderPass);
 		context->dev().destroySwapchainKHR(mSwapChain);
 		context->inst().destroySurfaceKHR(mSurface);
 	}
@@ -212,35 +210,6 @@ namespace nJinn {
 		std::vector<vk::Image> images = context->dev().getSwapchainImagesKHR(mSwapChain);
 		assert(frameCount == images.size());
 
-		vk::AttachmentDescription attachment;
-		attachment
-			.setFormat(mColorFormat)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
-			.setStoreOp(vk::AttachmentStoreOp::eStore)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
-			.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
-			
-		vk::AttachmentReference attachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal);
-
-		vk::SubpassDescription subpass;
-		subpass
-			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-			.setColorAttachmentCount(1)
-			.setPColorAttachments(&attachmentReference);
-
-
-		vk::RenderPassCreateInfo renderPassInfo;
-		renderPassInfo
-			.setAttachmentCount(1)
-			.setPAttachments(&attachment)
-			.setSubpassCount(1)
-			.setPSubpasses(&subpass);
-
-		mRenderPass = context->dev().createRenderPass(renderPassInfo);
-
 		vk::ImageViewCreateInfo viewInfo;
 		viewInfo
 			.setFormat(mColorFormat)
@@ -248,22 +217,12 @@ namespace nJinn {
 			.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
 			.setViewType(vk::ImageViewType::e2D);
 
-		vk::FramebufferCreateInfo framebufferInfo;
-		framebufferInfo
-			.setAttachmentCount(1)
-			.setRenderPass(renderPass())
-			.setHeight(mHeight)
-			.setWidth(mWidth)
-			.setLayers(1);
-
 		mFrames = new Frame[frameCount];
 
 		for (size_t i = 0; i < frameCount; ++i) {
 			Frame & frame = mFrames[i];
 			viewInfo.setImage(images[i]);
 			frame.view = context->dev().createImageView(viewInfo);
-			framebufferInfo.setPAttachments(&frame.view);
-			frame.frameBuffer = context->dev().createFramebuffer(framebufferInfo);
 			frame.imageAquiredSemaphore = context->dev().createSemaphore(vk::SemaphoreCreateInfo());
 			frame.renderingCompleteSemaphore = context->dev().createSemaphore(vk::SemaphoreCreateInfo());
 			frame.image = images[i];
@@ -274,7 +233,6 @@ namespace nJinn {
 		info.flags = vk::FenceCreateFlagBits::eSignaled;
 		for (size_t i = 0; i < mMaxQueuedFrames; ++i) {
 			mFences[i] = context->dev().createFence(info);
-			//info.flags = vk::FenceCreateFlags();
 		}
 		
 		setCurrentFrame(0);
@@ -301,10 +259,12 @@ namespace nJinn {
 		}
 		buffer.endRecording();
 
+		vk::CommandBuffer cmdbuf = buffer.get();
+
 		vk::SubmitInfo submitInfo;
 		submitInfo
 			.setCommandBufferCount(1)
-			.setPCommandBuffers(buffer.get());
+			.setPCommandBuffers(&cmdbuf);
 
 		context->mainQueue().submit(1, &submitInfo, nullptr);
 		context->mainQueue().waitIdle();
@@ -397,7 +357,6 @@ namespace nJinn {
 	{
 		context->dev().destroySemaphore(renderingCompleteSemaphore);
 		context->dev().destroySemaphore(imageAquiredSemaphore);
-		context->dev().destroyFramebuffer(frameBuffer);
 		context->dev().destroyImageView(view);
 	}
 }

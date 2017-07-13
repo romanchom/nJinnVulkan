@@ -9,12 +9,16 @@
 #include <nJinnVk/GameObject.hpp>
 #include <nJinnVk/ResourceManager.hpp>
 #include <nJinnVk/Clock.hpp>
+#include <nJinnVk/Camera.hpp>
+#include <nJinnVk/LightSourceDirectional.hpp>
+
 
 using namespace nJinn;
 
 class G : public GameBase {
 private:
 	GameObject * go;
+
 public:
 	virtual void onInitialize() override {
 		go = nullptr;
@@ -22,7 +26,14 @@ public:
 	
 	virtual void onUpdate() override {
 		if (nJinn::clock->frame() == 100) {
-			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", true);
+
+			GameObject * camera = GameObject::create();
+			camera->addComponent<Camera>();
+
+			GameObject * light = GameObject::create();
+			light->addComponent<LightSourceDirectional>();
+
+			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
 
 			go = GameObject::create();
 			go->position(0.5, 0.1, 0.1);
@@ -30,7 +41,7 @@ public:
 			go->scale(0.1, 0.1, 0.1);
 
 			MeshRenderer * mr = go->addComponent<MeshRenderer>();
-			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm", true));
+			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm", ResourceLoadPolicy::Immediate));
 			mr->materialFamily(matFam);
 		}
 		if (nullptr != go) {

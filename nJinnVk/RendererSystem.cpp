@@ -8,6 +8,7 @@
 #include "Renderer.hpp"
 #include "Debug.hpp"
 #include "ResourceManager.hpp"
+#include "Camera.hpp"
 
 namespace nJinn {
 	RendererSystem * rendererSystem;
@@ -76,7 +77,7 @@ namespace nJinn {
 		{ 
 			{ gBufferDiffuseColorAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
 			{ gBufferNormalSpecularAttachmentIndex, vk::ImageLayout::eColorAttachmentOptimal },
-			{ depthStencilAttachmentIndex, vk::ImageLayout::eGeneral },
+			{ depthStencilAttachmentIndex, vk::ImageLayout::eDepthStencilAttachmentOptimal },
 		};
 
 		subpasses[geometrySubpassIndex]
@@ -151,176 +152,14 @@ namespace nJinn {
 		mDeferredRenderPass = context->dev().createRenderPass(renderPassInfo);
 	}
 
-	void RendererSystem::createGBuffer()
-	{
-		vk::ImageCreateInfo imageInfo;
-
-		// depth stencil buffer
-		imageInfo
-			.setImageType(vk::ImageType::e2D)
-			.setFormat(formats[depthStencilAttachmentIndex])
-			.setExtent(vk::Extent3D(screen->width(), screen->height(), 1))
-			.setMipLevels(1)
-			.setArrayLayers(1)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setTiling(vk::ImageTiling::eOptimal)
-			.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment
-				| vk::ImageUsageFlagBits::eInputAttachment)
-			.setSharingMode(vk::SharingMode::eExclusive)
-			.setInitialLayout(vk::ImageLayout::eUndefined);
-
-		mGBufferImages[depthStencilAttachmentIndex] = context->dev().createImage(imageInfo);
-
-		imageInfo
-			.setFormat(formats[gBufferDiffuseColorAttachmentIndex])
-			.setUsage(vk::ImageUsageFlagBits::eColorAttachment
-				| vk::ImageUsageFlagBits::eInputAttachment);
-		mGBufferImages[gBufferDiffuseColorAttachmentIndex] = context->dev().createImage(imageInfo);
-		
-		imageInfo.setFormat(formats[gBufferNormalSpecularAttachmentIndex]);
-		mGBufferImages[gBufferNormalSpecularAttachmentIndex] = context->dev().createImage(imageInfo);
-		
-		imageInfo.setFormat(formats[hdrColorAttachmentIndex]);
-		mGBufferImages[hdrColorAttachmentIndex] = context->dev().createImage(imageInfo);
-		
-		uint32_t totalSizeRequired = 0;
-		uint32_t offsets[renderPassAttachmentsCount];
-
-		// temporary proof of concept
-		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
-			vk::MemoryRequirements memReq = context->dev().getImageMemoryRequirements(mGBufferImages[i]);
-			totalSizeRequired += memReq.alignment - 1;
-			totalSizeRequired /= memReq.alignment;
-			totalSizeRequired *= memReq.alignment;
-			offsets[i] = totalSizeRequired;
-			totalSizeRequired += memReq.size;
-		}
-		mGBufferMemory.allocate(totalSizeRequired);
-		
-		vk::ImageSubresourceRange range(
-			vk::ImageAspectFlagBits::eDepth
-			| vk::ImageAspectFlagBits::eStencil,
-			0, 1, 0, 1);
-
-		vk::ImageViewCreateInfo imageViewInfo;
-		imageViewInfo
-			.setViewType(vk::ImageViewType::e2D)
-			.setSubresourceRange(range);
-
-		vk::ImageMemoryBarrier defineLayoutBarrier;
-		defineLayoutBarrier
-			.setSubresourceRange(range)
-			.setOldLayout(vk::ImageLayout::eUndefined)
-			.setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
-			.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-			.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-
-		CommandBuffer cmdBuf;
-		cmdBuf.beginRecording();
-
-		// temporary proof of concept
-		for (int i = 0; i < renderPassAttachmentsCount/* <- fix this -1*/; ++i) {
-			context->dev().bindImageMemory(mGBufferImages[i],
-				mGBufferMemory.deviceMemory(),
-				mGBufferMemory.offset() + offsets[i]);
-
-			imageViewInfo
-				.setImage(mGBufferImages[i])
-				.setFormat(formats[i]);
-			
-			mImageViews[i] = context->dev().createImageView(imageViewInfo);
-			
-			defineLayoutBarrier.setImage(mGBufferImages[i]);
-			cmdBuf->pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
-				vk::PipelineStageFlagBits::eTopOfPipe,
-				vk::DependencyFlags(),
-				0, nullptr,
-				0, nullptr,
-				1, &defineLayoutBarrier);
-
-			range.setAspectMask(vk::ImageAspectFlagBits::eColor);
-			imageViewInfo.setSubresourceRange(range);
-			defineLayoutBarrier
-				.setSubresourceRange(range)
-				.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal);
-		}
-
-		range.setAspectMask(vk::ImageAspectFlagBits::eDepth);
-		imageViewInfo
-			.setSubresourceRange(range)
-			.setImage(mGBufferImages[0])
-			.setFormat(formats[0]);
-		mDepthOnlyImageView = context->dev().createImageView(imageViewInfo);
-
-		cmdBuf.endRecording();
-
-		vk::SubmitInfo submitInfo;
-		submitInfo
-			.setCommandBufferCount(1)
-			.setPCommandBuffers(cmdBuf.get());
-
-		context->mainQueue().submit(1, &submitInfo, nullptr);
-		context->mainQueue().waitIdle();
-
-	}
-
-	void RendererSystem::createFramebuffer()
-	{
-		vk::FramebufferCreateInfo framebufferInfo;
-		framebufferInfo
-			.setRenderPass(mDeferredRenderPass)
-			.setAttachmentCount(renderPassAttachmentsCount)
-			.setPAttachments(mImageViews)
-			.setWidth(screen->width())
-			.setHeight(screen->height())
-			.setLayers(1);
-		
-		for (int i = 0; i < 2; ++i) {
-			// temporary
-			mImageViews[hdrColorAttachmentIndex] = screen->getImageView(i);
-			mFramebuffers[i] = context->dev().createFramebuffer(framebufferInfo);
-		}
-	}
-
 	RendererSystem::RendererSystem()
 	{
 		createRenderPass();
-		createGBuffer();
-		createFramebuffer();
-
-		mat = resourceManager->get<MaterialFamily>("quad.yml", true);
-		mesh = resourceManager->get<Mesh>("quad.vbm", true);
-
-		mat->mObjectAllocator.allocateDescriptorSet(mDescSet);
-		pipe = pipelineFactory->createPipeline(*mat, *mesh, mDeferredRenderPass, lightingSubpassIndex);
-
 		mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
-
-		vk::DescriptorImageInfo imageInfos[renderPassAttachmentsCount];
-		imageInfos[0]
-			.setImageLayout(vk::ImageLayout::eGeneral)
-			.setImageView(mDepthOnlyImageView);
-		for (int i = 1; i < renderPassAttachmentsCount; ++i) {
-			imageInfos[i]
-				.setImageView(mImageViews[i])
-				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-		}
-
-		mDescSet.write()
-			.attachment(imageInfos, 0, renderPassAttachmentsCount - 1)
-			.uniformBuffer(&mGlobalUniforms, 1);
 	}
 
 	RendererSystem::~RendererSystem()
 	{
-		for (int i = 0; i < 2; ++i) {
-			context->dev().destroyFramebuffer(mFramebuffers[i]);
-		}
-		context->dev().destroyPipeline(pipe);// temporary -1
-		for (int i = 0; i < renderPassAttachmentsCount - 1; ++i) {
-			context->dev().destroyImageView(mImageViews[i]);
-			context->dev().destroyImage(mGBufferImages[i]);
-		}
 		context->dev().destroyRenderPass(mDeferredRenderPass);
 	}
 
@@ -329,75 +168,24 @@ namespace nJinn {
 		mGlobalUniforms.update();
 		GlobalUniformsStruct * unis = mGlobalUniforms.acquire<GlobalUniformsStruct>();
 
-
-		vk::Rect2D rendArea;
-		rendArea.extent.setWidth(screen->width()).setHeight(screen->height());
-
-		vk::ClearValue vals[renderPassAttachmentsCount];
-
-		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
-			vals[i].color.setFloat32({0.1f, 0.1f, 0.1f, 0.1f});
-		}
-		vals[depthStencilAttachmentIndex].depthStencil.setDepth(0.0f).setStencil(0);
-
-		vk::Viewport view;
-		view
-			.setWidth((float) screen->width())
-			.setHeight((float) screen->height())
-			.setMinDepth(0)
-			.setMaxDepth(1)
-			.setX(0)
-			.setY(0);
-
-		vk::RenderPassBeginInfo info;
-		info
-			.setRenderPass(mDeferredRenderPass)
-			.setFramebuffer(mFramebuffers[screen->currentFrameIndex()])
-			.setRenderArea(rendArea)
-			.setClearValueCount(4)
-			.setPClearValues(vals);
-
-		// TODO do this on separate thread or something
-		for (auto rend : mRenderersSet) {
-			rend->update();
-		}
-
-		cmdbuf.beginRecording();
-		screen->transitionForDraw(cmdbuf);
-		cmdbuf->beginRenderPass(info, vk::SubpassContents::eInline);
-		
-		// geometry pass
-
-		cmdbuf->setViewport(0, 1, &view);
-		cmdbuf->setScissor(0, 1, &rendArea);
-		for (auto rend : mRenderersSet) {
-			rend->draw(cmdbuf);
-		}
-
-		cmdbuf->nextSubpass(vk::SubpassContents::eInline);
-		// lighting pass
-		uint32_t offset = mGlobalUniforms.offset();
-
-		cmdbuf->bindPipeline(vk::PipelineBindPoint::eGraphics, pipe);
-		auto descSet = mDescSet.get();
-		cmdbuf->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, mat->layout(), 1, 1, &descSet, 1, &offset);
-		mesh->bind(cmdbuf);
-		mesh->draw(cmdbuf);
-
-		cmdbuf->endRenderPass();
-		screen->transitionForPresent(cmdbuf);
-		cmdbuf.endRecording();
-
 		vk::PipelineStageFlags src[] = {
 			vk::PipelineStageFlagBits::eAllCommands,
 			vk::PipelineStageFlagBits::eAllCommands,
 			vk::PipelineStageFlagBits::eAllCommands,
 		};
 
+		vk::CommandBuffer cmdBuffs[10];
+		int i = 0;
+		for (auto && camera : mCameras) {
+			camera->draw(mDeferredObjects, mLightSources);
+			cmdBuffs[i] = camera->mCommandBuffer.get();
+			++i;
+		}
+
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.setCommandBufferCount(1)
-			.setPCommandBuffers(cmdbuf.get())
+			.setCommandBufferCount(i)
+			.setPCommandBuffers(cmdBuffs)
 			.setPWaitSemaphores(wSems)
 			.setWaitSemaphoreCount(wSemC)
 			.setPWaitDstStageMask(src)

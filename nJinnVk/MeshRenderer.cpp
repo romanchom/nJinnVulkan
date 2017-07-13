@@ -22,7 +22,7 @@ namespace nJinn {
 	void MeshRenderer::mesh(const Mesh::handle & mesh)
 	{
 		mMesh = mesh;
-		resourceManager->onResourceLoaded(mesh, [=]{ return validate(); });
+		resourceManager->onResourceLoaded(mesh, [target = this]{ return target->validate(); });
 	}
 
 	void MeshRenderer::update()
@@ -56,7 +56,7 @@ namespace nJinn {
 
 			mUniforms.initialize<detail::ObjectUniforms>();
 
-			mDescSet.write()
+			DescriptorWriter(mDescSet)
 				.uniformBuffer(&mUniforms, 0);
 
 			rendererSystem->registerRenderer(this);
