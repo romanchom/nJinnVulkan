@@ -173,6 +173,7 @@
     <ClCompile Include="TransientUniformAllocator.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
+    <ClCompile Include="YamlUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\*">

@@ -11,8 +11,8 @@ namespace nJinn {
 	static const vk::Format formats[] =
 	{
 		vk::Format::eD32SfloatS8Uint,
-		vk::Format::eA2B10G10R10UnormPack32,
-		vk::Format::eA2B10G10R10UnormPack32,
+		vk::Format::eR16G16B16A16Sfloat,
+		vk::Format::eR8G8Snorm,
 		vk::Format::eB8G8R8A8Srgb, // temporary proof of concept
 		//vk::Format::eR16G16B16A16Sfloat,
 	};
@@ -154,17 +154,18 @@ namespace nJinn {
 
 	void GBuffer::writeDescriptorSet(DescriptorSet & descriptorSet)
 	{
-		vk::DescriptorImageInfo imageInfos[renderPassAttachmentsCount];
+		constexpr uint32_t count = renderPassAttachmentsCount - 1;
+		vk::DescriptorImageInfo imageInfos[count];
 		imageInfos[0]
 			.setImageLayout(vk::ImageLayout::eGeneral)
 			.setImageView(mDepthOnlyImageView);
-		for (int i = 1; i < renderPassAttachmentsCount; ++i) {
+		for (int i = 1; i < count; ++i) {
 			imageInfos[i]
 				.setImageView(mImageViews[i])
 				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 
-		DescriptorWriter(descriptorSet).attachment(imageInfos, 0, 4);
+		DescriptorWriter(descriptorSet).attachment(imageInfos, 0, count);
 	}
 
 	vk::Framebuffer GBuffer::framebuffer() {

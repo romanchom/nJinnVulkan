@@ -77,7 +77,7 @@ namespace nJinn {
 		if (tasksAdded) {
 			uploadCmdBuffer.endRecording();
 
-			vk::CommandBuffer buffer = uploadCmdBuffer;
+			vk::CommandBuffer buffer = uploadCmdBuffer.get();
 
 			submit
 				.setCommandBufferCount(1)

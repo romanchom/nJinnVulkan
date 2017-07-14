@@ -16,8 +16,8 @@ namespace nJinn {
 	static const vk::Format formats[RendererSystem::renderPassAttachmentsCount] =
 	{
 		vk::Format::eD32SfloatS8Uint,
-		vk::Format::eA2B10G10R10UnormPack32,
-		vk::Format::eA2B10G10R10UnormPack32,
+		vk::Format::eR16G16B16A16Sfloat,
+		vk::Format::eR8G8Snorm,
 		vk::Format::eB8G8R8A8Srgb, // temporary proof of concept
 		//vk::Format::eR16G16B16A16Sfloat,
 	};
@@ -166,9 +166,11 @@ namespace nJinn {
 		};
 
 		vk::DescriptorSetLayoutBinding lightingBindings[] = {
-			{ 0, vk::DescriptorType::eInputAttachment, 4,  vk::ShaderStageFlagBits::eFragment }
+			{ 0, vk::DescriptorType::eInputAttachment, 1, vk::ShaderStageFlagBits::eFragment },
+			{ 1, vk::DescriptorType::eInputAttachment, 1, vk::ShaderStageFlagBits::eFragment },
+			{ 2, vk::DescriptorType::eInputAttachment, 1, vk::ShaderStageFlagBits::eFragment },
 		};
-		mLightingDescriptorAllocator.initialize(lightingBindings, 1);
+		mLightingDescriptorAllocator.initialize(lightingBindings, 3);
 
 		vk::PipelineLayoutCreateInfo info;
 		info

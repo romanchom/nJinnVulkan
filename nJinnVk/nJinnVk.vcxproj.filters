@@ -310,6 +310,9 @@
     <ClCompile Include="LightSourceDirectional.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
+    <ClCompile Include="YamlUtility.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\*" />

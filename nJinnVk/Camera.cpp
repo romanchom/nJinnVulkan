@@ -10,6 +10,7 @@
 namespace nJinn {
 	struct Uniforms {
 		Eigen::Matrix4f modelViewProjection;
+		Eigen::Matrix4f modelViewInverseTransposed;
 	};
 
 	void Camera::draw(const std::unordered_set<class Renderer*> deferredObjects, const std::unordered_set<class LightSource*> lights) {
@@ -19,12 +20,12 @@ namespace nJinn {
 		vk::ClearValue vals[4];
 
 		for (int i = 0; i < 4; ++i) {
-			vals[i].color.setFloat32({ 0.0f, 0.0f, 0.0f, 0.0f });
+			vals[i].color.setFloat32({ 1.0f, 0.0f, 0.0f, 0.0f });
 		}
 		vals[0].depthStencil.setDepth(0.0f).setStencil(0);
 
-		vk::Viewport view;
-		view
+		vk::Viewport viewport;
+		viewport
 			.setWidth((float)screen->width())
 			.setHeight((float)screen->height())
 			.setMinDepth(0)
@@ -42,23 +43,24 @@ namespace nJinn {
 
 		mCommandBuffer.beginRecording();
 		vk::CommandBuffer cmdbuf = mCommandBuffer.get();
-		screen->transitionForDraw(mCommandBuffer);
+		screen->transitionForDraw(cmdbuf);
 		cmdbuf.beginRenderPass(info, vk::SubpassContents::eInline);
-		cmdbuf.setViewport(0, 1, &view);
+		cmdbuf.setViewport(0, 1, &viewport);
 
 		auto descSet = mGeometryDescriptorSet.get();
-		/*cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-			rendererSystem->mGeometryPipelineLayout, 0,
-			1, &descSet,
-			0, nullptr);*/
 
-		Eigen::Matrix4d viewProjection = projection() * owner()->transform().inverse();
+		Eigen::Matrix4d view = owner()->transform().inverse();
+		Eigen::Matrix4d viewProjection = projection() * view;
 		auto layout = rendererSystem->mGeometryPipelineLayout;
 		mUniformAllocator.nextCycle();
 		for (auto && obj : deferredObjects) {
 			auto allocation = mUniformAllocator.allocate(sizeof(Uniforms));
 			auto data = reinterpret_cast<Uniforms *>(allocation.data);
-			data->modelViewProjection = (viewProjection * obj->owner()->transform()).cast<float>();
+			
+			Eigen::Matrix4d model = obj->owner()->transform();
+			data->modelViewProjection = (viewProjection * model).cast<float>();
+			data->modelViewInverseTransposed = (view * model).inverse().transpose().cast<float>();
+			
 			cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0,
 				1, &allocation.descriptorSet,
 				1, &allocation.offset);

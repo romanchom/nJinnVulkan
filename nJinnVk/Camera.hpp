@@ -25,7 +25,6 @@ namespace nJinn {
 		DescriptorSet mGeometryDescriptorSet;
 		DescriptorSet mLightingDescriptorSet;
 
-
 		void draw(const std::unordered_set<class Renderer * > deferredObjects, const std::unordered_set<class LightSource *> lights);
 		//void setRenderTarget();
 		void computeProjectionMatrix();

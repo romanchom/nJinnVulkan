@@ -30,7 +30,7 @@ public:
 		if (nJinn::clock->frame() == 100) {
 
 			GameObject * camera = GameObject::create();
-			camera->position(0, -10, 0);
+			camera->position(0, -2, 0);
 			auto cam = camera->addComponent<Camera>();
 			(*cam)
 				.nearClippingPlane(0.01)
