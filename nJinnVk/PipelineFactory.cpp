@@ -60,21 +60,31 @@ namespace nJinn {
 
 	vk::Pipeline PipelineFactory::createPipeline(MaterialFamily & material, Mesh & mesh, vk::RenderPass pass, uint32_t subpass)
 	{
+		vk::Rect2D scissorRectangle;
+		// from specification:
+		// Evaluation of (offset.x + extent.width) must not cause a signed integer addition overflow
+		uint32_t limit = static_cast<uint32_t>(std::numeric_limits<int32_t>::max());
+		scissorRectangle.extent
+			.setHeight(limit)
+			.setWidth(limit);
+	
 		vk::PipelineViewportStateCreateInfo viewportState;
 		viewportState
 			.setViewportCount(1)
-			.setScissorCount(1);
+			.setScissorCount(1)
+			.setPScissors(&scissorRectangle);
 
 		vk::PipelineMultisampleStateCreateInfo multisampleState;
 		vk::DynamicState dynamicStates[] = {
 			vk::DynamicState::eViewport,
-			vk::DynamicState::eScissor,
 		};
 
 		vk::PipelineDynamicStateCreateInfo dynamicState;
 		dynamicState
 			.setPDynamicStates(dynamicStates)
 			.setDynamicStateCount(countof(dynamicStates));
+
+		
 
 		vk::GraphicsPipelineCreateInfo pipeInfo;
 		material.fillPipelineInfo(pipeInfo);

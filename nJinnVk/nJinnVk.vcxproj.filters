@@ -173,9 +173,6 @@
     <ClInclude Include="PointOfView.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="TransientUniformAllocator.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.hpp">
       <Filter>Header Files\game</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="LightSourceDirectional.hpp">
       <Filter>Header Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="TransientUniformAllocator.hpp">
+      <Filter>Header Files\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -312,6 +312,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />

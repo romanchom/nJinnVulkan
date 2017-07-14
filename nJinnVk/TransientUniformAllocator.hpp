@@ -9,8 +9,8 @@
 namespace nJinn {
 	struct TransientAllocation {
 		vk::DescriptorSet descriptorSet;
-		vk::DeviceSize offset;
 		void * data;
+		uint32_t offset;
 	};
 
 	class TransientUniformChunk {

@@ -1,5 +1,5 @@
 #include "stdafx.hpp"
-#include "TransientUniformAllocator.h"
+#include "TransientUniformAllocator.hpp"
 
 #include "Screen.hpp"
 
@@ -53,9 +53,10 @@ namespace nJinn {
 			if (mBytesFree < size) return false;
 		}
 		ret.data = reinterpret_cast<void *>(mMappedPointer + mOffset);
-		mOffset += size;
 		ret.offset = mOffset;
 		ret.descriptorSet = mDescriptorSet.get();
+		mOffset += size;
+		mOffset = context->alignUniform(mOffset);
 		return true;
 	}
 
@@ -109,7 +110,7 @@ namespace nJinn {
 		mCurrentChunk = &mChunks.back();
 		mDescriptorAllocator.allocateDescriptorSet(mCurrentChunk->mDescriptorSet);
 		DescriptorWriter(mCurrentChunk->mDescriptorSet)
-			.uniformBuffer(mCurrentChunk->mBuffer, 0, size, 0);
+			.uniformBuffer(mCurrentChunk->mBuffer, 0, 256, 0);// fix this shit
 	}
 
 	TransientUniformAllocator::TransientUniformAllocator() :
@@ -124,6 +125,7 @@ namespace nJinn {
 
 		mDescriptorAllocator.initialize(&binding, 1);
 
+		allocateChunk(1024);
 	}
 
 	TransientUniformAllocator::~TransientUniformAllocator()
@@ -134,9 +136,7 @@ namespace nJinn {
 	{
 		TransientAllocation ret;
 		if(!mCurrentChunk->allocate(size, ret)) {
-			mChunks.emplace_back(mCurrentChunk->size() * 2);
-			mCurrentChunk = &mChunks.back();
-			mDescriptorAllocator.allocateDescriptorSet(mCurrentChunk->mDescriptorSet);
+			allocateChunk(mCurrentChunk->size() * 2);
 			mCurrentChunk->allocate(size, ret);
 		}
 		return ret;

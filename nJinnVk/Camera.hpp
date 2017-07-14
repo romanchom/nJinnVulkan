@@ -3,7 +3,7 @@
 #include <unordered_set>
 #include <Eigen/Dense>
 #include "Component.hpp"
-#include "TransientUniformAllocator.h"
+#include "TransientUniformAllocator.hpp"
 #include "CommandBuffer.hpp"
 #include "GBuffer.hpp"
 
@@ -11,7 +11,7 @@ namespace nJinn {
 	class Camera : public Component
 	{
 	private:
-		TransientUniformAllocator mAllocator;
+		TransientUniformAllocator mUniformAllocator;
 		CommandBuffer mCommandBuffer;
 
 		double mVerticalFieldOfView;
@@ -28,6 +28,7 @@ namespace nJinn {
 
 		void draw(const std::unordered_set<class Renderer * > deferredObjects, const std::unordered_set<class LightSource *> lights);
 		//void setRenderTarget();
+		void computeProjectionMatrix();
 	public:
 		Camera();
 		virtual ~Camera();
@@ -43,6 +44,8 @@ namespace nJinn {
 
 		inline Camera & farClippingPlane(double value) noexcept;
 		inline double farClippingPlane() const noexcept;
+
+		inline const Eigen::Matrix4d & projection();
 
 		friend class RendererSystem;
 	};
@@ -88,6 +91,12 @@ namespace nJinn {
 
 	inline double Camera::farClippingPlane() const noexcept	{
 		return mFarClippingPlane;
+	}
+
+	inline const Eigen::Matrix4d & nJinn::Camera::projection()
+	{
+		if (mProjectionDirty) computeProjectionMatrix();
+		return mProjection;
 	}
 }
 

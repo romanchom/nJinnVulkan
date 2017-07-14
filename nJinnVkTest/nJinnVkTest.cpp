@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "nJinnVkTest.h"
 
+#include <nJinnVk/Math.hpp>
 #include <nJinnVk/Application.hpp>
 #include <nJinnVk/MaterialFamily.hpp>
 #include <nJinnVk/Material.hpp>
@@ -14,6 +15,7 @@
 
 
 using namespace nJinn;
+using namespace nJinn::literals;
 
 class G : public GameBase {
 private:
@@ -28,7 +30,13 @@ public:
 		if (nJinn::clock->frame() == 100) {
 
 			GameObject * camera = GameObject::create();
-			camera->addComponent<Camera>();
+			camera->position(0, -10, 0);
+			auto cam = camera->addComponent<Camera>();
+			(*cam)
+				.nearClippingPlane(0.01)
+				.farClippingPlane(1000)
+				.horizontalFieldOfView(60.0_deg)
+				.verticalFieldOfView(40.0_deg);
 
 			GameObject * light = GameObject::create();
 			light->addComponent<LightSourceDirectional>();
@@ -36,8 +44,8 @@ public:
 			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
 
 			go = GameObject::create();
-			go->position(0.5, 0.1, 0.1);
-			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitY())));
+			go->position(0, 0, 0);
+			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitZ())));
 			go->scale(0.1, 0.1, 0.1);
 
 			MeshRenderer * mr = go->addComponent<MeshRenderer>();
@@ -45,7 +53,7 @@ public:
 			mr->materialFamily(matFam);
 		}
 		if (nullptr != go) {
-			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(nJinn::clock->time(), Eigen::Vector3d::UnitY())));
+			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(nJinn::clock->time(), Eigen::Vector3d::UnitZ())));
 		}
 	}
 	virtual void onPreRender() override {}

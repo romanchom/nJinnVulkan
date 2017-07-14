@@ -17,5 +17,5 @@ void main()
 {
 	normal = vec4(1);
 	//normal.xy = encodeNormal(inNormal);
-	diffuse = vec4(inDiffuse, 1);
+	diffuse = vec4(1, 0, 1, 1);
 }
