@@ -56,7 +56,8 @@ namespace nJinn {
 		ret.offset = mOffset;
 		ret.descriptorSet = mDescriptorSet.get();
 		mOffset += size;
-		mOffset = context->alignUniform(mOffset);
+		mOffset = context->alignUniform(mOffset); // this this shit
+		mBytesFree -= 256; // fix this shit
 		return true;
 	}
 

@@ -20,7 +20,7 @@ namespace nJinn {
 		vk::ClearValue vals[4];
 
 		for (int i = 0; i < 4; ++i) {
-			vals[i].color.setFloat32({ 1.0f, 0.0f, 0.0f, 0.0f });
+			vals[i].color.setFloat32({ 0.0f, 0.0f, 0.0f, 0.0f });
 		}
 		vals[0].depthStencil.setDepth(0.0f).setStencil(0);
 
@@ -49,7 +49,15 @@ namespace nJinn {
 
 		auto descSet = mGeometryDescriptorSet.get();
 
-		Eigen::Matrix4d view = owner()->transform().inverse();
+		Eigen::Matrix4d coordinateTransform;
+		coordinateTransform <<
+			1, 0, 0, 0,
+			0, 0, -1, 0,
+			0, -1, 0, 0,
+			0, 0, 0, 1;
+
+
+		Eigen::Matrix4d view = coordinateTransform * owner()->transform().inverse();
 		Eigen::Matrix4d viewProjection = projection() * view;
 		auto layout = rendererSystem->mGeometryPipelineLayout;
 		mUniformAllocator.nextCycle();
@@ -97,13 +105,13 @@ namespace nJinn {
 		}
 
 		double scaleX = 1.0 / std::tan(mHorizontalFieldOfView * 0.5);
-		double scaleY = 1.0 / std::tan(mVerticalFieldOfView * -0.5);
+		double scaleY = 1.0 / std::tan(mVerticalFieldOfView * 0.5);
 
 		mProjection <<
 			scaleX, 0, 0, 0,
-			0, 0, scaleY, 0,
-			0, -a, 0, b,
-			0, 1, 0, 0;
+			0, scaleY, 0, 0,
+			0, 0, a, b,
+			0, 0, -1, 0;
 
 	}
 

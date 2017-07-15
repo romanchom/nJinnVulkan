@@ -19,41 +19,49 @@ using namespace nJinn::literals;
 
 class G : public GameBase {
 private:
-	GameObject * go;
-
+	std::vector<GameObject *> asteroids;
+	bool ok;
 public:
 	virtual void onInitialize() override {
-		go = nullptr;
+		ok = false;
 	}
 	
 	virtual void onUpdate() override {
 		if (nJinn::clock->frame() == 100) {
 
-			GameObject * camera = GameObject::create();
-			camera->position(0, -2, 0);
+			auto camera = GameObject::create();
+			camera->position(0, -15, 2);
 			auto cam = camera->addComponent<Camera>();
 			(*cam)
 				.nearClippingPlane(0.01)
 				.farClippingPlane(1000)
-				.horizontalFieldOfView(60.0_deg)
-				.verticalFieldOfView(40.0_deg);
+				.horizontalFieldOfView(80.0_deg)
+				.verticalFieldOfView(60.0_deg);
 
-			GameObject * light = GameObject::create();
+			auto light = GameObject::create();
 			light->addComponent<LightSourceDirectional>();
 
-			MaterialFamily::handle matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
+			auto matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
+			auto mesh = resourceManager->get<Mesh>("asteroid.vbm", ResourceLoadPolicy::Immediate);
 
-			go = GameObject::create();
-			go->position(0, 0, 0);
-			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitZ())));
-			go->scale(0.1, 0.1, 0.1);
+			for (int x = -5; x < 5; ++x) {
+				for (int y = -5; y < 5; ++y) {
+					auto go = GameObject::create();
+					go->position(x + 0.5, y + 0.5, 0);
+					go->scale(0.05, 0.05, 0.05);
 
-			MeshRenderer * mr = go->addComponent<MeshRenderer>();
-			mr->mesh(resourceManager->get<Mesh>("asteroid.vbm", ResourceLoadPolicy::Immediate));
-			mr->materialFamily(matFam);
+					auto mr = go->addComponent<MeshRenderer>();
+					mr->mesh(mesh);
+					mr->materialFamily(matFam);
+					asteroids.push_back(go);
+				}
+			}
+			ok = true;
 		}
-		if (nullptr != go) {
-			go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(nJinn::clock->time(), Eigen::Vector3d::UnitZ())));
+		if (ok) {
+			for (auto && go : asteroids) {
+				go->rotation(Eigen::Quaterniond(Eigen::AngleAxisd(nJinn::clock->time(), Eigen::Vector3d::UnitZ())));
+			}
 		}
 	}
 	virtual void onPreRender() override {}

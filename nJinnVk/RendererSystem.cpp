@@ -17,7 +17,7 @@ namespace nJinn {
 	{
 		vk::Format::eD32SfloatS8Uint,
 		vk::Format::eR16G16B16A16Sfloat,
-		vk::Format::eR8G8Snorm,
+		vk::Format::eR16G16Snorm,
 		vk::Format::eB8G8R8A8Srgb, // temporary proof of concept
 		//vk::Format::eR16G16B16A16Sfloat,
 	};
