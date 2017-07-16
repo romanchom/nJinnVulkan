@@ -184,6 +184,8 @@ namespace nJinn {
 
 	RendererSystem::~RendererSystem()
 	{
+		context->dev().destroyPipelineLayout(mLightingPipelineLayout);
+		context->dev().destroyPipelineLayout(mGeometryPipelineLayout);
 		context->dev().destroyRenderPass(mDeferredRenderPass);
 	}
 

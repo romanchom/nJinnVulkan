@@ -178,7 +178,7 @@ namespace nJinn {
 		for (int i = 0; i < 2; ++i) {
 			context->dev().destroyFramebuffer(mFramebuffers[i]);
 		}
-
+		context->dev().destroyImageView(mDepthOnlyImageView);
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			context->dev().destroyImageView(mImageViews[i]);
 			context->dev().destroyImage(mGBufferImages[i]);

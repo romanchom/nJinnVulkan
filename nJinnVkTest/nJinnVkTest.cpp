@@ -44,8 +44,8 @@ public:
 			auto matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
 			auto mesh = resourceManager->get<Mesh>("asteroid.vbm", ResourceLoadPolicy::Immediate);
 
-			for (int x = -5; x < 5; ++x) {
-				for (int y = -5; y < 5; ++y) {
+			for (int x = 0; x < 1; ++x) {
+				for (int y = 0; y < 1; ++y) {
 					auto go = GameObject::create();
 					go->position(x + 0.5, y + 0.5, 0);
 					go->scale(0.05, 0.05, 0.05);

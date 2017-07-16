@@ -27,18 +27,18 @@ namespace nJinn {
 	}
 
 	ThreadPool::ThreadPool(uint32_t workerCount) : 
-		mWorkerCount(0),
+		mWorkerCount(workerCount),
 		mWorkers(),
 		mShouldRun(true),
 		mIdleThreads(0)
 	{
-		if (0 == workerCount) {
-			workerCount = std::thread::hardware_concurrency();
+		if (0 == mWorkerCount) {
+			mWorkerCount = std::thread::hardware_concurrency();
 			// if optimal number of threads cannot be determined
 			// assume 4 threads
-			if (0 == workerCount) workerCount = 4;
+			if (0 == mWorkerCount) mWorkerCount = 4;
 		}
-		for (uint32_t i = 0; i < workerCount; ++i) {
+		for (uint32_t i = 0; i < mWorkerCount; ++i) {
 			mWorkers.emplace_back(&ThreadPool::workerFunction, this);
 		}
 	}

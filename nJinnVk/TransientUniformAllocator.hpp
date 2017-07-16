@@ -44,9 +44,9 @@ namespace nJinn {
 	class TransientUniformAllocator
 	{
 	private:
-		std::deque<TransientUniformChunk> mChunks;
 		TransientUniformChunk * mCurrentChunk;
 		DescriptorAllocator mDescriptorAllocator;
+		std::deque<TransientUniformChunk> mChunks;
 		void allocateChunk(vk::DeviceSize size);
 	public:
 		TransientUniformAllocator();

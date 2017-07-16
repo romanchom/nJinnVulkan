@@ -57,12 +57,13 @@ namespace nJinn {
 		memcpy(pDest, data, size);
 
 		if (!context->isUploadMemoryTypeCoherent()) {
-			context->dev().flushMappedMemoryRanges(1, &vk::MappedMemoryRange(task.memory, 0, size));
+			auto range = vk::MappedMemoryRange(task.memory, 0, size);
+			context->dev().flushMappedMemoryRanges(1, &range);
 		}
 		vk::MemoryBarrier barr;
 		vk::BufferMemoryBarrier preBarrier;
-
-		uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &vk::BufferCopy(0, 0, size));
+		auto copy = vk::BufferCopy(0, 0, size);
+		uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &copy);
 
 		addTask(task);
 	}

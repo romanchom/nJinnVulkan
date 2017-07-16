@@ -3,6 +3,7 @@
 
 #include "Context.hpp"
 #include "Math.hpp"
+#include "Debug.hpp"
 
 namespace nJinn {
 	UniformAllocator::UniformAllocator(size_t uniformSize) :
@@ -100,16 +101,18 @@ namespace nJinn {
 
 	UniformBuffer::~UniformBuffer()
 	{
+		debug->log("Free  ", mSize, "\n");
 		mAllocator->free(mSize);
 	}
 
 	void UniformBuffer::initialize(uint32_t size)
 	{
-		mSize = size;
+		debug->log("Alloc ", size, "\n");
+		mSize = context->alignUniform(size);
 		int tryCount = (int) sAllocators.size();
 		while (tryCount > 0) {
 			auto it = sAllocators.begin();
-			if (it->allocate(size)) {
+			if (it->allocate(mSize)) {
 				mAllocator = &*it;
 				return;
 			} else {
@@ -120,7 +123,7 @@ namespace nJinn {
 		}
 		sAllocators.emplace_front(4 * 1024 * 1024);
 		mAllocator = &sAllocators.front();
-		mAllocator->allocate(size);
+		mAllocator->allocate(mSize);
 	}
 
 	void * UniformBuffer::acquirePointer()

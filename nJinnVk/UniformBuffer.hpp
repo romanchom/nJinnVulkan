@@ -20,7 +20,6 @@ namespace nJinn {
 		UniformAllocator(size_t uniformSize);
 		~UniformAllocator();
 		bool allocate(size_t size) {
-			size = nextMultipleOf(size, context->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 			if (mFreeSpace < size) return false;
 			mFreeSpace -= size;
 			return true;
