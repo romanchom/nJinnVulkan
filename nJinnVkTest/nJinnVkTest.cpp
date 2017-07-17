@@ -30,7 +30,7 @@ public:
 		if (nJinn::clock->frame() == 100) {
 
 			auto camera = GameObject::create();
-			camera->position(0, -15, 2);
+			camera->position(0, -4, 1);
 			auto cam = camera->addComponent<Camera>();
 			(*cam)
 				.nearClippingPlane(0.01)
@@ -44,11 +44,11 @@ public:
 			auto matFam = resourceManager->get<MaterialFamily>("materialFamily.yml", ResourceLoadPolicy::Immediate);
 			auto mesh = resourceManager->get<Mesh>("asteroid.vbm", ResourceLoadPolicy::Immediate);
 
-			for (int x = 0; x < 1; ++x) {
-				for (int y = 0; y < 1; ++y) {
+			for (int x = -3; x < 3; ++x) {
+				for (int y = -3; y < 3; ++y) {
 					auto go = GameObject::create();
 					go->position(x + 0.5, y + 0.5, 0);
-					go->scale(0.05, 0.05, 0.05);
+					go->scale(0.1, 0.1, 0.1);
 
 					auto mr = go->addComponent<MeshRenderer>();
 					mr->mesh(mesh);

@@ -28,8 +28,8 @@ void main()
 {
 	//color = subpassLoad(diffuseSubpass);
 	vec3 normal = decodeNormal();
-	
-	color = vec4(dot(normal, normalize(vec3(1))));
+	vec4 diffuse = vec4(dot(normal, normalize(vec3(1))));
+	color = diffuse;
 	//color = vec4(normal, 1);
 	//color = vec4(subpassLoad(normalSubpass).xy, 0, 1);
 }

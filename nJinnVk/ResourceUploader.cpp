@@ -70,10 +70,12 @@ namespace nJinn {
 
 	void ResourceUploader::doExecute()
 	{
+		auto sem = transfersCompleteSemaphore.get();
+
 		vk::SubmitInfo submit;
 		submit
 			.setSignalSemaphoreCount(1)
-			.setPSignalSemaphores(transfersCompleteSemaphore.get());
+			.setPSignalSemaphores(&sem);
 
 		if (tasksAdded) {
 			uploadCmdBuffer.endRecording();

@@ -2,18 +2,37 @@
 
 #include <vulkan.hpp>
 
+#include "Context.hpp"
+
 namespace nJinn {
 	class Semaphore {
 	private:
-		vk::Semaphore semaphore;
+		vk::Semaphore mSemaphore;
 		Semaphore(const Semaphore &) = delete;
 		Semaphore & operator=(const Semaphore &) = delete;
+		void destroy() {
+			if (nullptr != mSemaphore)
+				context->dev().destroySemaphore(mSemaphore);
+		}
 	public:
-		Semaphore();
-		~Semaphore();
+		Semaphore() {
+			vk::SemaphoreCreateInfo info;
+			mSemaphore = context->dev().createSemaphore(info);
+		}
+		~Semaphore() {
+			destroy();
+		}
+		Semaphore(Semaphore && orig) :
+			mSemaphore(orig.mSemaphore)
+		{
+			orig.mSemaphore = nullptr;
+		}
+		Semaphore & operator=(Semaphore && orig) {
+			destroy();
+			mSemaphore = orig.mSemaphore;
+			orig.mSemaphore = nullptr;
+		}
 
-		operator vk::Semaphore() const { return semaphore; }
-
-		vk::Semaphore * get() { return &semaphore; }
+		vk::Semaphore get() { return mSemaphore; }
 	};
 }

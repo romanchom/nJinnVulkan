@@ -13,13 +13,10 @@ namespace nJinn
 			void destroy();
 			vk::Image image;
 			vk::ImageView view;
-			vk::Semaphore imageAquiredSemaphore;
-			vk::Semaphore renderingCompleteSemaphore;
 		};
 
 		void * mWindowHandle;
-		uint32_t frameCount;
-		uint32_t mMaxQueuedFrames;
+		uint32_t mFrameCount;
 		size_t queueIndex;
 		uint32_t mWidth;
 		uint32_t mHeight;
@@ -36,21 +33,16 @@ namespace nJinn
 		Frame * mFrames;
 		uint32_t mCurrentFrameIndex;
 		Frame * mCurrentFrame;
-		vk::Semaphore mCurrentAcquireFrameSemaphore;
-		vk::Fence * mFences;
 		size_t mTotalFrames;
 
 		bool shouldClose();
-		void acquireFrameIndex(vk::Semaphore signalSemaphore = nullptr, vk::Fence signalFence = nullptr);
 		void setCurrentFrame(uint32_t index);
 	public:
 		Screen(uint32_t width, uint32_t height);
 		~Screen();
 		void resize(uint32_t width, uint32_t height);
-		void present();
-		void acquireFrame();
-		vk::Semaphore waitingSemaphore() const { return mCurrentAcquireFrameSemaphore; }
-		vk::Semaphore renderCompleteSemaphore() const { return mCurrentFrame->renderingCompleteSemaphore; }
+		void present(vk::Semaphore renderingCompleteSemaphore);
+		void acquireFrame(vk::Semaphore frameAquiredSemaphore);
 		void transitionForDraw(vk::CommandBuffer cmdbuf);
 		void transitionForPresent(vk::CommandBuffer cmdbuf);
 		uint32_t width() { return mWidth; };
@@ -58,7 +50,7 @@ namespace nJinn
 		uint32_t currentFrameIndex() const { return mCurrentFrameIndex; }
 		vk::ImageView getImageView(uint32_t index) { return mFrames[index].view; }
 		vk::Image getImage(uint32_t index) { return mFrames[index].image; }
-		uint32_t maxQueuedFrames() const noexcept { return mMaxQueuedFrames; }
+		uint32_t frameCount() const noexcept { return mFrameCount; }
 
 
 		friend class Application;

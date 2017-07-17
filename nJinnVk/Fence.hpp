@@ -8,20 +8,36 @@ namespace nJinn {
 	class Fence {
 	private:
 		vk::Fence mFence;
+		Fence(const Fence &) = delete;
+		Fence & operator=(const Fence &) = delete;
+		void destroy() {
+			if(nullptr != mFence)
+				context->dev().destroyFence(mFence);
+		}
 	public:
-		Fence(bool signaled = false) {
-			VkFenceCreateInfo info;
-			info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			info.pNext = nullptr;
-			info.flags = signaled;
+		Fence() : mFence(nullptr) {}
+		explicit Fence(bool signaled) {
+			vk::FenceCreateInfo info;
+			if(signaled)
+				info.setFlags(vk::FenceCreateFlagBits::eSignaled);
 			mFence = context->dev().createFence(info);
 		};
-		~Fence() {
-			context->dev().destroyFence(mFence);
-		};
-		operator vk::Fence &() {
-			return mFence;
+		Fence(Fence && orig) :
+			mFence(orig.mFence)
+		{
+			orig.mFence = nullptr;
 		}
-		vk::Fence operator->() { return mFence; }
+
+		Fence & operator=(Fence && orig) {
+			destroy();
+			mFence = orig.mFence;
+			orig.mFence = nullptr;
+		}
+
+		~Fence() {
+			destroy();
+		};
+
+		vk::Fence get() { return mFence; }
 	};
 }

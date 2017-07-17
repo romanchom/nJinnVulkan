@@ -17,6 +17,7 @@
 #include "UniformBuffer.hpp"
 #include "Debug.hpp"
 #include "SystemStartup.hpp"
+#include "Context.hpp"
 
 
 
@@ -32,7 +33,6 @@ namespace nJinn {
 		double time = 0;
 		uint64_t frames = 0;
 
-
 		while (true) {
 			if (screen->shouldClose()) break;
 			clock->update();
@@ -43,24 +43,16 @@ namespace nJinn {
 				time = 0;
 			}
 
-			screen->acquireFrame();
 			mGame->onUpdate();
 			UniformBuffer::update();
 
 			resourceUploader->execute();
 
-			vk::Semaphore waitSemaphores[] = {
-				screen->waitingSemaphore(),
-				resourceUploader->semaphore()
-			};
-			vk::Semaphore signalSemaphores[] = {
-				screen->renderCompleteSemaphore()
-			};
-
-			rendererSystem->update(waitSemaphores, 2, signalSemaphores, 1);
-
-			screen->present();
+			rendererSystem->update();
 		}
+
+		context->mainQueue().waitIdle();
+
 	}
 
 	Application::Application(APPLICATION_PARAMS)

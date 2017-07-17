@@ -27,7 +27,7 @@ namespace nJinn {
 			return buffer + currentIndex;
 		}
 	private:
-		enum { bufferCount = 3 };
+		enum { bufferCount = 2 };
 		/// Command buffer pool from which command buffers are created.
 		vk::CommandPool pool;
 		/// Queue of command buffers.

@@ -29,7 +29,7 @@ namespace nJinn {
 
 		void upload(const void * data, size_t size, vk::Buffer dst);
 		void execute() { doExecute(); }
-		vk::Semaphore semaphore() { return transfersCompleteSemaphore; }
+		vk::Semaphore semaphore() { return transfersCompleteSemaphore.get(); }
 	};
 
 	extern ResourceUploader * resourceUploader;

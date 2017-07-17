@@ -13,7 +13,7 @@ namespace nJinn {
 				unique_lock<mutex> lock(mMutex);
 				while (mTaskQueue.empty() && mShouldRun) {
 					++mIdleThreads;
-					if((mTaskQueue.empty()) && (mIdleThreads == mWorkerCount)) mConditionVariableIdle.notify_one();
+					if((mTaskQueue.empty()) && (mIdleThreads == mWorkers.size())) mConditionVariableIdle.notify_one();
 					mConditionVariable.wait(lock);
 					--mIdleThreads;
 				}
@@ -27,18 +27,18 @@ namespace nJinn {
 	}
 
 	ThreadPool::ThreadPool(uint32_t workerCount) : 
-		mWorkerCount(workerCount),
 		mWorkers(),
 		mShouldRun(true),
 		mIdleThreads(0)
 	{
-		if (0 == mWorkerCount) {
-			mWorkerCount = std::thread::hardware_concurrency();
+		if (0 == workerCount) {
+			workerCount = std::thread::hardware_concurrency();
 			// if optimal number of threads cannot be determined
 			// assume 4 threads
-			if (0 == mWorkerCount) mWorkerCount = 4;
+			if (0 == workerCount) workerCount = 4;
 		}
-		for (uint32_t i = 0; i < mWorkerCount; ++i) {
+
+		for (uint32_t i = 0; i < workerCount; ++i) {
 			mWorkers.emplace_back(&ThreadPool::workerFunction, this);
 		}
 	}
@@ -47,8 +47,8 @@ namespace nJinn {
 	{
 		mShouldRun = false;
 		mConditionVariable.notify_all();
-		for (unsigned i = 0; i < mWorkerCount; ++i) {
-			mWorkers[i].join();
+		for (auto && worker : mWorkers) {
+			worker.join();
 		}
 	}
 
@@ -59,10 +59,10 @@ namespace nJinn {
 		mConditionVariable.notify_one();
 	}
 
-	void ThreadPool::waitUntillCompleted()
+	void ThreadPool::waitUntilCompleted()
 	{
 		unique_lock<mutex> lock(mMutex);
-		while ((!mTaskQueue.empty()) || (mIdleThreads != mWorkerCount)) {
+		while ((!mTaskQueue.empty()) || (mIdleThreads != mWorkers.size())) {
 			mConditionVariableIdle.wait(lock);
 		}
 	}

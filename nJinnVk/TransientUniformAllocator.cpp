@@ -93,7 +93,9 @@ namespace nJinn {
 			context->dev().flushMappedMemoryRanges(count, ranges);
 		}
 
-		auto oldestCycle = screen->maxQueuedFrames() - 1;
+		// TODO
+		//auto oldestCycle = screen->maxQueuedFrames() - 1;
+		auto oldestCycle = 1;
 		auto bytesToFree = mBytesAllocated[oldestCycle];
 		// shift history to the right
 		for (int i = oldestCycle; i > 0; --i) {

@@ -10,8 +10,7 @@ namespace nJinn {
 	class ThreadPool
 	{
 	private:
-		typedef std::function<void()> task_t;
-		uint32_t mWorkerCount;
+		using task_t = std::function<void()>;
 		std::vector<std::thread> mWorkers;
 		std::queue<task_t> mTaskQueue;
 		std::mutex mMutex;
@@ -24,7 +23,7 @@ namespace nJinn {
 		ThreadPool(uint32_t workerCount = 0);
 		~ThreadPool();
 		void submitTask(const task_t & task);
-		void waitUntillCompleted();
+		void waitUntilCompleted();
 	};
 
 	extern ThreadPool * threadPool;

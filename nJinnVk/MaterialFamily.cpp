@@ -27,9 +27,9 @@ namespace nJinn {
 			throw std::runtime_error("Missing required parameter: shaders");
 		}
 		
-		uint32_t attachmentCount = root["outputCount"].as<uint32_t>();
+		auto attachmentCount = root["outputCount"].as<uint32_t>();
 
-		for (int i = 0; i < attachmentCount; ++i) {
+		for (uint32_t i = 0; i < attachmentCount; ++i) {
 			mBlendAttachmentState[i]
 				.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
 				.setBlendEnable(false);

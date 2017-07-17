@@ -146,7 +146,7 @@ namespace nJinn {
 			.setHeight(screen->height())
 			.setLayers(1);
 
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < screen->frameCount(); ++i) {
 			images[hdrColorAttachmentIndex] = screen->getImageView(i);
 			mFramebuffers[i] = context->dev().createFramebuffer(framebufferInfo);
 		}
@@ -175,7 +175,7 @@ namespace nJinn {
 
 	GBuffer::~GBuffer()
 	{
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < screen->frameCount(); ++i) {
 			context->dev().destroyFramebuffer(mFramebuffers[i]);
 		}
 		context->dev().destroyImageView(mDepthOnlyImageView);

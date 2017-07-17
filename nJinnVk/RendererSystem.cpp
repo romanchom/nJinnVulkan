@@ -9,6 +9,7 @@
 #include "Debug.hpp"
 #include "ResourceManager.hpp"
 #include "Camera.hpp"
+#include "ResourceUploader.hpp"
 
 namespace nJinn {
 	RendererSystem * rendererSystem;
@@ -152,7 +153,8 @@ namespace nJinn {
 		mDeferredRenderPass = context->dev().createRenderPass(renderPassInfo);
 	}
 
-	RendererSystem::RendererSystem()
+	RendererSystem::RendererSystem() :
+		mCurrentSyncIndex(0)
 	{
 		createRenderPass();
 		mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
@@ -180,6 +182,10 @@ namespace nJinn {
 
 		descSetLayouts[0] = mLightingDescriptorAllocator.layout();
 		mLightingPipelineLayout = context->dev().createPipelineLayout(info);
+
+		for (int i = 0; i < 2; ++i) {
+			mSyncs.emplace_back(i == 0);
+		}
 	}
 
 	RendererSystem::~RendererSystem()
@@ -189,10 +195,41 @@ namespace nJinn {
 		context->dev().destroyRenderPass(mDeferredRenderPass);
 	}
 
-	void RendererSystem::update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsC)
+	void RendererSystem::update()
 	{
+		auto fence = mSyncs[mCurrentSyncIndex].renderingCompleteFence.get();
+		while (vk::Result::eTimeout == context->dev()
+			.waitForFences(1, &fence, true, UINT64_MAX));
+		context->dev().resetFences(1, &fence);
+
+		++mCurrentSyncIndex %= mSyncs.size();
+
+		Sync & sync = mSyncs[mCurrentSyncIndex];
+		screen->acquireFrame(sync.frameAcquiredSemaphore.get());
+
 		mGlobalUniforms.update();
 		GlobalUniformsStruct * unis = mGlobalUniforms.acquire<GlobalUniformsStruct>();
+
+		for (auto && obj : mDeferredObjects) {
+			obj->update();
+		}
+
+		mCommandBuffersToExecute.clear();
+		int i = 0;
+		for (auto && camera : mCameras) {
+			camera->draw(mDeferredObjects, mLightSources);
+			mCommandBuffersToExecute.push_back(camera->mCommandBuffer.get());
+			++i;
+		}
+
+
+		vk::Semaphore waitSemaphores[] = {
+			sync.frameAcquiredSemaphore.get(),
+			resourceUploader->semaphore()
+		};
+		vk::Semaphore signalSemaphores[] = {
+			sync.renderingCompleteSemaphore.get() 
+		};
 
 		vk::PipelineStageFlags src[] = {
 			vk::PipelineStageFlagBits::eAllCommands,
@@ -200,28 +237,18 @@ namespace nJinn {
 			vk::PipelineStageFlagBits::eAllCommands,
 		};
 
-		for (auto && obj : mDeferredObjects) {
-			obj->update();
-		}
-
-		vk::CommandBuffer cmdBuffs[10];
-		int i = 0;
-		for (auto && camera : mCameras) {
-			camera->draw(mDeferredObjects, mLightSources);
-			cmdBuffs[i] = camera->mCommandBuffer.get();
-			++i;
-		}
-
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.setCommandBufferCount(i)
-			.setPCommandBuffers(cmdBuffs)
-			.setPWaitSemaphores(wSems)
-			.setWaitSemaphoreCount(wSemC)
+			.setCommandBufferCount(rendererSystem->mCommandBuffersToExecute.size())
+			.setPCommandBuffers(rendererSystem->mCommandBuffersToExecute.data())
+			.setPWaitSemaphores(waitSemaphores)
+			.setWaitSemaphoreCount(2)
 			.setPWaitDstStageMask(src)
-			.setSignalSemaphoreCount(sSemsC)
-			.setPSignalSemaphores(sSems);
+			.setSignalSemaphoreCount(1)
+			.setPSignalSemaphores(signalSemaphores);
 
-		context->mainQueue().submit(1, &submitInfo, nullptr);
+		context->mainQueue().submit(1, &submitInfo, sync.renderingCompleteFence.get());
+
+		screen->present(sync.renderingCompleteSemaphore.get());
 	}
 }

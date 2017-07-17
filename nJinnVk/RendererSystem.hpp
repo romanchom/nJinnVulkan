@@ -11,6 +11,8 @@
 #include "MaterialFamily.hpp"
 #include "Mesh.hpp"
 #include "UniformBuffer.hpp"
+#include "Semaphore.hpp"
+#include "Fence.hpp"
 
 namespace nJinn {
 	class RendererSystem {
@@ -62,6 +64,21 @@ namespace nJinn {
 		UniformBuffer mGlobalUniforms;
 
 		void createRenderPass();
+
+		struct Sync {
+			Semaphore frameAcquiredSemaphore;
+			Semaphore renderingCompleteSemaphore;
+			Fence renderingCompleteFence;
+
+			explicit Sync(bool signalFence) :
+				renderingCompleteFence(signalFence)
+			{}
+		};
+
+		std::vector<Sync> mSyncs;
+		uint32_t mCurrentSyncIndex;
+
+		std::vector<vk::CommandBuffer> mCommandBuffersToExecute;
 	public:
 		RendererSystem();
 		~RendererSystem();
@@ -75,7 +92,7 @@ namespace nJinn {
 		void registerCamera(class Camera * camera) { mCameras.emplace(camera); }
 		void unregisterCamera(class Camera * camera) { mCameras.erase(camera); }
 
-		void update(vk::Semaphore * wSems, uint32_t wSemC, vk::Semaphore * sSems, uint32_t sSemsCw);
+		void update();
 
 		vk::RenderPass renderPass() const { return mDeferredRenderPass; }
 		
