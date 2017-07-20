@@ -120,6 +120,7 @@
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
+    <ClInclude Include="SegregatedAllocator.hpp" />
     <ClInclude Include="Semaphore.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="SegregatedAllocator.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
