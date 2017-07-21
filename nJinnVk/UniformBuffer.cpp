@@ -25,19 +25,16 @@ namespace nJinn {
 			.setAllocationSize(memReq.size)
 			.setMemoryTypeIndex(context->uploadMemoryType());
 
-		mMemory = context->dev().allocateMemory(allocInfo);
-		context->dev().bindBufferMemory(mBuffer, mMemory, 0);
-		mPointer = (char *)context->dev().mapMemory(mMemory, 0, uniformSize * 2, {});
-		//																	   ^
-		//																	   |
-		// TODO															or this "2"
+		mMemory = memory->upload().alloc(memReq.size);
+		context->dev().bindBufferMemory(mBuffer, mMemory.memory(), mMemory.offset());
+		mPointer = (char *)mMemory.mapping();
+
 	}
 
 	UniformAllocator::~UniformAllocator()
 	{
 		context->dev().destroyBuffer(mBuffer);
-		context->dev().unmapMemory(mMemory);
-		context->dev().freeMemory(mMemory);
+		memory->upload().free(mMemory);
 	}
 
 	void UniformAllocator::update()
@@ -59,10 +56,10 @@ namespace nJinn {
 
 	void UniformAllocator::writtenRange(vk::MappedMemoryRange & range)
 	{
-		range
+		/*range
 			.setMemory(mMemory)
 			.setOffset(mCycle * mTotalSpace)
-			.setSize(mCurrentOffset);
+			.setSize(mCurrentOffset);*/
 	}
 
 	bool UniformAllocator::occupied() const
@@ -85,12 +82,12 @@ namespace nJinn {
 	{
 		if (!context->isUploadMemoryTypeCoherent()) {
 			// TODO fix this allocation and this fucking memory leak
-			vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
+			/*vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
 			int i = 0;
 			for (UniformAllocator & alloc : sAllocators) {
 				alloc.writtenRange(ranges[i++]);
 			}
-			context->dev().flushMappedMemoryRanges(i, ranges);
+			context->dev().flushMappedMemoryRanges(i, ranges);*/
 		}
 		for (UniformAllocator & alloc : sAllocators) {
 			alloc.update();

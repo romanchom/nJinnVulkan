@@ -6,6 +6,8 @@
 #include <memory>
 #include <boost/pool/pool_alloc.hpp>
 
+#include "Math.hpp"
+
 namespace nJinn {
 	namespace detail {
 		template<typename T>
@@ -28,6 +30,7 @@ namespace nJinn {
 		struct Chunk {
 			vk::DeviceMemory memory;
 			BlockList blocks;
+			uint8_t * mapping;
 		};
 
 		struct Block {
@@ -41,8 +44,9 @@ namespace nJinn {
 	class SegregatedAllocator {
 	private:
 		vk::DeviceSize mChunkSize;
-		vk::DeviceSize mAlignment;
+		Aligner<vk::DeviceSize> mAligner;
 		uint32_t mListCount;
+		bool mShouldMap;
 		vk::MemoryAllocateInfo mAllocateInfo;
 		std::unique_ptr<detail::FreeList[]> mFreeLists;
 		detail::ChunkList mChunks;
@@ -61,9 +65,10 @@ namespace nJinn {
 			vk::DeviceMemory memory() { return mBlock->chunk->memory; }
 			vk::DeviceSize offset() { return mBlock->offset; }
 			vk::DeviceSize size() { return mBlock->size; }
+			uint8_t * mapping() { return mBlock->chunk->mapping + offset(); }
 			friend SegregatedAllocator;
 		};
-		SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType);
+		SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType, bool shouldMap);
 		~SegregatedAllocator();
 		Allocation alloc(vk::DeviceSize size);
 		void free(Allocation & allocation);

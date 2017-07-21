@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vulkan.hpp>
-#include "MemoryAllocation.hpp"
+#include "Memory.hpp"
 
 namespace nJinn {
 	class GBuffer {
@@ -22,11 +22,11 @@ namespace nJinn {
 		vk::Framebuffer mFramebuffers[3];
 	public:
 		GBuffer();
+		~GBuffer();
 		void initialize(uint32_t width, uint32_t height);
 		void writeDescriptorSet(class DescriptorSet & descriptorSet);
 		vk::Image colorBuffer() { return mGBufferImages[hdrColorAttachmentIndex]; }
 		vk::Framebuffer framebuffer();
-		~GBuffer();
 	};
 }
 

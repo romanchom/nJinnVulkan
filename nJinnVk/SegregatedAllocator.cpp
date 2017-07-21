@@ -19,6 +19,10 @@ namespace nJinn {
 		if (vk::Result::eSuccess != ret) {
 			throw std::runtime_error("Device memory allocation failed");
 		}
+		if (mShouldMap) {
+			chunk->mapping = reinterpret_cast<uint8_t*>(context->dev()
+				.mapMemory(chunk->memory, 0, mChunkSize));
+		}
 
 		// create one large block
 		auto block = createEmptyBlock(chunk, chunk->blocks.begin());
@@ -28,23 +32,20 @@ namespace nJinn {
 		createFreeNode(block);
 	}
 
-	BlockHandle SegregatedAllocator::createEmptyBlock(ChunkHandle chunk, BlockHandle position)
-	{
+	BlockHandle SegregatedAllocator::createEmptyBlock(ChunkHandle chunk, BlockHandle position) {
 		auto block = chunk->blocks.emplace(position);
 		block->chunk = chunk;
 		return block;
 	}
 
-	void SegregatedAllocator::createFreeNode(BlockHandle block)
-	{
+	void SegregatedAllocator::createFreeNode(BlockHandle block) {
 		auto & freelist = mFreeLists[blockSizeClass(block->size)];
 		freelist.emplace_front(block);
 		auto free = freelist.begin();
 		block->free = free;
 	}
 
-	uint64_t SegregatedAllocator::allocationSizeClass(vk::DeviceSize size)
-	{
+	uint64_t SegregatedAllocator::allocationSizeClass(vk::DeviceSize size) {
 		// get size class of sufficient size
 
 		// get size twice as large
@@ -57,17 +58,17 @@ namespace nJinn {
 		return static_cast<uint32_t>(blockSizeClass((size << 1) - 1));
 	}
 
-	uint64_t SegregatedAllocator::blockSizeClass(vk::DeviceSize size)
-	{
+	uint64_t SegregatedAllocator::blockSizeClass(vk::DeviceSize size) {
 		unsigned long index;
 		_BitScanReverse64(&index, size);
 		return static_cast<uint64_t>(index);
 	}
 
-	SegregatedAllocator::SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType) :
+	SegregatedAllocator::SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType, bool shouldMap) :
 		mChunkSize(size),
-		mAlignment(alignment),
-		mListCount(blockSizeClass(size) + 1)
+		mAligner(alignment),
+		mListCount(blockSizeClass(size) + 1),
+		mShouldMap(shouldMap)
 	{
 		mFreeLists = std::make_unique<FreeList[]>(mListCount);
 
@@ -89,12 +90,18 @@ namespace nJinn {
 				debug->error("Memory chunk not free when released");
 			}
 #endif
+			if (mShouldMap) {
+				context->dev().unmapMemory(chunk.memory);
+			}
 			context->dev().freeMemory(chunk.memory);
 		}
 	}
 
 	SegregatedAllocator::Allocation SegregatedAllocator::alloc(vk::DeviceSize size) {
 		Allocation ret;
+
+		// align
+		size = mAligner(size);
 
 		uint32_t index = allocationSizeClass(size);
 		// TODO provide best fit method which searches blocks of size class one smaller
@@ -174,8 +181,7 @@ namespace nJinn {
 		createFreeNode(block);
 	}
 
-	void SegregatedAllocator::validate()
-	{
+	void SegregatedAllocator::validate() {
 		for (auto && chunk : mChunks) {
 			vk::DeviceSize prev = 0;
 			for (auto && block : chunk.blocks) {

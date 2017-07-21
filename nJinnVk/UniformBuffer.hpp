@@ -2,7 +2,7 @@
 
 #include <list>
 #include <vulkan.hpp>
-#include "MemoryAllocation.hpp"
+#include "Memory.hpp"
 #include "Math.hpp"
 #include "Context.hpp"
 
@@ -10,7 +10,7 @@ namespace nJinn {
 	class UniformAllocator {
 	private:
 		vk::Buffer mBuffer;
-		vk::DeviceMemory mMemory;
+		MemoryAllocation mMemory;
 		size_t mTotalSpace;
 		size_t mFreeSpace;
 		size_t mCurrentOffset;

@@ -182,15 +182,11 @@ namespace nJinn {
 
 		physicalDevice.getProperties(&physicalDeviceProperties);
 
-		mUniformAlignmentAdd = physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1;
-		mUniformAlignmentMask = ~mUniformAlignmentAdd;
+		mAligner = Aligner<vk::DeviceSize>(physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 	}
 
 	Context::~Context()
 	{
-		//MaterialFamily::collect();
-		//Mesh::collect();
-		//Shader::collect();
 		UniformBuffer::collect();
 
 		device.destroy();

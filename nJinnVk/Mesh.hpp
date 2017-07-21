@@ -3,7 +3,8 @@
 #include <vulkan.hpp>
 
 #include "Resource.hpp"
-#include "MemoryAllocation.hpp"
+
+#include "Memory.hpp"
 
 namespace nJinn {
 	class Mesh : public Resource {
@@ -17,7 +18,7 @@ namespace nJinn {
 		void draw(vk::CommandBuffer cmdbuf);
 	private:
 		vk::Buffer buffer;
-		MemoryAllocation bufferMemory;
+		MemoryAllocation mMemory;
 		vk::PipelineVertexInputStateCreateInfo vertexDataLayout;
 		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
 		vk::PipelineTessellationStateCreateInfo tessInfo;

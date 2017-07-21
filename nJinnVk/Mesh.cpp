@@ -40,6 +40,7 @@ namespace nJinn {
 
 	Mesh::~Mesh() {
 		context->dev().destroyBuffer(buffer);
+		memory->local().free(mMemory);
 	}
 
 	void Mesh::load(const std::string & name)
@@ -61,9 +62,8 @@ namespace nJinn {
 
 		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(buffer);
 
-		bufferMemory.allocate(memReq.size);
-
-		context->dev().bindBufferMemory(buffer, bufferMemory, 0);
+		mMemory = memory->local().alloc(memReq.size);
+		context->dev().bindBufferMemory(buffer, mMemory.memory(), mMemory.offset());
 		uint32_t totalVertexAttributes = 0;
 		
 		for (uint32_t s = 0; s < meshData.vertexStreamCount(); ++s) {

@@ -2,6 +2,8 @@
 
 #include <vulkan.hpp>
 #include "Console.hpp"
+#include "Memory.hpp"
+#include "Math.hpp"
 
 namespace nJinn {
 	extern class Context * context;
@@ -26,8 +28,7 @@ namespace nJinn {
 		uint32_t uploadMemoryTypeIndex;
 		bool isUploadMemoryCoherent;
 
-		vk::DeviceSize mUniformAlignmentAdd;
-		vk::DeviceSize mUniformAlignmentMask;
+		Aligner<vk::DeviceSize> mAligner;
 		
 		// debug section
 		VkDebugReportCallbackEXT debugReportCallback;
@@ -66,6 +67,6 @@ namespace nJinn {
 
 	inline vk::DeviceSize Context::alignUniform(vk::DeviceSize size)
 	{
-		return (size + mUniformAlignmentAdd) & mUniformAlignmentMask;
+		return mAligner(size);
 	}
 }

@@ -19,7 +19,7 @@ namespace nJinn {
 		}
 	}
 
-	inline namespace literals {
+	namespace literals {
 		constexpr uint64_t operator""_hash(const char * string, size_t length) {
 			return detail::recursiveHash(string, length);
 		}

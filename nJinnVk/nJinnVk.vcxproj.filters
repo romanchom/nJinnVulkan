@@ -83,21 +83,6 @@
     <ClInclude Include="Semaphore.hpp">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryManager.hpp">
-      <Filter>Header Files\api\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="Allocator.hpp">
-      <Filter>Header Files\api\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="BlockAllocator.hpp">
-      <Filter>Header Files\api\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="BucketAllocator.hpp">
-      <Filter>Header Files\api\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryAllocation.hpp">
-      <Filter>Header Files\api\memory</Filter>
-    </ClInclude>
     <ClInclude Include="RendererSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -194,6 +179,9 @@
     <ClInclude Include="SegregatedAllocator.hpp">
       <Filter>Header Files\api\memory</Filter>
     </ClInclude>
+    <ClInclude Include="Memory.hpp">
+      <Filter>Header Files\api\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -222,18 +210,6 @@
     </ClCompile>
     <ClCompile Include="ResourceUploader.cpp">
       <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryManager.cpp">
-      <Filter>Source Files\api\memory</Filter>
-    </ClCompile>
-    <ClCompile Include="BlockAllocator.cpp">
-      <Filter>Source Files\api\memory</Filter>
-    </ClCompile>
-    <ClCompile Include="BucketAllocator.cpp">
-      <Filter>Source Files\api\memory</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryAllocation.cpp">
-      <Filter>Source Files\api\memory</Filter>
     </ClCompile>
     <ClCompile Include="RendererSystem.cpp">
       <Filter>Source Files</Filter>
@@ -314,10 +290,14 @@
       <Filter>Source Files\utility</Filter>
     </ClCompile>
     <ClCompile Include="SegregatedAllocator.cpp">
-      <Filter>Source Files\api</Filter>
+      <Filter>Source Files\api\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Source Files\api\memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />

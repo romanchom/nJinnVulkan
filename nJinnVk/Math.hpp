@@ -44,4 +44,17 @@ namespace nJinn {
 		value *= multipleOf;
 		return value;
 	}
+
+	template<typename T>
+	class Aligner {
+	private:
+		T mAlignment;
+	public:
+		Aligner(const T alignment = 1) :
+			mAlignment(alignment - 1)
+		{}
+		const T operator()(const T number) const noexcept {
+			return (number + mAlignment) & ~mAlignment;
+		}
+	};
 }

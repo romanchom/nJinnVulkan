@@ -11,6 +11,8 @@ namespace nJinn {
 		mThreadPoolBind(&mThreadPool, &nJinn::threadPool),
 		mContext(),
 		mContextBind(&mContext, &nJinn::context),
+		mMemory(),
+		mMemoryBind(&mMemory, &memory),
 		mScreen(config.getValue<uint32_t>("rendering.width"), config.getValue<uint32_t>("rendering.height")),
 		mScreenBind(&mScreen, &nJinn::screen),
 		mResourceUploader(),

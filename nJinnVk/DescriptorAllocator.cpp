@@ -6,6 +6,7 @@
 
 namespace nJinn {
 	using namespace YAML;
+	using namespace literals;
 
 	DescriptorAllocator::DescriptorAllocator(uint32_t poolSize) :
 		mBindingCount(0),

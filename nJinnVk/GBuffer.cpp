@@ -63,7 +63,7 @@ namespace nJinn {
 			offsets[i] = totalSizeRequired;
 			totalSizeRequired += memReq.size;
 		}
-		mGBufferMemory.allocate(totalSizeRequired);
+		mGBufferMemory = memory->local().alloc(totalSizeRequired);
 
 		vk::ImageSubresourceRange range(
 			vk::ImageAspectFlagBits::eDepth
@@ -89,7 +89,7 @@ namespace nJinn {
 		// temporary proof of concept
 		for (int i = 0; i < renderPassAttachmentsCount; ++i) {
 			context->dev().bindImageMemory(mGBufferImages[i],
-				mGBufferMemory.deviceMemory(),
+				mGBufferMemory.memory(),
 				mGBufferMemory.offset() + offsets[i]);
 
 			imageViewInfo
@@ -183,5 +183,6 @@ namespace nJinn {
 			context->dev().destroyImageView(mImageViews[i]);
 			context->dev().destroyImage(mGBufferImages[i]);
 		}
+		memory->local().free(mGBufferMemory);
 	}
 }
