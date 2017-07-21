@@ -108,7 +108,6 @@
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="PipelineFactory.hpp" />
-    <ClInclude Include="PointerBind.hpp" />
     <ClInclude Include="PointOfView.h" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="RendererSystem.hpp" />

@@ -18,6 +18,7 @@
 #include "Debug.hpp"
 #include "SystemStartup.hpp"
 #include "Context.hpp"
+#include "Clock.hpp"
 
 
 
@@ -60,7 +61,7 @@ namespace nJinn {
 		os::hInstance = hInstance;
 		config.parseCommandLine(args);
 		config.parseDefaultConfigFile();
-		systemStartup = std::make_unique<SystemStartup>();
+		nJinnStart();
 	}
 
 	Application::~Application()
@@ -68,6 +69,7 @@ namespace nJinn {
 		mGame->onExit();
 		context->mainQueue().waitIdle();
 		GameObject::clearScene();
+		nJinnStop();
 	}
 
 	void Application::quit()

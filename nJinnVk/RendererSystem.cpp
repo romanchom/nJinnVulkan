@@ -157,7 +157,7 @@ namespace nJinn {
 		mCurrentSyncIndex(0)
 	{
 		createRenderPass();
-		mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
+		//mGlobalUniforms.initialize(sizeof(GlobalUniformsStruct));
 
 		vk::DescriptorSetLayoutBinding geometryBindings[] = {
 			{0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eAllGraphics }
@@ -207,8 +207,8 @@ namespace nJinn {
 		Sync & sync = mSyncs[mCurrentSyncIndex];
 		screen->acquireFrame(sync.frameAcquiredSemaphore.get());
 
-		mGlobalUniforms.update();
-		GlobalUniformsStruct * unis = mGlobalUniforms.acquire<GlobalUniformsStruct>();
+		//mGlobalUniforms.update();
+		//GlobalUniformsStruct * unis = mGlobalUniforms.acquire<GlobalUniformsStruct>();
 
 		for (auto && obj : mDeferredObjects) {
 			obj->update();
@@ -232,9 +232,8 @@ namespace nJinn {
 		};
 
 		vk::PipelineStageFlags src[] = {
-			vk::PipelineStageFlagBits::eAllCommands,
-			vk::PipelineStageFlagBits::eAllCommands,
-			vk::PipelineStageFlagBits::eAllCommands,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits::eVertexShader,
 		};
 
 		vk::SubmitInfo submitInfo;

@@ -187,8 +187,6 @@ namespace nJinn {
 
 	Context::~Context()
 	{
-		UniformBuffer::collect();
-
 		device.destroy();
 		if (debugReportCallback) {
 			DestroyDebugReportCallback(instance, debugReportCallback, nullptr);

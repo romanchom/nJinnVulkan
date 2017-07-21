@@ -56,7 +56,7 @@ namespace nJinn {
 
 		vk::RenderPass mDeferredRenderPass;
 		
-		UniformBuffer mGlobalUniforms;
+		//UniformBuffer mGlobalUniforms;
 
 		void createRenderPass();
 

@@ -31,7 +31,6 @@ namespace nJinn {
 	{
 	private:
 		std::unique_ptr<GameBase> mGame;
-		std::unique_ptr<class SystemStartup> systemStartup;
 		void gameLoop();
 	public:
 		Application(APPLICATION_PARAMS);

@@ -128,9 +128,6 @@
     <ClInclude Include="ResourceManager.hpp">
       <Filter>Header Files\resources</Filter>
     </ClInclude>
-    <ClInclude Include="PointerBind.hpp">
-      <Filter>Header Files\utility</Filter>
-    </ClInclude>
     <ClInclude Include="SystemStartup.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>
@@ -297,6 +294,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
     <CustomBuild Include="shaders\*" />
