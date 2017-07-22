@@ -120,6 +120,7 @@
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="SystemStartup.hpp" />
+    <ClInclude Include="TaskScheduler.hpp" />
     <ClInclude Include="TeeStream.hpp" />
     <ClInclude Include="TransientUniformAllocator.hpp" />
     <ClInclude Include="ThreadPool.hpp" />
@@ -163,6 +164,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SystemStartup.cpp" />
+    <ClCompile Include="TaskScheduler.cpp" />
     <ClCompile Include="TransientUniformAllocator.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />

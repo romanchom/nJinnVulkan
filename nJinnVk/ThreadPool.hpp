@@ -4,6 +4,7 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <atomic>
 #include <functional>
 
 namespace nJinn {
@@ -16,8 +17,8 @@ namespace nJinn {
 		std::mutex mMutex;
 		std::condition_variable mConditionVariable;
 		std::condition_variable mConditionVariableIdle;
-		volatile bool mShouldRun;
-		volatile uint32_t mIdleThreads;
+		std::atomic<bool> mShouldRun;
+		std::atomic<uint32_t> mIdleThreads;
 		void workerFunction();
 	public:
 		ThreadPool(uint32_t workerCount = 0);

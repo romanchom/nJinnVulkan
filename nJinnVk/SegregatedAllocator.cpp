@@ -84,8 +84,7 @@ namespace nJinn {
 		for (auto & chunk : mChunks) {
 #ifdef _DEBUG
 			auto & blocks = chunk.blocks;
-			auto second = blocks.begin();
-			++second;
+			auto second = std::next(blocks.begin());
 			if (blocks.end() != second) {
 				debug->error("Memory chunk not free when released");
 			}
@@ -123,8 +122,7 @@ namespace nJinn {
 				uint32_t sizeLeft = static_cast<uint32_t>(block->size - size);
 				if (0 != sizeLeft) {
 					// insert a split right after out block
-					auto next = block;
-					++next;
+					auto next = std::next(block);
 
 					// block needs to be split
 					auto split = createEmptyBlock(block->chunk, next);
@@ -156,8 +154,7 @@ namespace nJinn {
 	void SegregatedAllocator::free(Allocation & allocation) {
 		auto block = allocation.mBlock;
 		auto & chunk = block->chunk->blocks;
-		auto next = block;
-		++next;
+		auto next = std::next(block);
 		// coalesce with next
 		if (chunk.end() != next) {
 			auto & nextFreeList = mFreeLists[blockSizeClass(next->size)];
@@ -168,8 +165,7 @@ namespace nJinn {
 			}
 		}
 		if (chunk.begin() != block) {
-			auto prev = block;
-			--prev;
+			auto prev = std::prev(block);
 			auto & prevFreeList = mFreeLists[blockSizeClass(prev->size)];
 			if (prevFreeList.end() != prev->free) {
 				block->size += prev->size;

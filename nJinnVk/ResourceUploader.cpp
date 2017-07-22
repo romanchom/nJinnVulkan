@@ -26,17 +26,6 @@ namespace nJinn {
 		}
 	}
 
-	/*namespace detail {
-		void CopyTaskBufferToBuffer::copy(vk::CommandBuffer cmdbuf) {
-			vk::BufferCopy region;
-			region
-				.setSrcOffset(0)
-				.setDstOffset(0)
-				.setSize(mSource->size());
-			cmdbuf.copyBuffer(mSource->buffer(), mDestination, 1, &region);
-		}
-	}*/
-
 	ResourceUploader::ResourceUploader() :
 		mCurrentIndex(0),
 		mTasksAdded(false)
@@ -45,44 +34,6 @@ namespace nJinn {
 	}
 
 	ResourceUploader::~ResourceUploader() {}
-
-	/*void ResourceUploader::upload(const void * data, size_t size, vk::Buffer dst)
-	{
-		uploadTask task;
-
-		vk::BufferCreateInfo bufferInfo;
-		bufferInfo
-			.setSize(size)
-			.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
-
-		task.buffer = context->dev().createBuffer(bufferInfo);
-
-		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(task.buffer);
-
-		vk::MemoryAllocateInfo allocInfo;
-		allocInfo
-			.setAllocationSize(memReq.size)
-			.setMemoryTypeIndex(context->uploadMemoryType());
-
-		task.memory = context->dev().allocateMemory(allocInfo);
-
-		context->dev().bindBufferMemory(task.buffer, task.memory, 0);
-
-		void * pDest =context->dev().mapMemory(task.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags());
-
-		memcpy(pDest, data, size);
-
-		if (!context->isUploadMemoryTypeCoherent()) {
-			auto range = vk::MappedMemoryRange(task.memory, 0, size);
-			context->dev().flushMappedMemoryRanges(1, &range);
-		}
-		vk::MemoryBarrier barr;
-		vk::BufferMemoryBarrier preBarrier;
-		auto copy = vk::BufferCopy(0, 0, size);
-		uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &copy);
-
-		addTask(task);
-	}*/
 
 	void ResourceUploader::uploadBuffer(StagingBuffer source, vk::Buffer destination) {
 		// TODO add synchronization if necessary

@@ -51,9 +51,6 @@ namespace nJinn {
 
 			rendererSystem->update();
 		}
-
-		context->mainQueue().waitIdle();
-
 	}
 
 	Application::Application(APPLICATION_PARAMS)

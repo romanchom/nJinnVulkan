@@ -1,8 +1,6 @@
 #include "stdafx.hpp"
 #include "ThreadPool.hpp"
 
-using namespace std;
-
 namespace nJinn {
 	ThreadPool * threadPool;
 	void ThreadPool::workerFunction()
@@ -10,14 +8,14 @@ namespace nJinn {
 		while (true) {
 			task_t task;
 			{
-				unique_lock<mutex> lock(mMutex);
-				while (mTaskQueue.empty() && mShouldRun) {
-					++mIdleThreads;
-					if((mTaskQueue.empty()) && (mIdleThreads == mWorkers.size())) mConditionVariableIdle.notify_one();
+				std::unique_lock<std::mutex> lock(mMutex);
+				while (mTaskQueue.empty() && mShouldRun.load()) {
+					mIdleThreads++;
+					if((mTaskQueue.empty()) && (mIdleThreads.load() == mWorkers.size())) mConditionVariableIdle.notify_one();
 					mConditionVariable.wait(lock);
-					--mIdleThreads;
+					mIdleThreads--;
 				}
-				if (!mShouldRun) break;
+				if (!mShouldRun.load()) break;
 
 				task = mTaskQueue.front();
 				mTaskQueue.pop();
@@ -45,7 +43,7 @@ namespace nJinn {
 
 	ThreadPool::~ThreadPool()
 	{
-		mShouldRun = false;
+		mShouldRun.store(false);
 		mConditionVariable.notify_all();
 		for (auto && worker : mWorkers) {
 			worker.join();
@@ -54,14 +52,14 @@ namespace nJinn {
 
 	void ThreadPool::submitTask(const task_t & task)
 	{
-		unique_lock<mutex> lock(mMutex);
+		std::lock_guard<std::mutex> lock(mMutex);
 		mTaskQueue.push(task);
 		mConditionVariable.notify_one();
 	}
 
 	void ThreadPool::waitUntilCompleted()
 	{
-		unique_lock<mutex> lock(mMutex);
+		std::unique_lock<std::mutex> lock(mMutex);
 		while ((!mTaskQueue.empty()) || (mIdleThreads != mWorkers.size())) {
 			mConditionVariableIdle.wait(lock);
 		}
