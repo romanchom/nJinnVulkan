@@ -67,7 +67,7 @@ namespace nJinn {
 	SegregatedAllocator::SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType, bool shouldMap) :
 		mChunkSize(size),
 		mAligner(alignment),
-		mListCount(blockSizeClass(size) + 1),
+		mListCount(static_cast<uint32_t>(blockSizeClass(size) + 1)),
 		mShouldMap(shouldMap)
 	{
 		mFreeLists = std::make_unique<FreeList[]>(mListCount);
@@ -102,7 +102,7 @@ namespace nJinn {
 		// align
 		size = mAligner(size);
 
-		uint32_t index = allocationSizeClass(size);
+		uint32_t index = static_cast<uint32_t>(allocationSizeClass(size));
 		// TODO provide best fit method which searches blocks of size class one smaller
 		bool success = false;
 		// iterate all free list of required size

@@ -3,41 +3,55 @@
 #include <list>
 #include <vulkan.hpp>
 #include "Memory.hpp"
-#include "Math.hpp"
-#include "Context.hpp"
 
 namespace nJinn {
 	class UniformAllocator {
 	private:
 		vk::Buffer mBuffer;
 		MemoryAllocation mMemory;
-		size_t mTotalSpace;
-		size_t mFreeSpace;
-		size_t mCurrentOffset;
-		char * mPointer;
+		uint32_t mTotalSpace;
+		uint32_t mFreeSpace;
+		uint32_t mCurrentOffset;
+		uint8_t * mPointer;
 		uint32_t mCycle;
 	public:
-		UniformAllocator(size_t uniformSize);
+		UniformAllocator(uint32_t uniformSize);
 		~UniformAllocator();
-		bool allocate(size_t size) {
+		bool allocate(uint32_t size) {
 			if (mFreeSpace < size) return false;
 			mFreeSpace -= size;
 			return true;
 		}
-		void free(size_t size) {
+		void free(uint32_t size) {
 			mFreeSpace += size;
 		}
 		void update();
-		std::pair<void *, size_t> acquire(size_t size);
+		uint32_t obtain(uint32_t size) noexcept;
+		void * pointer(uint32_t offset) const noexcept {
+			return mPointer + offset;
+		}
 		void writtenRange(vk::MappedMemoryRange & range);
-		bool occupied() const;
-		bool operator<(const UniformAllocator & that);
-		vk::Buffer buffer() { return mBuffer; }
+		bool free() const noexcept;
+		bool operator<(const UniformAllocator & that) const noexcept;
+		vk::Buffer buffer() const noexcept { return mBuffer; }
 	};
+
+	class UniformManager {
+	private:
+		vk::DeviceSize mAllocatorSize;
+		std::list<UniformAllocator> mAllocators;
+	public:
+		UniformManager(vk::DeviceSize allocatorSize);
+		~UniformManager();
+		UniformAllocator * allocate(uint32_t size);
+		void collect() noexcept;
+		void update();
+	};
+
+	extern UniformManager * uniformManager;
 
 	class UniformBuffer {
 	private:
-		static std::list<UniformAllocator> sAllocators;
 	private:
 		uint32_t mSize;
 		uint32_t mCurrentOffset;
@@ -50,19 +64,16 @@ namespace nJinn {
 			initialize(sizeof(T));
 		}
 
-		void * acquirePointer();
+		void advance() noexcept;
 		template<typename T>
 		T * acquire();
 
-		uint32_t offset() { return mCurrentOffset; }
-		void fillDescriptorInfo(vk::DescriptorBufferInfo & info) const;
-
-		static void collect();
-		static void update();
+		uint32_t offset() const noexcept { return mCurrentOffset; }
+		void fillDescriptorInfo(vk::DescriptorBufferInfo & info) const noexcept;
 	};
 
 	template<typename T>
 	inline T * UniformBuffer::acquire() {
-		return reinterpret_cast<T *>(acquirePointer());
+		return reinterpret_cast<T *>(mAllocator->pointer(mCurrentOffset));
 	}
 }

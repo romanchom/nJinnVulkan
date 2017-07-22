@@ -45,7 +45,7 @@ namespace nJinn {
 			}
 
 			mGame->onUpdate();
-			UniformBuffer::update();
+			uniformManager->update();
 
 			resourceUploader->execute();
 

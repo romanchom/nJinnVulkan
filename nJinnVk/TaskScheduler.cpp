@@ -14,7 +14,7 @@ namespace nJinn {
 		TaskHandle task = mTasks.begin();
 
 		task->function = function;
-		task->unmetDependencyCount = dependencies.size();
+		task->unmetDependencyCount.store(static_cast<int>(dependencies.size()));
 		for (TaskHandle dep : dependencies) {
 			dep->dependants.push_back(task);
 		}

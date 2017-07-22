@@ -2,11 +2,9 @@
 #include "UniformBuffer.hpp"
 
 #include "Context.hpp"
-#include "Math.hpp"
-#include "Debug.hpp"
 
 namespace nJinn {
-	UniformAllocator::UniformAllocator(size_t uniformSize) :
+	UniformAllocator::UniformAllocator(uint32_t uniformSize) :
 		mTotalSpace(uniformSize),
 		mFreeSpace(uniformSize),
 		mCurrentOffset(0),
@@ -20,37 +18,25 @@ namespace nJinn {
 		mBuffer = context->dev().createBuffer(bufferInfo);
 		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(mBuffer);
 
-		vk::MemoryAllocateInfo allocInfo;
-		allocInfo
-			.setAllocationSize(memReq.size)
-			.setMemoryTypeIndex(context->uploadMemoryType());
-
 		mMemory = memory->upload().alloc(memReq.size);
 		context->dev().bindBufferMemory(mBuffer, mMemory.memory(), mMemory.offset());
-		mPointer = (char *)mMemory.mapping();
-
+		mPointer = mMemory.mapping();
 	}
 
-	UniformAllocator::~UniformAllocator()
-	{
+	UniformAllocator::~UniformAllocator() {
 		context->dev().destroyBuffer(mBuffer);
 		memory->upload().free(mMemory);
 	}
 
-	void UniformAllocator::update()
-	{
+	void UniformAllocator::update() {
 		// TODO where is this "2" comming from??
 		++mCycle %= 2;
 		mCurrentOffset = mTotalSpace * mCycle;
 	}
 
-	std::pair<void*, size_t> UniformAllocator::acquire(size_t size)
-	{
-		std::pair<void *, size_t> ret;
-		ret.first = mPointer + mCurrentOffset;
-		ret.second = mCurrentOffset;
-		// TODO make separate class for uniform buffer management and integrate it with startup system
-		mCurrentOffset += context->alignUniform(size);
+	uint32_t UniformAllocator::obtain(uint32_t size) noexcept {
+		uint32_t ret = mCurrentOffset;
+		mCurrentOffset += size;
 		return ret;
 	}
 
@@ -62,23 +48,61 @@ namespace nJinn {
 			.setSize(mCurrentOffset);*/
 	}
 
-	bool UniformAllocator::occupied() const
-	{
-		return mFreeSpace != mTotalSpace;
+	bool UniformAllocator::free() const noexcept {
+		return mFreeSpace == mTotalSpace;
 	}
 
-	bool UniformAllocator::operator<(const UniformAllocator & that)
-	{
+	bool UniformAllocator::operator<(const UniformAllocator & that) const  noexcept {
 		return mFreeSpace > that.mFreeSpace;
 	}
 
-	void UniformBuffer::collect()
+	UniformManager::UniformManager(vk::DeviceSize allocatorSize) :
+		mAllocatorSize(allocatorSize)
 	{
-		sAllocators.remove_if([](const UniformAllocator & alloc) { return !alloc.occupied(); });
-		sAllocators.sort();
+		mAllocators.emplace_front(mAllocatorSize);
+	}
+	
+	UniformManager::~UniformManager() {}
+	
+	UniformAllocator * UniformManager::allocate(uint32_t size) {
+		UniformAllocator * ret = nullptr;
+		int tryCount = (int) mAllocators.size();
+		while (tryCount > 0) {
+			auto it = mAllocators.begin();
+			if (it->allocate(size)) {
+				return &*it;
+			}
+			else {
+				// move full allocator to the back
+				mAllocators.splice(mAllocators.end(), mAllocators, it);
+				--tryCount;
+			}
+		}
+
+		mAllocators.emplace_front(mAllocatorSize);
+		return &mAllocators.front();
 	}
 
-	void UniformBuffer::update()
+	void UniformManager::collect() noexcept {
+		for (auto it = mAllocators.begin(); mAllocators.end() != it;) {
+			if (it->free()) {
+				auto copy = it;
+				++it;
+				mAllocators.erase(copy);
+			}
+		}
+	}
+
+	void UniformManager::update() {
+		for (auto && alloc : mAllocators) {
+			alloc.update();
+		}
+	}
+
+	UniformManager * uniformManager = nullptr;
+
+	
+	/*void UniformBuffer::update()
 	{
 		if (!context->isUploadMemoryTypeCoherent()) {
 			// TODO fix this allocation and this fucking memory leak
@@ -87,51 +111,29 @@ namespace nJinn {
 			for (UniformAllocator & alloc : sAllocators) {
 				alloc.writtenRange(ranges[i++]);
 			}
-			context->dev().flushMappedMemoryRanges(i, ranges);*/
+			context->dev().flushMappedMemoryRanges(i, ranges);
 		}
 		for (UniformAllocator & alloc : sAllocators) {
 			alloc.update();
 		}
-	}
+	}*/
 
-	std::list<UniformAllocator> UniformBuffer::sAllocators;
 
-	UniformBuffer::~UniformBuffer()
-	{
-		debug->log("Free  ", mSize, "\n");
+	UniformBuffer::~UniformBuffer() {
 		mAllocator->free(mSize);
 	}
 
-	void UniformBuffer::initialize(uint32_t size)
-	{
-		debug->log("Alloc ", size, "\n");
-		mSize = context->alignUniform(size);
-		int tryCount = (int) sAllocators.size();
-		while (tryCount > 0) {
-			auto it = sAllocators.begin();
-			if (it->allocate(mSize)) {
-				mAllocator = &*it;
-				return;
-			} else {
-				// move full allocator to the back
-				sAllocators.splice(sAllocators.end(), sAllocators, it);
-				--tryCount;
-			}
-		}
-		sAllocators.emplace_front(4 * 1024 * 1024);
-		mAllocator = &sAllocators.front();
+	void UniformBuffer::initialize(uint32_t size) {
+		mSize = static_cast<uint32_t>(context->alignUniform(size));
+		mAllocator = uniformManager->allocate(mSize);
 		mAllocator->allocate(mSize);
 	}
 
-	void * UniformBuffer::acquirePointer()
-	{
-		auto v = mAllocator->acquire(mSize);
-		mCurrentOffset = (uint32_t) v.second;
-		return v.first;
+	void UniformBuffer::advance() noexcept {
+		mCurrentOffset = mAllocator->obtain(mSize);
 	}
 
-	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info) const
-	{
+	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info) const noexcept {
 		info
 			.setBuffer(mAllocator->buffer())
 			.setOffset(0)

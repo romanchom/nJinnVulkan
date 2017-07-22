@@ -27,6 +27,7 @@ namespace nJinn {
 
 	void MeshRenderer::update()
 	{
+		mUniforms.advance();
 		auto uniforms = mUniforms.acquire<detail::ObjectUniforms>();
 		uniforms->model = owner()->transform().cast<float>();
 	}
