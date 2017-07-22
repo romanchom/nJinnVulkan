@@ -11,11 +11,11 @@ namespace nJinn {
 	TaskScheduler::TaskHandle TaskScheduler::schedule(const std::function<void()>& function, std::vector<TaskHandle> dependencies)
 	{
 		mTasks.emplace_front();
-		TaskHandle task = mTasks.begin();
+		auto task = mTasks.begin();
 
 		task->function = function;
 		task->unmetDependencyCount.store(static_cast<int>(dependencies.size()));
-		for (TaskHandle dep : dependencies) {
+		for (auto && dep : dependencies) {
 			dep->dependants.push_back(task);
 		}
 

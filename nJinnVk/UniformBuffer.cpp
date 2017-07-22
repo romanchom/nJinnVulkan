@@ -16,7 +16,7 @@ namespace nJinn {
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer);
 		
 		mBuffer = context->dev().createBuffer(bufferInfo);
-		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(mBuffer);
+		auto memReq = context->dev().getBufferMemoryRequirements(mBuffer);
 
 		mMemory = memory->upload().alloc(memReq.size);
 		context->dev().bindBufferMemory(mBuffer, mMemory.memory(), mMemory.offset());
@@ -35,7 +35,7 @@ namespace nJinn {
 	}
 
 	uint32_t UniformAllocator::obtain(uint32_t size) noexcept {
-		uint32_t ret = mCurrentOffset;
+		auto ret = mCurrentOffset;
 		mCurrentOffset += size;
 		return ret;
 	}
@@ -65,7 +65,6 @@ namespace nJinn {
 	UniformManager::~UniformManager() {}
 	
 	UniformAllocator * UniformManager::allocate(uint32_t size) {
-		UniformAllocator * ret = nullptr;
 		int tryCount = (int) mAllocators.size();
 		while (tryCount > 0) {
 			auto it = mAllocators.begin();

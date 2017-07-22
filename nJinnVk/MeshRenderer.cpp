@@ -35,7 +35,7 @@ namespace nJinn {
 	void MeshRenderer::draw(vk::CommandBuffer cmdbuf)
 	{
 		cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline);
-		uint32_t offset = mUniforms.offset();
+		auto offset = mUniforms.offset();
 		auto descSet = mDescSet.get();
 		cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
 			mMaterialFamily->layout(), 2, 

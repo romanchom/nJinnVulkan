@@ -102,7 +102,7 @@ namespace nJinn {
 		// align
 		size = mAligner(size);
 
-		uint32_t index = static_cast<uint32_t>(allocationSizeClass(size));
+		auto index = static_cast<uint32_t>(allocationSizeClass(size));
 		// TODO provide best fit method which searches blocks of size class one smaller
 		bool success = false;
 		// iterate all free list of required size
@@ -119,7 +119,7 @@ namespace nJinn {
 				block->free = mFreeLists[blockSizeClass(size)].end();
 				success = true;
 				// get the remaining size
-				uint32_t sizeLeft = static_cast<uint32_t>(block->size - size);
+				auto sizeLeft = static_cast<uint32_t>(block->size - size);
 				if (0 != sizeLeft) {
 					// insert a split right after out block
 					auto next = std::next(block);
