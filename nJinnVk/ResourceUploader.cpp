@@ -4,33 +4,49 @@
 #include "Context.hpp"
 
 namespace nJinn {
-	ResourceUploader * resourceUploader;
+	StagingBuffer::StagingBuffer(vk::DeviceSize size) {
+		vk::BufferCreateInfo bufferInfo;
+		bufferInfo
+			.setSize(size)
+			.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
 
-	ResourceUploader::ResourceUploader() :
-		currentIndex(0),
-		tasksAdded(false)
-	{
-		uploadCmdBuffer.beginRecording();
+		mBuffer = context->dev().createBuffer(bufferInfo);
+
+		vk::MemoryRequirements memReq = context->dev().getBufferMemoryRequirements(mBuffer);
+
+		mMemory = memory->upload().alloc(memReq.size);
+
+		context->dev().bindBufferMemory(mBuffer, mMemory.memory(), mMemory.offset());
 	}
 
-	ResourceUploader::~ResourceUploader()
-	{
-		for (size_t i = 0; i < 2; ++i) {
-			for (auto & task : uploadTasks[i]) {
-				context->dev().destroyBuffer(task.buffer);
-				context->dev().freeMemory(task.memory);
-			}
-			uploadTasks[i].clear();
+	StagingBuffer::~StagingBuffer() {
+		if (nullptr != mBuffer) {
+			context->dev().destroyBuffer(mBuffer);
+			memory->upload().free(mMemory);
 		}
 	}
 
-	void ResourceUploader::addTask(const uploadTask & task)
+	/*namespace detail {
+		void CopyTaskBufferToBuffer::copy(vk::CommandBuffer cmdbuf) {
+			vk::BufferCopy region;
+			region
+				.setSrcOffset(0)
+				.setDstOffset(0)
+				.setSize(mSource->size());
+			cmdbuf.copyBuffer(mSource->buffer(), mDestination, 1, &region);
+		}
+	}*/
+
+	ResourceUploader::ResourceUploader() :
+		mCurrentIndex(0),
+		mTasksAdded(false)
 	{
-		uploadTasks[currentIndex].push_back(task);
-		tasksAdded = true;
+		mCommandBuffer.beginRecording();
 	}
 
-	void ResourceUploader::upload(const void * data, size_t size, vk::Buffer dst)
+	ResourceUploader::~ResourceUploader() {}
+
+	/*void ResourceUploader::upload(const void * data, size_t size, vk::Buffer dst)
 	{
 		uploadTask task;
 
@@ -66,39 +82,50 @@ namespace nJinn {
 		uploadCmdBuffer->copyBuffer(task.buffer, dst, 1, &copy);
 
 		addTask(task);
+	}*/
+
+	void ResourceUploader::uploadBuffer(StagingBuffer source, vk::Buffer destination) {
+		// TODO add synchronization if necessary
+		vk::BufferCopy region;
+		region
+			.setSrcOffset(0)
+			.setDstOffset(0)
+			.setSize(source.size());
+		mCommandBuffer->copyBuffer(source.buffer(), destination, 1, &region);
+
+		mStagingBuffers[mCurrentIndex].emplace_back(std::move(source));
+		mTasksAdded = true;
 	}
 
-	void ResourceUploader::doExecute()
+	void ResourceUploader::execute()
 	{
-		auto sem = transfersCompleteSemaphore.get();
+		auto sem = mTransfersCompleteSemaphore.get();
 
 		vk::SubmitInfo submit;
 		submit
 			.setSignalSemaphoreCount(1)
 			.setPSignalSemaphores(&sem);
 
-		if (tasksAdded) {
-			uploadCmdBuffer.endRecording();
+		if (mTasksAdded) {
+			mCommandBuffer.endRecording();
 
-			vk::CommandBuffer buffer = uploadCmdBuffer.get();
+			vk::CommandBuffer buffer = mCommandBuffer.get();
 
 			submit
 				.setCommandBufferCount(1)
 				.setPCommandBuffers(&buffer);
 
-			++currentIndex %= 2;
+			++mCurrentIndex %= 2;
 
-			for (auto & task : uploadTasks[currentIndex]) {
-				context->dev().destroyBuffer(task.buffer);
-				context->dev().freeMemory(task.memory);
-			}
+			mStagingBuffers[mCurrentIndex].clear();
+			mTasksAdded = false;
 
-			uploadTasks[currentIndex].clear();
-			tasksAdded = false;
-
-			uploadCmdBuffer.beginRecording();
+			mCommandBuffer.beginRecording();
 		}
 
 		context->mainQueue().submit(1, &submit, nullptr);
 	}
+
+	ResourceUploader * resourceUploader;
+
 }

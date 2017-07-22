@@ -47,7 +47,7 @@ namespace nJinn {
 	{
 		meshLoader::MeshData meshData(name);
 
-		size_t totalSize = meshData.totalDataSize();
+		const auto totalSize = meshData.totalDataSize();
 		bindingCount = (uint32_t) meshData.vertexStreamCount();
 		indexCount = meshData.indexCount();
 		indexType = (meshData.indexSize() == 2) ? vk::IndexType::eUint16 : vk::IndexType::eUint32;
@@ -96,7 +96,10 @@ namespace nJinn {
 
 		tessInfo.setPatchControlPoints(3);
 
-		resourceUploader->upload(meshData.data(), meshData.totalDataSize(), buffer);
+		StagingBuffer stagingBuffer(totalSize);
+		memcpy(stagingBuffer.pointer(), meshData.data(), totalSize);
+
+		resourceUploader->uploadBuffer(std::move(stagingBuffer), buffer);
 
 		finishedLoading();
 	}
