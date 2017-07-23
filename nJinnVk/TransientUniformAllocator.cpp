@@ -53,7 +53,7 @@ namespace nJinn {
 			if (mBytesFree < size) return false;
 		}
 		ret.data = reinterpret_cast<void *>(mMappedPointer + mOffset);
-		ret.offset = mOffset;
+		ret.offset = static_cast<uint32_t>(mOffset);
 		ret.descriptorSet = mDescriptorSet.get();
 		mOffset += size;
 		mOffset = context->alignUniform(mOffset); // this this shit

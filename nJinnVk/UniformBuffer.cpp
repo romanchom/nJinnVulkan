@@ -34,21 +34,19 @@ namespace nJinn {
 		mCurrentOffset = mTotalSpace * mCycle;
 	}
 
-	uint32_t UniformAllocator::obtain(uint32_t size) noexcept {
+	uint32_t UniformAllocator::allocate(uint32_t size) noexcept {
 		auto ret = mCurrentOffset;
 		mCurrentOffset += size;
 		return ret;
 	}
 
-	void UniformAllocator::writtenRange(vk::MappedMemoryRange & range)
-	{
-		/*range
-			.setMemory(mMemory)
-			.setOffset(mCycle * mTotalSpace)
-			.setSize(mCurrentOffset);*/
+	void UniformAllocator::flush() {
+		auto start = static_cast<vk::DeviceSize>(mCycle * mTotalSpace);
+		auto size = static_cast<vk::DeviceSize>(mCurrentOffset) - start;
+		mMemory.flush(start, size);
 	}
 
-	bool UniformAllocator::free() const noexcept {
+	bool UniformAllocator::isFree() const noexcept {
 		return mFreeSpace == mTotalSpace;
 	}
 
@@ -59,16 +57,16 @@ namespace nJinn {
 	UniformManager::UniformManager(vk::DeviceSize allocatorSize) :
 		mAllocatorSize(allocatorSize)
 	{
-		mAllocators.emplace_front(mAllocatorSize);
+		mAllocators.emplace_front(static_cast<uint32_t>(mAllocatorSize));
 	}
 	
 	UniformManager::~UniformManager() {}
 	
-	UniformAllocator * UniformManager::allocate(uint32_t size) {
+	UniformAllocator * UniformManager::reserve(uint32_t size) {
 		int tryCount = (int) mAllocators.size();
 		while (tryCount > 0) {
 			auto it = mAllocators.begin();
-			if (it->allocate(size)) {
+			if (it->reserve(size)) {
 				return &*it;
 			}
 			else {
@@ -78,13 +76,15 @@ namespace nJinn {
 			}
 		}
 
-		mAllocators.emplace_front(mAllocatorSize);
-		return &mAllocators.front();
+		mAllocators.emplace_front(static_cast<uint32_t>(mAllocatorSize));
+		auto & ret = mAllocators.front();
+		ret.reserve(size);
+		return &ret;
 	}
 
 	void UniformManager::collect() noexcept {
 		for (auto it = mAllocators.begin(); mAllocators.end() != it;) {
-			if (it->free()) {
+			if (it->isFree()) {
 				auto copy = it;
 				++it;
 				mAllocators.erase(copy);
@@ -100,36 +100,17 @@ namespace nJinn {
 
 	UniformManager * uniformManager = nullptr;
 
-	
-	/*void UniformBuffer::update()
-	{
-		if (!context->isUploadMemoryTypeCoherent()) {
-			// TODO fix this allocation and this fucking memory leak
-			/*vk::MappedMemoryRange * ranges = new vk::MappedMemoryRange[sAllocators.size()];
-			int i = 0;
-			for (UniformAllocator & alloc : sAllocators) {
-				alloc.writtenRange(ranges[i++]);
-			}
-			context->dev().flushMappedMemoryRanges(i, ranges);
-		}
-		for (UniformAllocator & alloc : sAllocators) {
-			alloc.update();
-		}
-	}*/
-
-
 	UniformBuffer::~UniformBuffer() {
-		mAllocator->free(mSize);
+		mAllocator->release(mSize);
 	}
 
 	void UniformBuffer::initialize(uint32_t size) {
 		mSize = static_cast<uint32_t>(context->alignUniform(size));
-		mAllocator = uniformManager->allocate(mSize);
-		mAllocator->allocate(mSize);
+		mAllocator = uniformManager->reserve(mSize);
 	}
 
 	void UniformBuffer::advance() noexcept {
-		mCurrentOffset = mAllocator->obtain(mSize);
+		mCurrentOffset = mAllocator->allocate(mSize);
 	}
 
 	void UniformBuffer::fillDescriptorInfo(vk::DescriptorBufferInfo & info) const noexcept {

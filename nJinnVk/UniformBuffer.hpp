@@ -17,21 +17,21 @@ namespace nJinn {
 	public:
 		UniformAllocator(uint32_t uniformSize);
 		~UniformAllocator();
-		bool allocate(uint32_t size) {
+		bool reserve(uint32_t size) {
 			if (mFreeSpace < size) return false;
 			mFreeSpace -= size;
 			return true;
 		}
-		void free(uint32_t size) {
+		void release(uint32_t size) {
 			mFreeSpace += size;
 		}
 		void update();
-		uint32_t obtain(uint32_t size) noexcept;
+		uint32_t allocate(uint32_t size) noexcept;
 		void * pointer(uint32_t offset) const noexcept {
 			return mPointer + offset;
 		}
-		void writtenRange(vk::MappedMemoryRange & range);
-		bool free() const noexcept;
+		void flush();
+		bool isFree() const noexcept;
 		bool operator<(const UniformAllocator & that) const noexcept;
 		vk::Buffer buffer() const noexcept { return mBuffer; }
 	};
@@ -43,7 +43,7 @@ namespace nJinn {
 	public:
 		UniformManager(vk::DeviceSize allocatorSize);
 		~UniformManager();
-		UniformAllocator * allocate(uint32_t size);
+		UniformAllocator * reserve(uint32_t size);
 		void collect() noexcept;
 		void update();
 	};

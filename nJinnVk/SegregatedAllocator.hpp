@@ -1,7 +1,7 @@
 #pragma once
 
 #include <list>
-#include <forward_list>
+#include <vector>
 #include <vulkan.hpp>
 #include <memory>
 #include <boost/pool/pool_alloc.hpp>
@@ -11,7 +11,7 @@
 namespace nJinn {
 	namespace detail {
 		template<typename T>
-		using MemoryAllocator = boost::pool_allocator<T>;
+		using MemoryAllocator = boost::fast_pool_allocator<T>;
 		template<typename T>
 		using List = std::list<T, MemoryAllocator<T>>;
 
@@ -27,10 +27,16 @@ namespace nJinn {
 		using ChunkList = List<Chunk>;
 		using ChunkHandle = ChunkList::iterator;
 
+		struct Interval {
+			vk::DeviceSize start;
+			vk::DeviceSize size;
+		};
+
 		struct Chunk {
 			vk::DeviceMemory memory;
-			BlockList blocks;
 			uint8_t * mapping;
+			BlockList blocks;
+			std::vector<Interval> flushes;
 		};
 
 		struct Block {
@@ -51,6 +57,8 @@ namespace nJinn {
 		std::unique_ptr<detail::FreeList[]> mFreeLists;
 		detail::ChunkList mChunks;
 
+		std::vector<vk::MappedMemoryRange> mFlushRanges;
+
 		void allocateChunk();
 		detail::BlockHandle createEmptyBlock(detail::ChunkHandle chunk, detail::BlockHandle position);
 		void createFreeNode(detail::BlockHandle block);
@@ -66,12 +74,14 @@ namespace nJinn {
 			vk::DeviceSize offset() { return mBlock->offset; }
 			vk::DeviceSize size() { return mBlock->size; }
 			uint8_t * mapping() { return mBlock->chunk->mapping + offset(); }
+			void flush(vk::DeviceSize start, vk::DeviceSize size);
 			friend SegregatedAllocator;
 		};
 		SegregatedAllocator(vk::DeviceSize size, vk::DeviceSize alignment, uint32_t memoryType, bool shouldMap);
 		~SegregatedAllocator();
 		Allocation alloc(vk::DeviceSize size);
 		void free(Allocation & allocation);
+		void flush();
 		void validate();
 	};
 }

@@ -238,7 +238,7 @@ namespace nJinn {
 
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.setCommandBufferCount(rendererSystem->mCommandBuffersToExecute.size())
+			.setCommandBufferCount(static_cast<uint32_t>(rendererSystem->mCommandBuffersToExecute.size()))
 			.setPCommandBuffers(rendererSystem->mCommandBuffersToExecute.data())
 			.setPWaitSemaphores(waitSemaphores)
 			.setWaitSemaphoreCount(2)

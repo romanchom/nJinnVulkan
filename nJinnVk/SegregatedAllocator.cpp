@@ -2,7 +2,7 @@
 #include "SegregatedAllocator.hpp"
 
 #include <stdexcept>
-
+#include <algorithm>
 #include <intrin.h>
 
 #include "Context.hpp"
@@ -177,6 +177,55 @@ namespace nJinn {
 		createFreeNode(block);
 	}
 
+	void SegregatedAllocator::flush() {
+		struct IntervalCmp {
+			bool operator()(const detail::Interval & l, const detail::Interval & r) const {
+				return l.start < r.start;
+			}
+		};
+		if (mShouldMap && !context->isUploadMemoryTypeCoherent()) {
+			mFlushRanges.clear();
+			for (auto && chunk : mChunks) {
+				auto && flushes = chunk.flushes;
+				// merge neighboring flushes
+				if (flushes.size() > 0) {
+					// sort by interval start
+					std::sort(flushes.begin(), flushes.end(), IntervalCmp());
+
+					auto it = flushes.begin();
+
+					mFlushRanges.emplace_back(
+						chunk.memory,
+						it->start,
+						it->size);
+					++it;
+
+					for (; it != flushes.end(); ++it) {
+						auto && back = mFlushRanges.back();
+						if (back.size + back.offset == it->start) {
+							// merge two intervals if end == start
+							back.size += it->size;
+						}
+						else {
+							// otherwise add interval to array
+							mFlushRanges.emplace_back(
+								chunk.memory,
+								it->start,
+								it->size);
+						}
+					}
+					flushes.clear();
+				}
+			}
+			// flush all mapped ranges in entire memory type with single operation
+			if (mFlushRanges.size() > 0) {
+				context->dev().flushMappedMemoryRanges(
+					static_cast<uint32_t>(mFlushRanges.size()),
+					mFlushRanges.data());
+			}
+		}
+	}
+
 	void SegregatedAllocator::validate() {
 		for (auto && chunk : mChunks) {
 			vk::DeviceSize prev = 0;
@@ -186,6 +235,12 @@ namespace nJinn {
 				}
 				prev += block.size;
 			}
+		}
+	}
+
+	void SegregatedAllocator::Allocation::flush(vk::DeviceSize start, vk::DeviceSize size) {
+		if (!context->isUploadMemoryTypeCoherent()) {
+			mBlock->chunk->flushes.push_back({ offset() + start, size });
 		}
 	}
 }
