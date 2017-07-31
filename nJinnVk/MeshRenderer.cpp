@@ -22,7 +22,7 @@ namespace nJinn {
 	void MeshRenderer::mesh(const Mesh::handle & mesh)
 	{
 		mMesh = mesh;
-		resourceManager->onResourceLoaded(mesh, [target = this]{ return target->validate(); });
+		mesh->onLoaded([target = this]{ return target->validate(); });
 	}
 
 	void MeshRenderer::update()
@@ -49,6 +49,7 @@ namespace nJinn {
 	MeshRenderer::~MeshRenderer()
 	{
 		context->dev().destroyPipeline(mPipeline);
+		// TODO unregister from rendererSystem
 	}
 
 	bool nJinn::MeshRenderer::validate()

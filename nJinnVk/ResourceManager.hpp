@@ -38,9 +38,6 @@ namespace nJinn {
 		template<typename T>
 		handle_t<T> get(const key_t & key, ResourceLoadPolicy policy = ResourceLoadPolicy::None);
 
-		void onResourceLoaded(const val_t & resource, const callback_t & callback);
-		void runCallbacks(Resource * resource);
-
 		void collect();
 	};
 
@@ -59,7 +56,7 @@ namespace nJinn {
 				resource->load(key);
 				break;
 			case ResourceLoadPolicy::Deferred:
-				threadPool->submitTask([=]() {
+				threadPool->submitTask([resource, key]() {
 					resource->load(key); 
 					debug->log("Resource loaded in frame ", clock->frame(), '\n');
 				});

@@ -3,7 +3,7 @@
 #include <vulkan.hpp>
 
 namespace nJinn {
-	/// Manages the lifetime of vkCommanBuffer.
+	/// Manages the lifetime of vkCommandBuffer.
 	/**
 		This class contains command pool and a set of command buffers.
 		They are kept in an internal queue and provided in round robin order.
@@ -11,7 +11,7 @@ namespace nJinn {
 	class CommandBuffer {
 	public:
 		/// Creates default command buffer ready to be used.
-		CommandBuffer();
+		CommandBuffer(uint32_t queueIndex = 0, vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary);
 		/// Immediatelly destroys command buffer and all owned resources.
 		~CommandBuffer();
 
@@ -20,22 +20,26 @@ namespace nJinn {
 		/// Ends recording of the command buffer.
 		inline void endRecording();
 		
-		/// Gets current vkCommandBuffer.
-		vk::CommandBuffer get() { return buffer[currentIndex]; }
-		/// Gets current vkCommandBuffer.
+		/// Gets current vkCommandBuffer that is ready for recording new commands.
+		vk::CommandBuffer getRecordable() const noexcept { return mBuffers[mRecordableIndex]; }
+		/// Gets current vkCommandBuffer that is ready to be executed.
+		vk::CommandBuffer getExecutable() const noexcept { return mBuffers[mExecutableIndex]; }
+		/// Gets current vkCommandBuffer that is ready to be executed.
 		vk::CommandBuffer * operator->() {
-			return buffer + currentIndex;
+			return mBuffers + mRecordableIndex;
 		}
 	private:
 		enum { bufferCount = 2 };
 		/// Command buffer pool from which command buffers are created.
-		vk::CommandPool pool;
+		vk::CommandPool mPool;
 		/// Queue of command buffers.
-		vk::CommandBuffer buffer[bufferCount];
+		vk::CommandBuffer mBuffers[bufferCount];
 		/// Cached CommandBufferBeginInfo used every time beginRecording is called.
-		vk::CommandBufferBeginInfo beginInfo;
-		/// Index of the current command buffer in queue.
-		size_t currentIndex;
+		vk::CommandBufferBeginInfo mBeginInfo;
+		/// Index of the current executable command buffer in queue.
+		uint32_t mExecutableIndex;
+		/// Index of the current recordable command buffer in queue.
+		uint32_t mRecordableIndex;
 	};
 
 	/**
@@ -48,9 +52,10 @@ namespace nJinn {
 		Failure to do so results in undefined behaviour.
 	*/
 	inline void CommandBuffer::beginRecording() {
-		++currentIndex %= bufferCount; // TODO possibly centralize this
-		get().reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-		get().begin(beginInfo);
+		++mRecordableIndex %= bufferCount;
+		getRecordable().reset({});
+		//getRecordable().reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+		getRecordable().begin(mBeginInfo);
 	}
 	
 	/**
@@ -59,6 +64,7 @@ namespace nJinn {
 	*/
 	inline void CommandBuffer::endRecording()
 	{
-		get().end();
+		getRecordable().end();
+		mExecutableIndex = mRecordableIndex;
 	}
 }

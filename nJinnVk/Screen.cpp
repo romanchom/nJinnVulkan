@@ -237,7 +237,7 @@ namespace nJinn {
 		}
 		buffer.endRecording();
 
-		vk::CommandBuffer cmdbuf = buffer.get();
+		vk::CommandBuffer cmdbuf = buffer.getExecutable();
 
 		vk::SubmitInfo submitInfo;
 		submitInfo

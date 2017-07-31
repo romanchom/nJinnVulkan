@@ -101,6 +101,7 @@
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="LightSource.hpp" />
     <ClInclude Include="LightSourceDirectional.hpp" />
+    <ClInclude Include="LightSourcePoint.hpp" />
     <ClInclude Include="MaterialFamily.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="Math.hpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="ResourceUploader.hpp" />
     <ClInclude Include="Screen.hpp" />
+    <ClInclude Include="SecondaryCommandBuffer.hpp" />
     <ClInclude Include="SegregatedAllocator.hpp" />
     <ClInclude Include="Semaphore.hpp" />
     <ClInclude Include="Shader.hpp" />
@@ -158,6 +160,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ResourceUploader.cpp" />
     <ClCompile Include="Screen.cpp" />
+    <ClCompile Include="SecondaryCommandBuffer.cpp" />
     <ClCompile Include="SegregatedAllocator.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">

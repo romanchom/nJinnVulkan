@@ -89,20 +89,31 @@ namespace nJinn {
 		struct queueLocation {
 			uint32_t familyIndex = 0;
 			uint32_t indexInFamily = 0;
+			uint32_t fit = ~0u;
 		};
 
 		queueLocation qLocations[queueCount];
 		std::vector<int> queueInstanceCounts(queuesProperties.size());
 
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < queueCount; ++i) {
 			auto type = queueTypes[i];
 			for (uint32_t j = 0; j < queuesProperties.size(); ++j) {
-				if (queuesProperties[j].queueFlags & type) {
+				auto hasFlag = static_cast<bool>(queuesProperties[j].queueFlags & type);
+				if (!hasFlag) continue;
+
+				auto flags = static_cast<uint32_t>(queuesProperties[j].queueFlags);
+				auto fit = __popcnt(flags);
+				// if new queue type is a tighter fit
+				if (fit < qLocations[i].fit) {
 					qLocations[i].familyIndex = j;
-					qLocations[i].indexInFamily = queueInstanceCounts[j]++;
-					break;
+					qLocations[i].fit = fit;
 				}
 			}
+		}
+
+		for (int i = 0; i < queueCount; ++i) {
+			auto qIndex = qLocations[i].familyIndex;
+			qLocations[i].indexInFamily = queueInstanceCounts[qIndex]++;
 		}
 
 		float priorities[3] = { 1.0f, 1.0f, 1.0f };

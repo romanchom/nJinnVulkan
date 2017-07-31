@@ -74,6 +74,7 @@ namespace nJinn {
 		uint32_t mCurrentSyncIndex;
 
 		std::vector<vk::CommandBuffer> mCommandBuffersToExecute;
+		std::vector<vk::Semaphore> mWaitSemaphores;
 	public:
 		RendererSystem();
 		~RendererSystem();

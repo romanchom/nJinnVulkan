@@ -60,6 +60,12 @@ namespace nJinn {
 				mDepthStencilInfo.setMaxDepthBounds(bounds[1].as<float>());
 			}
 		}
+		if (Node stencilNode = root["node"]) {
+			mDepthStencilInfo.setStencilTestEnable(true);
+			if (Node frontNode = stencilNode["front"]) {
+
+			}
+		}
 
 		vk::DescriptorSetLayout globalLayout;
 

@@ -4,29 +4,30 @@
 #include "Context.hpp"
 
 namespace nJinn {
-	CommandBuffer::CommandBuffer() :
-		currentIndex(-1)
+	CommandBuffer::CommandBuffer(uint32_t queueIndex, vk::CommandBufferLevel level) :
+		mRecordableIndex(-1),
+		mExecutableIndex(-1)
 	{
 		vk::CommandPoolCreateInfo poolInfo;
 		poolInfo
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer | vk::CommandPoolCreateFlagBits::eTransient)
-			.setQueueFamilyIndex(context->mainQueueFamilyIndex());
+			.setQueueFamilyIndex(queueIndex);
 			
-		pool = context->dev().createCommandPool(poolInfo);
+		mPool = context->dev().createCommandPool(poolInfo);
 
 		vk::CommandBufferAllocateInfo bufferInfo;
 		bufferInfo
 			.setCommandBufferCount(bufferCount)
-			.setCommandPool(pool)
-			.setLevel(vk::CommandBufferLevel::ePrimary);
+			.setCommandPool(mPool)
+			.setLevel(level);
 
-		context->dev().allocateCommandBuffers(&bufferInfo, buffer);
+		context->dev().allocateCommandBuffers(&bufferInfo, mBuffers);
 
-		beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+		mBeginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 	}
 
 	CommandBuffer::~CommandBuffer()
 	{
-		context->dev().destroyCommandPool(pool);
+		context->dev().destroyCommandPool(mPool);
 	}
 }

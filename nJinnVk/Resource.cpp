@@ -3,12 +3,29 @@
 
 #include "ResourceManager.hpp"
 
-nJinn::Resource::Resource() :
-	mIsLoaded(false)
-{}
+namespace nJinn {
+	Resource::Resource() :
+		mIsLoaded(false)
+	{}
 
-void nJinn::Resource::finishedLoading()
-{
-	mIsLoaded = true;
-	resourceManager->runCallbacks(this);
+	void Resource::onLoaded(callback_t callback) {
+		std::lock_guard<std::mutex> lock(mCallbackMutex);
+		if (mIsLoaded) {
+			callback();
+		} else {
+			mOnLoadedCallbacks.emplace_back(callback);
+		}
+	}
+
+	void Resource::finishedLoading() {
+		std::lock_guard<std::mutex> lock(mCallbackMutex);
+		mIsLoaded = true;
+		for (auto && callback : mOnLoadedCallbacks) {
+			callback();
+		}
+		// move empty vector into member to release memory
+		mOnLoadedCallbacks = std::vector<std::function<void()>>();
+	}
 }
+
+

@@ -178,10 +178,8 @@ namespace nJinn {
 	}
 
 	void SegregatedAllocator::flush() {
-		struct IntervalCmp {
-			bool operator()(const detail::Interval & l, const detail::Interval & r) const {
-				return l.start < r.start;
-			}
+		const auto cmp = [](const detail::Interval & l, const detail::Interval & r) {
+			return l.start < r.start;
 		};
 		if (mShouldMap && !context->isUploadMemoryTypeCoherent()) {
 			mFlushRanges.clear();
@@ -190,7 +188,7 @@ namespace nJinn {
 				// merge neighboring flushes
 				if (flushes.size() > 0) {
 					// sort by interval start
-					std::sort(flushes.begin(), flushes.end(), IntervalCmp());
+					std::sort(flushes.begin(), flushes.end(), cmp);
 
 					auto it = flushes.begin();
 

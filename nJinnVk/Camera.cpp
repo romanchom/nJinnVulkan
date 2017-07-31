@@ -42,7 +42,7 @@ namespace nJinn {
 			.setPClearValues(vals);
 
 		mCommandBuffer.beginRecording();
-		vk::CommandBuffer cmdbuf = mCommandBuffer.get();
+		vk::CommandBuffer cmdbuf = mCommandBuffer.getRecordable();
 		screen->transitionForDraw(cmdbuf);
 		cmdbuf.beginRenderPass(info, vk::SubpassContents::eInline);
 		cmdbuf.setViewport(0, 1, &viewport);

@@ -15,7 +15,7 @@ namespace nJinn {
 	void Renderer::materialFamily(const MaterialFamily::handle & material)
 	{
 		mMaterialFamily = material;
-		resourceManager->onResourceLoaded(material, [=] { return validate(); });
+		material->onLoaded([=] { return validate(); });
 	}
 
 	bool Renderer::validate()

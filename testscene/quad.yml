@@ -16,5 +16,8 @@ objectParams:
         count: 1
  
 outputCount: 1
+
+depth:
+    compare: less
 #blend
 ...

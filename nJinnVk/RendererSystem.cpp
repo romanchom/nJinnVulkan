@@ -201,6 +201,7 @@ namespace nJinn {
 		while (vk::Result::eTimeout == context->dev()
 			.waitForFences(1, &fence, true, UINT64_MAX));
 		context->dev().resetFences(1, &fence);
+		resourceUploader->releaseResources();
 
 		++mCurrentSyncIndex %= mSyncs.size();
 
@@ -214,19 +215,23 @@ namespace nJinn {
 			obj->update();
 		}
 
+		mWaitSemaphores.clear();
+		mWaitSemaphores.emplace_back(sync.frameAcquiredSemaphore.get());
+		if (resourceUploader->resourcesAvailable()) {
+			mWaitSemaphores.emplace_back(resourceUploader->semaphore());
+			mCommandBuffersToExecute.emplace_back(resourceUploader->takeOwnershipCommandBuffer());
+		}
+
 		mCommandBuffersToExecute.clear();
 		int i = 0;
 		for (auto && camera : mCameras) {
 			camera->draw(mDeferredObjects, mLightSources);
-			mCommandBuffersToExecute.push_back(camera->mCommandBuffer.get());
+			mCommandBuffersToExecute.push_back(camera->mCommandBuffer.getExecutable());
 			++i;
 		}
 
 
-		vk::Semaphore waitSemaphores[] = {
-			sync.frameAcquiredSemaphore.get(),
-			resourceUploader->semaphore()
-		};
+
 		vk::Semaphore signalSemaphores[] = {
 			sync.renderingCompleteSemaphore.get() 
 		};
@@ -238,10 +243,10 @@ namespace nJinn {
 
 		vk::SubmitInfo submitInfo;
 		submitInfo
-			.setCommandBufferCount(static_cast<uint32_t>(rendererSystem->mCommandBuffersToExecute.size()))
-			.setPCommandBuffers(rendererSystem->mCommandBuffersToExecute.data())
-			.setPWaitSemaphores(waitSemaphores)
-			.setWaitSemaphoreCount(2)
+			.setCommandBufferCount(static_cast<uint32_t>(mCommandBuffersToExecute.size()))
+			.setPCommandBuffers(mCommandBuffersToExecute.data())
+			.setPWaitSemaphores(mWaitSemaphores.data())
+			.setWaitSemaphoreCount(static_cast<uint32_t>(mWaitSemaphores.size()))
 			.setPWaitDstStageMask(src)
 			.setSignalSemaphoreCount(1)
 			.setPSignalSemaphores(signalSemaphores);
