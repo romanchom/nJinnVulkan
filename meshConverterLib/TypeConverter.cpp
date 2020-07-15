@@ -23,7 +23,7 @@ namespace meshLoader {
 			t = new RegularConverter<uint16_t>();
 		} else if (name == "ushortn") {
 			t = new NormalizingConverter<uint16_t>();
-		} else throw std::exception("Unrecognized data name");
+		} else throw std::runtime_error("Unrecognized data name");
 		return t;
 	}
 

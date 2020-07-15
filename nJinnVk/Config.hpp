@@ -27,7 +27,7 @@ namespace nJinn {
 	const T & Config::getValue(const std::string & key)
 	{
 		auto & var  = variables[key];
-		if (var.empty()) throw std::exception("Option not recognized");
+		if (var.empty()) throw std::runtime_error("Option not recognized");
 		return var.as<T>();
 	}
 

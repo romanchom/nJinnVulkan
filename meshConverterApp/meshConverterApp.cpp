@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 
-		if (input.empty()) throw std::exception("No input file given.");
+		if (input.empty()) throw std::runtime_error("No input file given.");
 
 		meshLoader::MeshLoader loader;
 		loader.loadObj(input, verbose);

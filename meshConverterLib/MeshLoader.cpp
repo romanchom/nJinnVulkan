@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <boost/iostreams/device/mapped_file.hpp>
 
 #include "MeshLoader.hpp"
@@ -37,7 +37,7 @@ namespace meshLoader {
 	}
 
 	void MeshLoader::loadObj(const std::string & filename, bool verbose) {
-		if (_loaded) throw std::exception("Cannot load mesh into an already used object.");
+		if (_loaded) throw std::runtime_error("Cannot load mesh into an already used object.");
 		
 
 
@@ -48,7 +48,7 @@ namespace meshLoader {
 		FILE * file = fopen(filename.c_str(), "r");
 
 		if (file == 0) {
-			throw std::exception("Couldn't open file");
+			throw std::runtime_error("Couldn't open file");
 		}
 
 		if (verbose) printf("Opened file %s.\n", filename.c_str());
@@ -83,7 +83,7 @@ namespace meshLoader {
 
 		if (verbose) {
 			if (positions.size() != 0) printf("Read %llu vertex positions.\n", positions.size() / 3);
-			else throw std::exception("No vertex positions found. Aborting.");
+			else throw std::runtime_error("No vertex positions found. Aborting.");
 
 			printf("Reading vertex normals.\n");
 		}
@@ -108,7 +108,7 @@ namespace meshLoader {
 
 		if (verbose) {
 			if (normals.size()) printf("Read %llu vertex normals.\n", normals.size() / 3);
-			else throw std::exception("No normals found. Aborting.");
+			else throw std::runtime_error("No normals found. Aborting.");
 
 			printf("Reading vertex texture coordinates.\n");
 		}
@@ -131,7 +131,7 @@ namespace meshLoader {
 		} while (fscanf(file, "%s", str) > 0);
 		if (verbose) {
 			if (uvs.size()) printf("Read %llu vertex texture coordinates.\n", uvs.size() / 2);
-			else throw std::exception("Found no texture coordinates. Aborting.");
+			else throw std::runtime_error("Found no texture coordinates. Aborting.");
 
 			printf("Reading faces and optimizing.\n");
 		}
